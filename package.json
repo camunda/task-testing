@@ -7,6 +7,7 @@
     "all": "run-s lint test build",
     "start": "vite --config demo.config.js",
     "build": "vite build",
+    "build:demo": "vite build --config demo.config.js",
     "test": "vitest run",
     "test:watch": "vitest watch",
     "lint": "eslint ."

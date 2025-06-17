@@ -5,7 +5,14 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   root: 'demo',
   plugins: [ react() ],
+  build: {
+    outDir: '../public',
+    emptyOutDir: true,
+  },
   server: {
     open: true
+  },
+  test: {
+    globals: true,
   },
 });
