@@ -5,12 +5,11 @@
   "type": "module",
   "scripts": {
     "all": "run-s lint test build",
-    "start": "vite --config demo.config.mjs",
+    "start": "vite serve",
     "build": "vite build",
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "lint": "eslint .",
-    "prepare": "vite build"
+    "lint": "eslint ."
   },
   "files": [
     "dist"
@@ -24,6 +23,7 @@
     "@vitejs/plugin-react": "^4.4.1",
     "bpmn-js": "^18.6.2",
     "camunda-bpmn-js": "^5.10.0",
+    "classnames": "^2.5.1",
     "eslint": "^9.25.0",
     "eslint-plugin-bpmn-io": "^2.2.0",
     "eslint-plugin-react-hooks": "^5.2.0",

@@ -7,6 +7,8 @@ const files = {
   client: [
     'lib/**/*.js',
     'lib/**/*.jsx',
+    'demo/**/*.js',
+    'demo/**/*.jsx',
   ],
   build: [
     '*.js',
