@@ -2,6 +2,7 @@ name: Deploy to GitHub Pages
 on: 
   push:
     branches: [ $default-branch ]
+  workflow_dispatch:
 concurrency:
   group: "pages"
   cancel-in-progress: false
