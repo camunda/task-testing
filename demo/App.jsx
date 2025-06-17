@@ -5,7 +5,7 @@ import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
 import { useState, useRef, useEffect } from 'react';
 import BpmnModeler from 'bpmn-js/lib/Modeler';
 
-import TaskTesting from '../lib';
+// import TaskTesting from '../lib';
 
 import diagram from './diagram.bpmn?raw';
 
@@ -47,7 +47,7 @@ function App() {
     <>
       <div className="modeler" ref={ modelerRef }></div>
       <div className="bottom-panel">
-        <TaskTesting />
+        {/* <TaskTesting /> */}
       </div>
     </>
   );
