@@ -4,15 +4,18 @@ const files = {
   ignored: [
     'dist'
   ],
-  client: [
-    'lib/**/*.js',
-    'lib/**/*.jsx',
-    'demo/**/*.js',
-    'demo/**/*.jsx',
+  lib: [
+    '**/*.js',
+    '**/*.jsx',
+    '**/*.spec.js',
+    '**/*.spec.jsx'
   ],
   build: [
-    '*.js',
-    '*.mjs',
+    '*.js'
+  ],
+  test: [
+    'test/**/*.spec.js',
+    'test/**/*.spec.jsx'
   ]
 };
 
@@ -29,23 +32,31 @@ export default [
     };
   }),
 
-  // client
+  // lib
   ...bpmnIoPlugin.configs.browser.map(config => {
     return {
       ...config,
-      files: files.client
+      files: files.lib
     };
   }),
   ...bpmnIoPlugin.configs.jsx.map((config) => {
     return {
       ...config,
-      files: files.client
+      files: files.lib
     };
   }),
   {
     settings: {
       react: { version: '16.14.0' }
     },
-    files: files.client
+    files: files.lib,
   },
+
+  // test
+  ...bpmnIoPlugin.configs.mocha.map(config => {
+    return {
+      ...config,
+      files: files.test
+    };
+  }),
 ];
