@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "all": "run-s lint test build",
-    "start": "vite serve",
+    "start": "vite --config demo.config.js",
     "build": "vite build",
     "test": "vitest run",
     "test:watch": "vitest watch",
