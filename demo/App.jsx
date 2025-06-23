@@ -1,11 +1,20 @@
+import { useState, useRef, useEffect } from 'react';
+
+import BpmnModeler from 'bpmn-js/lib/Modeler';
+
 import 'bpmn-js/dist/assets/diagram-js.css';
 import 'bpmn-js/dist/assets/bpmn-js.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
 
-import { useState, useRef, useEffect } from 'react';
-import BpmnModeler from 'bpmn-js/lib/Modeler';
+import TaskTesting from '../lib';
 
-// import TaskTesting from '../lib';
+import {
+  saveFile,
+  deploymentConfig,
+  deployResources,
+  createProcessInstance,
+  getProcessInstance
+} from '../test/mock';
 
 import diagram from './diagram.bpmn?raw';
 
@@ -43,11 +52,22 @@ function App() {
     }
   }, [ modeler ]);
 
+  const injector = modeler?.get('injector');
+
+  const props = {
+    injector,
+    saveFile,
+    deploymentConfig,
+    deployResources,
+    createProcessInstance,
+    getProcessInstance
+  };
+
   return (
     <>
       <div className="modeler" ref={ modelerRef }></div>
       <div className="bottom-panel">
-        {/* <TaskTesting /> */}
+        {injector && <TaskTesting { ...props } />}
       </div>
     </>
   );

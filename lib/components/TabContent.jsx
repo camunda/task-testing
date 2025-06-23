@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+
 import classNames from 'classnames';
 
 import { is } from 'bpmn-js/lib/util/ModelUtil';
@@ -19,13 +20,24 @@ export default function TabContent(props) {
   const [ input, setInput ] = useState('{\n\n}');
   const [ loading, setLoading ] = useState(false);
   const [ selectedElement, setSelectedElement ] = useState(null);
-  const [ test, setTest ] = useState(null);
   const [ testResults, setTestResults ] = useState({});
 
-  useEffect(() => {
-    const _test = new Test(...props);
+  const utilRef = useRef(null);
 
-    setTest(_test);
+  useEffect(() => {
+    const {
+      deploymentConfig,
+      deployResources,
+      createProcessInstance,
+      getProcessInstance
+    } = props;
+
+    utilRef.current = new Test(
+      deployResources,
+      deploymentConfig,
+      createProcessInstance,
+      getProcessInstance
+    );
   }, []);
 
   useEffect(() => {
@@ -64,10 +76,6 @@ export default function TabContent(props) {
   }, [ input ]);
 
   const onTest = async () => {
-    if (!test) {
-      return;
-    }
-
     setLoading(true);
 
     saveFile();
@@ -77,7 +85,7 @@ export default function TabContent(props) {
       [ selectedElement.id ]: null
     });
 
-    const results = await test.run(selectedElement.id, input, (getProcessInstanceResult) => {
+    const results = await utilRef.current.run(selectedElement.id, input, (getProcessInstanceResult) => {
       if (getProcessInstanceResult.success) {
         setTestResults({
           ...testResults,
