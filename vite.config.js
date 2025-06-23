@@ -1,10 +1,15 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+
 import react from '@vitejs/plugin-react';
+import { libInjectCss } from 'vite-plugin-lib-inject-css';
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [ react() ],
+  plugins: [
+    react(),
+    libInjectCss()
+  ],
   build: {
     lib: {
       entry: resolve(__dirname, 'lib/index.jsx'),
@@ -13,7 +18,7 @@ export default defineConfig({
     rollupOptions: {
       external: [ 'react', 'react-dom' ],
     },
-    sourcemap: true,
+    sourcemap: true
   },
   test: {
     globals: true,

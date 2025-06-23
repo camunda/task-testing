@@ -1,8 +1,17 @@
 {
   "name": "task-testing",
-  "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/task-testing.js",
+  "module": "dist/task-testing.js",
+  "exports": {
+    ".": {
+      "import": "./dist/task-testing.js"
+    }
+  },
   "scripts": {
     "all": "run-s lint test build",
     "start": "vite --config demo.config.js",
@@ -10,35 +19,35 @@
     "build:demo": "vite build --config demo.config.js",
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "prepublishOnly": "npm run build"
   },
-  "files": [
-    "dist"
-  ],
   "license": "MIT",
   "devDependencies": {
-    "@eslint/js": "^9.25.0",
-    "@testing-library/react": "^16.0.0",
-    "@types/react": "^19.1.2",
-    "@types/react-dom": "^19.1.2",
-    "@vitejs/plugin-react": "^4.4.1",
+    "@camunda8/sdk": "^8.7.17",
+    "@eslint/js": "^9.29.0",
+    "@testing-library/react": "^16.3.0",
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.6.0",
     "bpmn-js": "^18.6.2",
     "camunda-bpmn-js": "^5.10.0",
     "classnames": "^2.5.1",
-    "eslint": "^9.25.0",
+    "eslint": "^9.29.0",
     "eslint-plugin-bpmn-io": "^2.2.0",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.19",
-    "globals": "^16.0.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.2.0",
     "mocha-test-container-support": "^0.2.0",
     "npm-run-all2": "^6.2.2",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "sass": "^1.89.2",
     "vite": "^6.3.5",
-    "vitest": "^3.2.0"
+    "vite-plugin-lib-inject-css": "^2.2.2",
+    "vitest": "^3.2.4"
   },
   "peerDependencies": {
-    "bpmn-js": "*",
     "react": "*",
     "react-dom": "*"
   }

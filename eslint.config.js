@@ -2,7 +2,8 @@ import bpmnIoPlugin from 'eslint-plugin-bpmn-io';
 
 const files = {
   ignored: [
-    'dist'
+    'dist',
+    'public'
   ],
   lib: [
     '**/*.js',
@@ -47,7 +48,7 @@ export default [
   }),
   {
     settings: {
-      react: { version: '16.14.0' }
+      react: { version: '18.2.0' }
     },
     files: files.lib,
   },
