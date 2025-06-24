@@ -25,15 +25,15 @@ export default function TabContent(props) {
 
   useEffect(() => {
     const {
-      deployResources,
+      deploy,
       startInstance,
-      getProcessInstance
+      getInstance
     } = props;
 
     utilRef.current = new Test(
-      deployResources,
+      deploy,
       startInstance,
-      getProcessInstance
+      getInstance
     );
   }, []);
 

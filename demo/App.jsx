@@ -9,11 +9,10 @@ import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
 import TaskTesting from '../lib';
 
 import {
-  saveFile,
-  deploymentConfig,
-  deployResources,
-  createProcessInstance,
-  getProcessInstance
+  deploy,
+  startInstance,
+  getInstance,
+  saveFile
 } from '../test/mock';
 
 import diagram from './diagram.bpmn?raw';
@@ -57,10 +56,9 @@ function App() {
   const props = {
     injector,
     saveFile,
-    deploymentConfig,
-    deployResources,
-    createProcessInstance,
-    getProcessInstance
+    deploy,
+    startInstance,
+    getInstance
   };
 
   return (

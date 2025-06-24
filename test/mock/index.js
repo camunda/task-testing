@@ -9,38 +9,33 @@ export const injector = {
 
 export function saveFile() {}
 
-export const deploymentConfig = {
-  tenantId: 'mock-tenant-id',
-  deploymentKey: 'mock-deployment-key',
-  resources: [
-    {
-      content: 'mock-content',
-      name: 'mock-process.bpmn'
-    }
-  ]
-};
-
-export function deployResources(resources, tenantId) {
+export function deploy() {
   return {
-    deploymentKey: 'mock-deployment-key',
-    tenantId: tenantId,
-    deployments: [
-      {
-        processDefinition: {
-          processId: 'mock-process-id'
+    success: true,
+    response: {
+      deploymentKey: 'mock-deployment-key',
+      tenantId: 'mock-tenant-id',
+      deployments: [
+        {
+          processDefinition: {
+            processId: 'mock-process-id'
+          }
         }
-      }
-    ]
+      ]
+    }
   };
 }
 
-export function createProcessInstance(processId, config) {
+export function startInstance(processId, config) {
   return {
-    processInstanceKey: 'mock-process-instance-key'
+    success: true,
+    response: {
+      processInstanceKey: 'mock-process-instance-key'
+    }
   };
 }
 
-export function getProcessInstance(processId, config) {
+export function getInstance(processId, config) {
   return {
     success: true,
     type: 'instanceFound',
