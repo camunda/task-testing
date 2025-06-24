@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 
-import classNames from 'classnames';
-
-import { is } from 'bpmn-js/lib/util/ModelUtil';
+import useSelectedElement from '../hooks/useSelectedElement';
 
 import Test from '../utils/Test';
 
@@ -19,99 +17,47 @@ export default function TabContent(props) {
 
   const [ input, setInput ] = useState('{\n\n}');
   const [ loading, setLoading ] = useState(false);
-  const [ selectedElement, setSelectedElement ] = useState(null);
-  const [ testResults, setTestResults ] = useState({});
+  const [ log, setLog ] = useState([]);
+
+  const element = useSelectedElement(injector);
 
   const utilRef = useRef(null);
 
   useEffect(() => {
     const {
-      deploymentConfig,
       deployResources,
-      createProcessInstance,
+      startInstance,
       getProcessInstance
     } = props;
 
     utilRef.current = new Test(
       deployResources,
-      deploymentConfig,
-      createProcessInstance,
+      startInstance,
       getProcessInstance
     );
   }, []);
 
-  useEffect(() => {
-    injector.get('eventBus').on('selection.changed', ({ newSelection }) => {
-      if (newSelection.length === 1 && is(newSelection[0], 'bpmn:Task')) {
-        setSelectedElement(newSelection[0]);
-      } else {
-        setSelectedElement(null);
-      }
-    });
-  }, []);
-
-  useEffect(() => {
-    const callback = ({ element }) => {
-      if (testResults[element.id]) {
-        setTestResults({
-          ...testResults,
-          [ element.id ]: null
-        });
-      }
-    };
-
-    injector.get('eventBus').on('element.changed', callback);
-
-    return () => {
-      injector.get('eventBus').off('element.changed', callback);
-    };
-  }, [ testResults ]);
-
-  useEffect(() => {
-
-    // set input for selected element in local storage
-    if (selectedElement && input) {
-      localStorage.setItem(`test-input-${selectedElement.id}`, input);
-    }
-  }, [ input ]);
+  const addLog = (elementId, message) => {
+    setLog((prev) => ([ ...prev, {
+      elementId,
+      message
+    } ]));
+  };
 
   const onTest = async () => {
     setLoading(true);
 
     saveFile();
 
-    setTestResults({
-      ...testResults,
-      [ selectedElement.id ]: null
-    });
-
-    const results = await utilRef.current.run(selectedElement.id, input, (getProcessInstanceResult) => {
-      if (getProcessInstanceResult.success) {
-        setTestResults({
-          ...testResults,
-          [ selectedElement.id ]: getProcessInstanceResult
-        });
-      } else {
-        setTestResults({
-          ...testResults,
-          [ selectedElement.id ]: getProcessInstanceResult
-        });
-      }
-    });
-
-    console.log('test results', results);
-
-    setTestResults({
-      ...testResults,
-      [ selectedElement.id ]: results
-    });
+    await utilRef.current.run(
+      element.id,
+      input,
+      addLog);
 
     setLoading(false);
   };
 
-  console.log('test results', testResults);
-
-  if (!selectedElement) {
+  if (!element) {
     return <div className="placeholder">Select a task to test.</div>;
   }
 
@@ -121,12 +67,12 @@ export default function TabContent(props) {
         <div className="input">
           <div className="input-header">
             <h5>Input</h5>
-            <button className={
-              classNames('btn', {
-                'btn-primary': !testResults[selectedElement.id],
-                'btn-secondary': testResults[selectedElement.id]
-              })
-            } onClick={ onTest } disabled={ loading }>{ loading ? 'Running...' : testResults[selectedElement.id] ? 'Run' : 'Run' }</button>
+            <button
+              className="btn btn-primary"
+              onClick={ onTest }
+              disabled={ loading }>
+              { loading ? 'Running...' : 'Run Test' }
+            </button>
           </div>
           <div className="input-content">
             <textarea id="task-testing-input" spellCheck="false" rows="10" onChange={ (e) => setInput(e.target.value) } value={ input }></textarea>
@@ -139,21 +85,11 @@ export default function TabContent(props) {
           </div>
           <div className="output-content">
             {
-              testResults[selectedElement.id] && (
-                <>
-                  {
-                    testResults[selectedElement.id].type === 'instanceStarted' && <span>Instance started...</span>
-                  }
-                  {
-                    testResults[selectedElement.id].type === 'instanceNotFound' && <span>Waiting for Operate 😴...</span>
-                  }
-                  {
-                    testResults[selectedElement.id].type === 'instanceFound' && (
-                      <pre>{ JSON.stringify(testResults[selectedElement.id].response.response.variables, null, 2) }</pre>
-                    )
-                  }
-                </>
-              )
+              log.map((entry, index) => (
+                <div key={ index } className="log-entry">
+                  <pre><strong>{ entry.elementId }:</strong> { entry.message }</pre>
+                </div>
+              ))
             }
           </div>
         </div>

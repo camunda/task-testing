@@ -46,10 +46,17 @@
       padding: 10px;
     }
 
-    pre,
     textarea {
-      background-color: lightgray;
+      background-color: rgb(236, 235, 235);
       padding: 10px;
+      white-space: break-spaces;
+      line-break: anywhere;
+      font-size: 13px;
+      font-family: monospace;
+      user-select: text;
+    }
+
+    pre {
       white-space: break-spaces;
       line-break: anywhere;
       font-size: 13px;
@@ -77,9 +84,7 @@
 
     .input-content,
     .output-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
+      background-color: rgb(236, 235, 235);
       overflow-y: auto;
     }
   }
