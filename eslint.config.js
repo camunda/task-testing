@@ -48,7 +48,7 @@ export default [
   }),
   {
     settings: {
-      react: { version: '18.2.0' }
+      react: { version: '18.3.0' }
     },
     files: files.lib,
   },

@@ -19,3 +19,11 @@ npm install
 
 npm start
 ```
+
+## Build
+
+Run all tests and build the library:
+
+```
+npm run all
+```

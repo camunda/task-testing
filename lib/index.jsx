@@ -1,4 +1,4 @@
-import TabContent from './components/TabContent';
+import TabContent from './components/TabContent/TabContent';
 
 /**
  * @param {Object} props

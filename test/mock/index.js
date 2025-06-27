@@ -9,7 +9,8 @@ export const injector = {
 
 export function saveFile() {}
 
-export function deploy() {
+export async function deploy() {
+  await new Promise(resolve => setTimeout(resolve, 3000));
   return {
     success: true,
     response: {
@@ -26,7 +27,8 @@ export function deploy() {
   };
 }
 
-export function startInstance(processId, config) {
+export async function startInstance(processId, config) {
+  await new Promise(resolve => setTimeout(resolve, 2000));
   return {
     success: true,
     response: {
@@ -35,7 +37,8 @@ export function startInstance(processId, config) {
   };
 }
 
-export function getInstance(processId, config) {
+export async function getInstance(processId, config) {
+  await new Promise(resolve => setTimeout(resolve, 1000));
   return {
     success: true,
     type: 'instanceFound',

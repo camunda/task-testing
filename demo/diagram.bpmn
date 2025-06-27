@@ -4,17 +4,17 @@
     <bpmn:startEvent id="StartEvent_1">
       <bpmn:outgoing>Flow_1xr5ql2</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:task id="Activity_1cjziw7">
+    <bpmn:task id="Task_1">
       <bpmn:incoming>Flow_1xr5ql2</bpmn:incoming>
     </bpmn:task>
-    <bpmn:sequenceFlow id="Flow_1xr5ql2" sourceRef="StartEvent_1" targetRef="Activity_1cjziw7" />
+    <bpmn:sequenceFlow id="Flow_1xr5ql2" sourceRef="StartEvent_1" targetRef="Task_1" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1kuphyf">
       <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
         <dc:Bounds x="182" y="102" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1cjziw7_di" bpmnElement="Activity_1cjziw7">
+      <bpmndi:BPMNShape id="Task_1_di" bpmnElement="Task_1">
         <dc:Bounds x="270" y="80" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1xr5ql2_di" bpmnElement="Flow_1xr5ql2">

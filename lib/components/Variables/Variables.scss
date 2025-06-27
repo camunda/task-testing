@@ -1,0 +1,30 @@
+.variables {
+
+  .variables-header_title-text {
+    display: flex;
+    align-items: center;
+  }
+
+  .variables-header_buttons {
+    .cds--btn--sm {
+      width: 100px;
+    }
+
+    .cds--btn.cds--skeleton {
+      inline-size: 100px;
+    }
+
+    .cds--tooltip-content {
+      font-size: 12px;
+      padding: 5px;
+    }
+  }
+
+  .hide-tooltip {
+    .cds--popover {
+      display: none;
+    }
+  }
+}
+
+
