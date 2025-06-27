@@ -20,7 +20,7 @@ export default function Output({ log }) {
   return (
     <div className="section output">
       <div className="output-header section-header">
-        <p>Output</p>
+        <p>Activity log</p>
         <p className="cds--label">
           {'Log of the task execution. If you run a task, the output will be displayed here.'}
         </p>

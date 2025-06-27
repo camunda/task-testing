@@ -46,7 +46,7 @@ export default function Variables({ onRun, element, loading }) {
             <Link href="https://docs.camunda.io/docs/components/concepts/variables" renderIcon={ () => <Launch size="14" /> } />
           </div>
           <p className="cds--label">
-            {"Enter variables as JSON. When you're ready to run a task, select it on the canvas and click Run."}
+            {'Enter process variables as JSON. To run a task, select it on the canvas and click Run.'}
           </p>
         </div>
         <div className="variables-header_buttons">

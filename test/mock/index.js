@@ -51,3 +51,11 @@ export async function getInstance(processId, config) {
     }
   };
 }
+
+export const appProps = {
+  injector,
+  saveFile,
+  deploy,
+  startInstance,
+  getInstance
+};
