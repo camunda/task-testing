@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 import useSelectedElement from './hooks/useSelectedElement';
 
@@ -7,7 +7,7 @@ import Output from './components/Output/Output';
 
 import run from './utils/run-task';
 
-import './style.scss';
+import './style.css';
 
 /**
  * @param {Object} props

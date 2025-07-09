@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 
 import { Button, ButtonSkeleton, Link, Tooltip } from '@carbon/react';
 import { Chemistry, Launch } from '@carbon/icons-react';
@@ -7,7 +7,7 @@ import CodeMirror from '../Codemirror/Codemirror';
 import { json, jsonParseLinter } from '@codemirror/lang-json';
 import { linter } from '@codemirror/lint';
 
-import './Variables.scss';
+import './Variables.css';
 
 
 export default function Variables({ onRun, element, loading }) {

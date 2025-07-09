@@ -5,58 +5,66 @@
   "files": [
     "dist"
   ],
-  "main": "dist/task-testing.js",
-  "module": "dist/task-testing.js",
+  "main": "dist/index.js",
   "exports": {
     ".": {
-      "import": "./dist/task-testing.js"
+      "import": "./dist/index.js"
     }
   },
   "scripts": {
     "all": "run-s lint test build",
-    "start": "vite --config demo.config.js",
-    "build": "vite build",
-    "build:demo": "vite build --config demo.config.js",
-    "test": "vitest run",
-    "test:watch": "vitest watch",
-    "lint": "eslint .",
-    "prepublishOnly": "npm run build"
+    "start": "webpack serve --config webpack.demo.cjs",
+    "dev": "npm test -- --auto-watch --no-single-run",
+    "build": "webpack",
+    "build:demo": "webpack --config webpack.demo.cjs",
+    "test": "karma start karma.config.cjs",
+    "lint": "eslint ."
   },
   "license": "MIT",
   "dependencies": {
-    "@carbon/icons-react": "^11.62.0",
-    "@codemirror/lang-json": "^6.0.2",
-    "@codemirror/lint": "^6.8.5",
-    "@uiw/react-codemirror": "^4.23.13"
+    "@codemirror/lang-json": "^6.0.1"
   },
   "devDependencies": {
-    "@camunda8/sdk": "^8.7.17",
-    "@carbon/react": "^1.85.1",
+    "@babel/core": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "@babel/preset-react": "^7.27.1",
+    "@carbon/icons-react": "^11.62.0",
+    "@carbon/react": "^1.76.0",
     "@eslint/js": "^9.29.0",
     "@testing-library/react": "^16.3.0",
-    "@types/react": "^18.2.43",
-    "@types/react-dom": "^18.2.17",
-    "@vitejs/plugin-react": "^4.6.0",
+    "babel-loader": "^10.0.0",
     "camunda-bpmn-js": "^5.10.0",
+    "camunda-modeler-webpack-plugin": "^0.2.0",
+    "chai": "^4.5.0",
     "classnames": "^2.5.1",
+    "css-loader": "^7.1.2",
     "eslint": "^9.29.0",
     "eslint-plugin-bpmn-io": "^2.2.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.2.0",
-    "mocha-test-container-support": "^0.2.0",
+    "html-webpack-plugin": "^5.6.3",
+    "karma": "^6.4.4",
+    "karma-chrome-launcher": "^3.2.0",
+    "karma-env-preprocessor": "^0.1.1",
+    "karma-mocha": "^2.0.1",
+    "karma-sinon-chai": "^2.0.2",
+    "karma-webpack": "^5.0.1",
+    "mocha": "^10.7.3",
     "npm-run-all2": "^6.2.2",
-    "react": "^18.3.0",
-    "react-dom": "^18.3.0",
-    "sass": "^1.89.2",
-    "vite": "^6.3.5",
-    "vite-plugin-lib-inject-css": "^2.2.2",
-    "vite-plugin-svgr": "^4.3.0",
-    "vitest": "^3.2.4"
+    "raw-loader": "^4.0.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sinon": "^17.0.1",
+    "sinon-chai": "^3.7.0",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.100.0",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.2"
   },
   "peerDependencies": {
     "camunda-bpmn-js": "*",
-    "react": "*",
-    "react-dom": "*"
+    "react": "^16.0.0 || ^17.0.0 || ^18.0.0",
+    "react-dom": "^16.0.0 || ^17.0.0 || ^18.0.0"
   }
 }

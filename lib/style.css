@@ -1,0 +1,27 @@
+.task-testing {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.task-testing > :first-child {
+  border-right: 1px solid #E0E0E0;
+}
+
+.section {
+  width: 50%;
+  height: 100%;
+  padding: 10px 15px;
+}
+
+.section-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  height: 48px;
+}
+
+.section-content {
+  height: calc(100% - 50px);
+  overflow: hidden;
+}

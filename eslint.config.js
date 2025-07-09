@@ -3,6 +3,7 @@ import bpmnIoPlugin from 'eslint-plugin-bpmn-io';
 const files = {
   ignored: [
     'dist',
+    'demo/dist',
     'public'
   ],
   lib: [
@@ -12,7 +13,8 @@ const files = {
     '**/*.spec.jsx'
   ],
   build: [
-    '*.js'
+    '*.js',
+    '*.cjs'
   ],
   test: [
     'test/**/*.spec.js',
@@ -48,7 +50,7 @@ export default [
   }),
   {
     settings: {
-      react: { version: '18.3.0' }
+      react: { version: '16.14.0' }
     },
     files: files.lib,
   },

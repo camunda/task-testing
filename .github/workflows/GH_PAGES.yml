@@ -1,4 +1,4 @@
-name: DEPLOY_TO_GH_PAGES
+name: GH_PAGES
 on: 
   push:
     branches: 
@@ -34,7 +34,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: 'demo/public'
+        path: 'demo/dist'
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4

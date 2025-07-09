@@ -1,9 +1,9 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 
 import CodeMirror from '../Codemirror/Codemirror';
 import { json } from '@codemirror/lang-json';
 
-import './Output.scss';
+import './Output.css';
 
 export default function Output({ log }) {
 

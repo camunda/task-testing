@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 import BpmnModeler from 'camunda-bpmn-js/lib/camunda-cloud/Modeler';
 import 'camunda-bpmn-js/dist/assets/camunda-cloud-modeler.css';
@@ -12,30 +12,24 @@ import {
   saveFile
 } from '../test/mock';
 
-import diagram from './diagram.bpmn?raw';
+import diagram from './diagram.xml';
 
-import './App.scss';
+import './style.css';
 
 function App() {
-
-  // Prevent multiple modeler instances from React.StrictMode running useEffect twice
-  const initialized = useRef(false);
-
   const modelerRef = useRef(null);
 
   const [ modeler, setModeler ] = useState(null);
   const [ tab, setTab ] = useState('debugger');
 
   useEffect(() => {
-    if (modelerRef.current && !initialized.current) {
+    if (modelerRef.current) {
       setModeler(new BpmnModeler({
         container: '#canvas',
         propertiesPanel: {
           parent: '#properties'
         }
       }));
-
-      initialized.current = true;
     }
   }, []);
 
