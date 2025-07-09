@@ -17,7 +17,6 @@ export default function TaskTesting(props) {
 
   const {
     injector,
-    saveFile,
     deploy,
     startInstance,
     getInstance
@@ -40,9 +39,8 @@ export default function TaskTesting(props) {
     const camundaApi = { deploy, startInstance, getInstance };
 
     setLoading(true);
-    saveFile();
 
-    await run(element.id, input, addLog, camundaApi);
+    await run(element.id, input, camundaApi, addLog);
 
     setLoading(false);
   };

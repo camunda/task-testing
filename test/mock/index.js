@@ -10,7 +10,7 @@ export const injector = {
 export function saveFile() {}
 
 export async function deploy() {
-  await new Promise(resolve => setTimeout(resolve, 3000));
+  await new Promise(resolve => setTimeout(resolve, 2000));
   return {
     success: true,
     response: {
@@ -41,9 +41,9 @@ export async function getInstance(processId, config) {
   await new Promise(resolve => setTimeout(resolve, 1000));
   return {
     success: true,
-    type: 'instanceFound',
     response: {
-      processId: 'mock-process-id',
+      key: 'mock-process-id',
+      state: 'COMPLETED',
       variables: {
         input: 'mock-input',
         output: 'mock-output'
