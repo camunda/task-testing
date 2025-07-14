@@ -1,35 +1,68 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 
-import CodeMirror from '../Codemirror/Codemirror';
-import { json } from '@codemirror/lang-json';
+import { Button } from '@carbon/react';
 
-import './Output.css';
+import CodeEditor from '../CodeEditor/CodeEditor';
 
-export default function Output({ log }) {
+import useCamundaContext from '../../hooks/useCamundaContext';
+
+export default function Output() {
+
+  const [ copyResultText, setCopyResultText ] = useState('Copy result');
+
+  const { log } = useCamundaContext();
 
   const value = useMemo(() => {
     if (!log.length) {
       return '';
     }
 
-    return log.map((entry) => {
-      return `${entry.elementId}: ${entry.message}`;
+    return log.map(({ elementId, message, type }) => {
+      if (type === 'info') {
+        return `${elementId}: ${message}`;
+      } else {
+        return message;
+      }
     }).join('\n');
   }, [ log ]);
 
+  const copyResult = () => {
+    const latestResult = [ ...log ].reverse().find(item => item.type === 'result');
+    if (latestResult) {
+      navigator.clipboard.writeText(latestResult.message);
+      setCopyResultText('Copied!');
+      setTimeout(() => {
+        setCopyResultText('Copy result');
+      }, 2000);
+    }
+  };
+
   return (
-    <div className="section output">
-      <div className="output-header section-header">
-        <p>Activity log</p>
-        <p className="cds--label">
-          {'Log of the task execution. If you run a task, the output will be displayed here.'}
-        </p>
+    <div className="section">
+      <div className="section-header">
+        <div className="section-header__info">
+          <p>Activity log</p>
+          <p className="cds--label">
+            {'Log of the task execution. If you run a task, the output will be displayed here.'}
+          </p>
+        </div>
+        <div className="section-header__buttons">
+          <Button
+            kind="tertiary"
+            size="sm"
+            onClick={ copyResult }
+            disabled={ !log.length }
+          >
+            {copyResultText}
+          </Button>
+        </div>
       </div>
-      <div className="section-content">
-        <CodeMirror
+      <div className="editor">
+        <CodeEditor
           value={ value }
-          extensions={ [ json() ] }
           readOnly={ true }
+          linting={ false }
+          placeholder="No output yet"
         />
       </div>
     </div>

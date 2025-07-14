@@ -20,7 +20,7 @@ function App() {
   const modelerRef = useRef(null);
 
   const [ modeler, setModeler ] = useState(null);
-  const [ tab, setTab ] = useState('debugger');
+  const [ tab, setTab ] = useState('test');
 
   useEffect(() => {
     if (modelerRef.current) {
@@ -65,20 +65,20 @@ function App() {
           <div className={ `bottom-panel_tabs-item ${tab === 'problems' ? 'active' : ''}` } onClick={ () => setTab('problems') }>
             Problems
           </div>
-          <div className={ `bottom-panel_tabs-item ${tab === 'debugger' ? 'active' : ''}` } onClick={ () => setTab('debugger') }>
-            Debugger
+          <div className={ `bottom-panel_tabs-item ${tab === 'test' ? 'active' : ''}` } onClick={ () => setTab('test') }>
+            Task testing
           </div>
         </div>
         <div className="bottom-panel_tabs-content">
           {tab === 'problems' && <ProblemsTab />}
-          {tab === 'debugger' && <DebuggerTab { ...props } />}
+          {tab === 'test' && <TestTab { ...props } />}
         </div>
       </div>
     </>
   );
 }
 
-function DebuggerTab(props) {
+function TestTab(props) {
   const { injector } = props;
 
   if (!injector) {
@@ -89,8 +89,7 @@ function DebuggerTab(props) {
 }
 
 function ProblemsTab() {
-  return <div style={ { padding: '10px' } }>I got 99 problems but debugging ain&apos;t one.</div>;
+  return <div style={ { padding: '10px' } }>I got 99 problems but running a single task ain&apos;t one.</div>;
 }
-
 
 export default App;

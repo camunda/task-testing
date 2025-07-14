@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-import useSelectedElement from './hooks/useSelectedElement';
+import { CamundaProvider } from './context/CamundaContext';
 
-import Variables from './components/Variables/Variables';
 import Output from './components/Output/Output';
+import Variables from './components/Variables/Variables';
 
-import run from './utils/run-task';
-
-import './style.css';
+import './style.scss';
 
 /**
  * @param {Object} props
@@ -22,33 +20,14 @@ export default function TaskTesting(props) {
     getInstance
   } = props;
 
-  const [ loading, setLoading ] = useState(false);
-  const [ log, setLog ] = useState([]);
-
-  const element = useSelectedElement(injector);
-
-  const addLog = (elementId, message) => {
-    setLog((prev) => ([ ...prev, {
-      elementId,
-      message
-    } ]));
-  };
-
-  const handleTest = async (input) => {
-
-    const camundaApi = { deploy, startInstance, getInstance };
-
-    setLoading(true);
-
-    await run(element.id, input, camundaApi, addLog);
-
-    setLoading(false);
-  };
+  const camundaApi = { deploy, startInstance, getInstance };
 
   return (
-    <div className="task-testing">
-      <Variables onRun={ handleTest } element={ element } loading={ loading } />
-      <Output log={ log } />
-    </div>
+    <CamundaProvider injector={ injector } camundaApi={ camundaApi }>
+      <div className="task-testing__container">
+        <Variables />
+        <Output />
+      </div>
+    </CamundaProvider>
   );
 }

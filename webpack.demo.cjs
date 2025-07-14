@@ -8,6 +8,7 @@ module.exports = {
     path: path.resolve(__dirname, 'demo/dist'),
     clean: true
   },
+  devtool: 'source-map',
   devServer: {
     static: path.join(__dirname, 'demo'),
     open: true,
@@ -28,8 +29,19 @@ module.exports = {
         },
       },
       {
+        test: /\.scss$/,
+        use: [
+          'style-loader',
+          'css-loader',
+          'sass-loader'
+        ]
+      },
+      {
         test: /\.css$/,
-        use: [ 'style-loader', 'css-loader' ]
+        use: [
+          'style-loader',
+          'css-loader'
+        ]
       },
       {
         test: /\.xml$/i,

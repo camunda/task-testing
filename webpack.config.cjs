@@ -17,7 +17,7 @@ module.exports = {
     outputModule: true
   },
   resolve: {
-    extensions: [ '.js', '.jsx' ]
+    extensions: [ '.js', '.jsx', '.scss' ]
   },
   externals: {
     react: 'react',
@@ -30,10 +30,21 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.scss$/,
+        use: [
+          'style-loader',
+          'css-loader',
+          'sass-loader'
+        ]
+      },
+      {
         test: /\.css$/,
-        use: [ 'style-loader', 'css-loader' ]
-      }
+        use: [
+          'style-loader',
+          'css-loader'
+        ]
+      },
     ]
   },
-  devtool: 'source-map'
+  devtool: 'eval-source-map'
 };
