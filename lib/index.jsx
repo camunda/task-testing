@@ -2,8 +2,8 @@ import React from 'react';
 
 import { CamundaProvider } from './context/CamundaContext';
 
-import Output from './components/Output/Output';
-import Variables from './components/Variables/Variables';
+import Output from './components/Output';
+import Variables from './components/Variables';
 
 import './style.scss';
 

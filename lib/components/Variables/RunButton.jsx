@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { Button, ButtonSkeleton, Tooltip } from '@carbon/react';
 import { Chemistry } from '@carbon/icons-react';
 
-import useCamundaContext from '../../../hooks/useCamundaContext';
+import useCamundaContext from '../../hooks/useCamundaContext';
 
 export default function RunButton({ onClick, error }) {
 

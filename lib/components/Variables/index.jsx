@@ -3,10 +3,10 @@ import React, { useState } from 'react';
 import { Link } from '@carbon/react';
 import { Launch } from '@carbon/icons-react';
 
-import CodeEditor from '../CodeEditor/CodeEditor';
+import CodeEditor from '../CodeEditor';
 
-import RunButton from './components/RunButton';
-import ExampleDataButton from './components/ExampleDataButton';
+import RunButton from './RunButton';
+import ExampleDataButton from './ExampleDataButton';
 
 import useCamundaContext from '../../hooks/useCamundaContext';
 

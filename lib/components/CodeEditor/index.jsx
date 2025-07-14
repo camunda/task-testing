@@ -6,7 +6,7 @@ import { EditorView, placeholder } from '@codemirror/view';
 import { linter } from '@codemirror/lint';
 import { json, jsonParseLinter } from '@codemirror/lang-json';
 
-import './CodeEditor.scss';
+import './style.scss';
 
 export default function CodeEditor({
   value = '{\n}',

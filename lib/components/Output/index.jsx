@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 
 import { Button } from '@carbon/react';
 
-import CodeEditor from '../CodeEditor/CodeEditor';
+import CodeEditor from '../CodeEditor';
 
 import useCamundaContext from '../../hooks/useCamundaContext';
 

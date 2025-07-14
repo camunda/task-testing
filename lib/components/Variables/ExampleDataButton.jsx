@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 
 import { Button, Tooltip } from '@carbon/react';
 
-import useCamundaContext from '../../../hooks/useCamundaContext';
+import useCamundaContext from '../../hooks/useCamundaContext';
 
 
 export default function ExampleDataButton({ onClick }) {
