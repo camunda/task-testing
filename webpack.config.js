@@ -1,28 +1,20 @@
 const CamundaModelerWebpackPlugin = require('camunda-modeler-webpack-plugin');
 
-const path = require('path');
-
 module.exports = {
   mode: 'production',
   entry: './lib/index.jsx',
+  devtool: 'source-map',
   output: {
-    path: path.resolve(__dirname, 'dist'),
     filename: 'index.js',
     library: {
-      type: 'module',
+      type: 'umd',
+      export: 'default',
     },
+    globalObject: 'this',
     clean: true
   },
-  experiments: {
-    outputModule: true
-  },
   resolve: {
-    extensions: [ '.js', '.jsx', '.scss' ]
-  },
-  externals: {
-    react: 'react',
-    'react-dom': 'react-dom',
-    'camunda-bpmn-js': 'camunda-bpmn-js',
+    extensions: [ '.js', '.jsx' ]
   },
   plugins: [
     new CamundaModelerWebpackPlugin(),
@@ -46,5 +38,4 @@ module.exports = {
       },
     ]
   },
-  devtool: 'eval-source-map'
 };

@@ -1,23 +1,17 @@
 {
   "name": "task-testing",
   "version": "0.0.1",
-  "type": "module",
   "files": [
     "dist"
   ],
   "main": "dist/index.js",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js"
-    }
-  },
   "scripts": {
     "all": "run-s lint test build",
-    "start": "webpack serve --config webpack.demo.cjs",
+    "start": "webpack serve --config webpack.demo.js",
     "dev": "npm test -- --auto-watch --no-single-run",
     "build": "webpack",
-    "build:demo": "webpack --config webpack.demo.cjs",
-    "test": "karma start karma.config.cjs",
+    "build:demo": "webpack --config webpack.demo.js",
+    "test": "karma start karma.config.js",
     "lint": "eslint ."
   },
   "license": "MIT",

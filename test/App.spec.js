@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 
-import TaskTesting from '../lib/index.jsx';
+import TaskTesting from '../lib';
 
-import { appProps } from './mock/index.js';
+import { appProps } from './mock';
 
 describe('task-testing', function() {
 
