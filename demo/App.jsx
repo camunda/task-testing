@@ -9,7 +9,6 @@ import {
   deploy,
   startInstance,
   getInstance,
-  saveFile
 } from '../test/mock';
 
 import diagram from './diagram.xml';
@@ -21,6 +20,8 @@ function App() {
 
   const [ modeler, setModeler ] = useState(null);
   const [ tab, setTab ] = useState('test');
+
+  const [ config, setConfig ] = useState();
 
   useEffect(() => {
     if (modelerRef.current) {
@@ -48,10 +49,11 @@ function App() {
 
   const props = {
     injector,
-    saveFile,
     deploy,
     startInstance,
-    getInstance
+    getInstance,
+    config,
+    saveConfig: setConfig,
   };
 
   return (

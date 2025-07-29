@@ -1,0 +1,37 @@
+@mixin layout {
+
+  .section {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    height: 100%;
+    padding: 15px;
+  }
+
+  .section__header {
+    display: flex;
+    justify-content: space-between;
+    height: 50px;
+    width: 100%;
+  }
+
+  .section__header--title {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .section__header--title-with-icon {
+    display: flex;
+    align-items: center;
+  }
+
+  .section__header--buttons {
+    display: flex;
+    align-items: center;
+  }
+
+  .section__content {
+    overflow: hidden;
+    height: calc(100% - 50px);
+  }
+}

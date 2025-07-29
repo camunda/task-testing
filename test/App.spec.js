@@ -7,10 +7,12 @@ import { appProps } from './mock';
 describe('task-testing', function() {
 
   it('should render', function() {
+
+    // when
     render(<TaskTesting { ...appProps } />);
 
-    expect(screen.getByText('Input variables')).to.exist;
-    expect(screen.getByText('Activity log')).to.exist;
+    // then
+    expect(screen.getByText('Select a single task on the canvas.')).to.exist;
   });
 
 });
