@@ -1,0 +1,68 @@
+@use 'layout' as *;
+@use 'editor';
+
+.task-testing__container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+
+  @include layout;
+
+  .empty {
+    padding: 10px;
+  }
+
+  &>div.section:first-child {
+    border-right: 1px solid #E0E0E0;
+  }
+
+  .output {
+    background: hsla(0, 0%, 93%, 0.5);
+
+    .status {
+      font-size: 14px;
+      padding: 8px;
+    }
+
+    .cds--inline-loading {
+      min-block-size: unset;
+    }
+
+    .snippet {
+      background: transparent;
+      padding: 0 8px;
+
+      .cds--snippet-btn--expand {
+        display: none;
+      }
+
+      .cds--copy-btn {
+        margin-right: 20px;
+      }
+    }
+  }
+
+
+  // Overriding Carbon styles
+
+  .section__header--buttons {
+    .cds--btn--sm {
+      width: 120px;
+      padding: 6px;
+    }
+
+    .cds--btn.cds--skeleton {
+      padding: 0;
+      inline-size: 120px;
+    }
+  }
+
+  .cds--tooltip-content {
+    font-size: 12px;
+    padding: 5px;
+  }
+
+  .hide-tooltip .cds--popover {
+    display: none;
+  }
+}

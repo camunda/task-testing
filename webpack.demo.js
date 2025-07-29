@@ -8,7 +8,7 @@ module.exports = {
     path: path.resolve(__dirname, 'demo/dist'),
     clean: true
   },
-  devtool: 'eval',
+  devtool: 'source-map',
   devServer: {
     static: path.join(__dirname, 'demo'),
     open: true
