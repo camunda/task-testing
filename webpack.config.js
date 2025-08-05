@@ -1,5 +1,3 @@
-const CamundaModelerWebpackPlugin = require('camunda-modeler-webpack-plugin');
-
 module.exports = {
   mode: 'production',
   entry: './lib/index.jsx',
@@ -7,20 +5,31 @@ module.exports = {
   output: {
     filename: 'index.js',
     library: {
-      type: 'umd',
-      export: 'default',
+      type: 'module',
+      export: 'default'
     },
-    globalObject: 'this',
     clean: true
+  },
+  experiments: {
+    outputModule: true
+  },
+  externals: {
+    react: 'react',
+    '@carbon/react': '@carbon/react',
+    '@carbon/icons-react': '@carbon/icons-react'
   },
   resolve: {
     extensions: [ '.js', '.jsx' ]
   },
-  plugins: [
-    new CamundaModelerWebpackPlugin(),
-  ],
   module: {
     rules: [
+      {
+        test: /\.jsx?$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader'
+        }
+      },
       {
         test: /\.scss$/,
         use: [
@@ -35,7 +44,7 @@ module.exports = {
           'style-loader',
           'css-loader'
         ]
-      },
+      }
     ]
   },
 };

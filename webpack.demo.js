@@ -11,7 +11,7 @@ module.exports = {
   devtool: 'eval',
   devServer: {
     static: path.join(__dirname, 'demo'),
-    open: true,
+    open: true
   },
   module: {
     rules: [
@@ -19,14 +19,8 @@ module.exports = {
         test: /\.jsx?$/,
         exclude: /node_modules/,
         use: {
-          loader: 'babel-loader',
-          options: {
-            presets: [
-              '@babel/preset-env',
-              '@babel/preset-react',
-            ],
-          },
-        },
+          loader: 'babel-loader'
+        }
       },
       {
         test: /\.scss$/,
@@ -45,16 +39,16 @@ module.exports = {
       },
       {
         test: /\.xml$/i,
-        use: 'raw-loader',
-      },
+        use: 'raw-loader'
+      }
     ]
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: './demo/index.html',
-    }),
+      template: './demo/index.html'
+    })
   ],
   resolve: {
-    extensions: [ '.js', '.jsx' ],
+    extensions: [ '.js', '.jsx' ]
   },
 };
