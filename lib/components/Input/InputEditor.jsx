@@ -12,20 +12,24 @@ export default function InputEditor({
   value,
   onChange,
   onErrorChange,
-  variables = []
+  autocompletion = []
 }) {
 
   const editorRef = useRef(null);
   const viewRef = useRef(null);
 
-  const jsonLinter = () => {
-    return () => {
-      return (view) => {
-        const errors = jsonParseLinter()(view);
-        onErrorChange(!!errors.length);
-        return errors;
-      };
-    };
+  const jsonLinter = (view) => {
+    const errors = jsonParseLinter()(view);
+    onErrorChange(!!errors.length);
+
+    if (errors && errors.length > 0) {
+      const errorMessage = errors[0].message || 'Error';
+      editorRef.current?.style.setProperty('--error-message', `"${errorMessage}"`);
+    } else {
+      editorRef.current?.style.removeProperty('--error-message');
+    }
+
+    return errors;
   };
 
   useEffect(() => {
@@ -36,8 +40,8 @@ export default function InputEditor({
       extensions: [
         basicSetup,
         json(),
-        linter(jsonLinter(onErrorChange)()),
-        ...getAutocompletionExtensions(variables),
+        linter(jsonLinter, { delay: 100 }),
+        ...getAutocompletionExtensions(autocompletion),
         placeholder('Provide process variables in JSON format'),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
@@ -58,7 +62,7 @@ export default function InputEditor({
     return () => {
       view.destroy();
     };
-  }, [ variables ]);
+  }, [ autocompletion ]);
 
   return <div ref={ editorRef } className="input-editor" />;
 }

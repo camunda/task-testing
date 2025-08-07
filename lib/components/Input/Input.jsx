@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 import { Link } from '@carbon/react';
 import { Launch } from '@carbon/icons-react';
+
+import { map } from 'lodash';
 
 import InputEditor from './InputEditor';
 import Button from '../Button/Button';
@@ -10,11 +13,48 @@ export default function Input({
   element,
   input,
   setInput,
-  variables,
+  reset,
+  resolvedVariables,
+  outputVariables,
   onRunTask,
 }) {
 
   const [ error, setError ] = useState(false);
+  const [ resetKey, setResetKey ] = useState(0);
+
+  const autocompletion = useMemo(() => {
+
+    const resolved = map(resolvedVariables, ({ name, detail, info }) => ({
+      label: name,
+      type: 'variable',
+      info: () => createInfo(info),
+      detail: detail ? `[${detail}]` : undefined,
+      value: info ? info : undefined,
+    })) ?? [];
+
+    const outputs = Object.entries(outputVariables)?.map(([ name, { value, source } ]) => ({
+      label: name,
+      type: 'constant',
+      info: () => createInfo(value, source),
+      detail: `[${typeof value}]`,
+      value: value,
+    }));
+
+    return [ ...resolved, ...outputs ];
+
+  }, [ resolvedVariables, outputVariables ]);
+
+  const handleRun = async () => {
+    if (error) {
+      return;
+    }
+    await onRunTask(input);
+  };
+
+  const handleReset = () => {
+    reset();
+    setResetKey(prev => prev + 1); // Force InputEditor to re-render
+  };
 
   const elementName = element.name || element.id;
 
@@ -52,12 +92,28 @@ export default function Input({
       </div>
       <div className="section__content">
         <InputEditor
+          key={ resetKey }
           value={ input }
           onChange={ setInput }
           onErrorChange={ setError }
-          variables={ variables }
+          autocompletion={ autocompletion }
         />
       </div>
     </div>
   );
+}
+
+function createInfo(value, source) {
+  const div = document.createElement('div');
+
+  const htmlString = renderToStaticMarkup(
+    <div className="info">
+      <span>{source ? `From output variables of "${source}"` : 'From process variables'}</span>
+      {value && <pre>{typeof value === 'object' ? JSON.stringify(value, null, 2) : value}</pre>}
+    </div>
+  );
+
+  div.innerHTML = htmlString;
+
+  return div;
 }
