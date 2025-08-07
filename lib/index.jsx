@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
+import { set, isEqual } from 'lodash';
 
 import {
   useSelectedElement,
@@ -23,7 +25,10 @@ export default function TaskTesting({
   deploy,
   startInstance,
   getInstance,
-  config,
+
+  // Inputs and outputs saved per file,
+  // provided by the modeler
+  config = {},
   saveConfig
 }) {
 
@@ -33,9 +38,30 @@ export default function TaskTesting({
 
   const { resolvedVariables, fetchingVariables } = useVariableResolver(injector, element);
 
-  const { input, setInput, reset } = useInput(element, resolvedVariables);
+  const { input, setInput, reset } = useInput(element, resolvedVariables, config.input);
 
-  const { output, setOutput, outputVariables } = useOutput(element);
+  const { output, setOutput, outputVariables } = useOutput(element, config.output);
+
+  useEffect(() => {
+    if (!element) {
+      return;
+    }
+
+    const newConfig = {
+      ...config,
+      input: {
+        ...config.input
+      }
+    };
+
+    set(newConfig, `input.${element?.id}`, input);
+
+    if (isEqual(config, newConfig)) {
+      return;
+    }
+
+    saveConfig(newConfig);
+  }, [ input ]);
 
   const handleRunTask = async () => {
 
@@ -45,6 +71,13 @@ export default function TaskTesting({
     try {
       const result = await run(element.id, input, camundaApi);
       setOutput(result);
+      saveConfig({
+        ...config,
+        output: {
+          ...config.output,
+          [element?.id]: result
+        }
+      });
     } catch (error) {
       setOutput(error);
     } finally {
