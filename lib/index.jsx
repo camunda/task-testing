@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 
 import {
   useSelectedElement,
@@ -30,34 +30,12 @@ export default function TaskTesting({
   const [ running, setRunning ] = useState(false);
 
   const element = useSelectedElement(injector);
-  const { variables, fetching: loadingVariables } = useVariableResolver(injector, element);
-  const { input, setInput } = useInput(element, variables);
+
+  const { resolvedVariables, fetchingVariables } = useVariableResolver(injector, element);
+
+  const { input, setInput, reset } = useInput(element, resolvedVariables);
+
   const { output, setOutput, outputVariables } = useOutput(element);
-
-  const autocompletion = useMemo(() => {
-
-    console.log('resolved', variables);
-    console.log('outputVariables', outputVariables);
-
-    const resolved = variables?.map(({ name, detail, info }) => ({
-      label: name,
-      type: 'variable',
-      info: () => createInfoNode(info),
-      detail: detail ? `[${detail}]` : undefined,
-      value: info ? info : undefined,
-    })) ?? [];
-
-    const outputs = Object.entries(outputVariables)?.map(([ name, { value, source } ]) => ({
-      label: name,
-      type: 'constant',
-      info: () => createInfoNode(value, source),
-      detail: `[${typeof value}]`,
-      value: typeof value === 'object' ? JSON.stringify(value, null, 2) : value.toString(),
-    }));
-
-    return [ ...resolved, ...outputs ];
-
-  }, [ variables, outputVariables ]);
 
   const handleRunTask = async () => {
 
@@ -74,7 +52,7 @@ export default function TaskTesting({
     }
   };
 
-  if (!element || loadingVariables) {
+  if (!element || fetchingVariables) {
     return (
       <div className="task-testing__container">
         <div className="empty">
@@ -90,7 +68,9 @@ export default function TaskTesting({
         element={ element }
         input={ input }
         setInput={ setInput }
-        variables={ autocompletion }
+        reset={ reset }
+        resolvedVariables={ resolvedVariables }
+        outputVariables={ outputVariables }
         onRunTask={ handleRunTask }
       />
       <Output
@@ -99,27 +79,4 @@ export default function TaskTesting({
       />
     </div>
   );
-}
-
-function createInfoNode(value, source) {
-  const div = document.createElement('div');
-  div.className = 'info';
-
-  const header = document.createElement('span');
-  if (source) {
-    header.textContent = `From the previous run of "${source}"`;
-  } else {
-    header.textContent = 'From process variables';
-  }
-
-  div.appendChild(header);
-
-  if (!value) {
-    return div;
-  }
-
-  const content = document.createTextNode(`\n\n${typeof value === 'object' ? JSON.stringify(value, null, 2) : value}`);
-  div.appendChild(content);
-
-  return div;
 }
