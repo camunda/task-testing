@@ -27,7 +27,7 @@ export default function TaskTesting({
   saveConfig
 }) {
 
-  const [ loading, setLoading ] = useState(false);
+  const [ running, setRunning ] = useState(false);
 
   const element = useSelectedElement(injector);
   const { variables, fetching: loadingVariables } = useVariableResolver(injector, element);
@@ -61,7 +61,7 @@ export default function TaskTesting({
 
   const handleRunTask = async () => {
 
-    setLoading(true);
+    setRunning(true);
     const camundaApi = { deploy, startInstance, getInstance };
 
     try {
@@ -70,7 +70,7 @@ export default function TaskTesting({
     } catch (error) {
       setOutput(error);
     } finally {
-      setLoading(false);
+      setRunning(false);
     }
   };
 
@@ -95,7 +95,7 @@ export default function TaskTesting({
       />
       <Output
         output={ output }
-        loading={ loading }
+        running={ running }
       />
     </div>
   );

@@ -60,6 +60,14 @@ export default [
     return {
       ...config,
       files: files.test
-    };
+    }; 
   }),
+  {
+    languageOptions: {
+      globals: {
+        sinon: true,
+      }
+    },
+    files: files.test
+  }
 ];

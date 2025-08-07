@@ -4,10 +4,7 @@ import { Link } from '@carbon/react';
 import { Launch } from '@carbon/icons-react';
 
 import InputEditor from './InputEditor';
-
-import RunButton from './RunButton';
-
-// import './Input.scss';
+import Button from '../Button/Button';
 
 export default function Input({
   element,
@@ -36,10 +33,21 @@ export default function Input({
           </p>
         </div>
         <div className="section__header--buttons">
-          <RunButton
-            onClick={ () => onRunTask(input) }
-            error={ error }
-          />
+          <Button
+            kind="ghost"
+            onClick={ handleReset }
+            tooltip="Reset to input mapping"
+          >
+            Reset
+          </Button>
+          <Button
+            kind="primary"
+            onClick={ handleRun }
+            tooltip={ error && 'Invalid JSON' }
+            skeleton
+          >
+            Run
+          </Button>
         </div>
       </div>
       <div className="section__content">

@@ -2,23 +2,22 @@ import React, { useMemo } from 'react';
 
 import { CodeSnippet, InlineLoading } from '@carbon/react';
 
-// import './Output.scss';
 
-export default function Output({ output, loading }) {
+export default function Output({ output, running }) {
 
   const value = useMemo(() => {
-    if (output instanceof Error) {
+    if (error) {
       return output.message;
     }
     return JSON.stringify(output, null, 2);
-  }, [ output ]);
+  }, [ output, error ]);
 
   const error = useMemo(() => {
     return output instanceof Error;
   }, [ output ]);
 
   const status = useMemo(() => {
-    if (loading) {
+    if (running) {
       return (
         <InlineLoading
           description="Running task..."
@@ -36,7 +35,7 @@ export default function Output({ output, loading }) {
     }
 
     return <div>No output</div>;
-  }, [ loading, output, error ]);
+  }, [ running, output, error ]);
 
   return (
     <div className="section">
@@ -53,7 +52,7 @@ export default function Output({ output, loading }) {
           { status}
         </div>
         <div className="result">
-          {value && !loading && <CodeSnippet
+          {value && !running && <CodeSnippet
             className="snippet"
             type="multi"
             align="left"
