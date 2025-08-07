@@ -28,6 +28,7 @@
         <zeebe:ioMapping>
           <zeebe:input source="=secret_key" target="api_key" />
           <zeebe:input source="=&#34;http://users.com/get&#34;" target="url" />
+          <zeebe:input source="=false" target="publish" />
           <zeebe:output source="=response.body.id" target="user_id" />
           <zeebe:output source="=response.body.name" target="user_name" />
         </zeebe:ioMapping>

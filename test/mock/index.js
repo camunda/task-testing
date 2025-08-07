@@ -51,7 +51,9 @@ export async function getInstance(processId, config) {
         foo: 'bar',
         baz: 42,
         nested: {
-          value: 'nestedValue'
+          value: 'nestedValue',
+          one: 1,
+          false: false,
         },
         long: 'This is a long string that exceeds the typical length of a variable value in a process instance. It is used to test how the output handles larger data and ensures that the UI can display it correctly without truncation or errors.',
         this: 'is',

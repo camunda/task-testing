@@ -1,26 +1,22 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 
 import { Button, ButtonSkeleton, Tooltip } from '@carbon/react';
 
-export default function RunButton({ onClick, error }) {
+/**
+ * Carbon React Button wrapped in a tooltip.
+ *
+ * Displays a loading skeleton if `skeleton` prop is true and `onClick` returns a promise.
+ */
+export default function CustomButton({ children, onClick, kind, tooltip, skeleton }) {
 
   const [ loading, setLoading ] = useState(false);
 
-  const tooltipContent = useMemo(() => {
-    if (error) {
-      return 'Invalid JSON';
-    }
-    return null;
-  }, [ error ]);
-
   const handleClick = () => {
-    if (onClick) {
-      setLoading(true);
-      onClick().finally(() => setLoading(false));
-    }
+    setLoading(true);
+    onClick()?.finally(() => setLoading(false));
   };
 
-  if (loading) {
+  if (loading && skeleton) {
     return (
       <ButtonSkeleton size="sm" className="cds--layout--size-sm" />
     );
@@ -28,17 +24,17 @@ export default function RunButton({ onClick, error }) {
 
   return (
     <Tooltip
-      className={ `${tooltipContent ? '' : 'hide-tooltip'}` }
-      label={ tooltipContent }
+      className={ `${tooltip ? '' : 'hide-tooltip'}` }
+      label={ tooltip }
       align="bottom"
       leaveDelayMs={ 100 }>
       <span tabIndex="0" style={ { display: 'inline-block' } }>
         <Button
+          kind={ kind }
           onClick={ handleClick }
-          disabled={ error }
           size="sm"
         >
-          Run this task
+          { children }
         </Button>
       </span>
     </Tooltip>
