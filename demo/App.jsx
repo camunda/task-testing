@@ -21,7 +21,20 @@ function App() {
   const [ modeler, setModeler ] = useState(null);
   const [ tab, setTab ] = useState('test');
 
-  const [ config, setConfig ] = useState();
+  const [ config, setConfig ] = useState({
+    input: {
+      'Task_Api':
+`{ 
+  "dummy": "value"
+}`,
+    },
+    output: {
+      'Task_Api': {
+        success: true,
+        result: 'saved result'
+      }
+    }
+  });
 
   useEffect(() => {
     if (modelerRef.current) {

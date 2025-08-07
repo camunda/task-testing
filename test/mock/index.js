@@ -3,11 +3,10 @@ export const injector = {
     return {
       on: () => {},
       off: () => {},
+      get: () => []
     };
   }
 };
-
-export function saveFile() {}
 
 export async function deploy() {
   await new Promise(resolve => setTimeout(resolve, 2000));
@@ -71,7 +70,8 @@ export async function getInstance(processId, config) {
 
 export const appProps = {
   injector,
-  saveFile,
+  config: {},
+  saveConfig: () => {},
   deploy,
   startInstance,
   getInstance
