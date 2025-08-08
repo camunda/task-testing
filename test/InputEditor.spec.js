@@ -1,79 +1,104 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+
+import { render, waitFor } from '@testing-library/react';
 
 import InputEditor from '../lib/components/Input/InputEditor';
 
 describe('InputEditor', function() {
 
-  let mockOnChange;
-  let mockOnErrorChange;
+  it('should render with no value and show placeholder', function() {
 
-  beforeEach(function() {
-    mockOnChange = sinon.spy();
-    mockOnErrorChange = sinon.spy();
+    // when
+    const { queryByText } = renderWithProps();
+
+    // then
+    expect(queryByText('Provide process variables in JSON format')).to.exist;
   });
 
-  describe('render', function() {
 
-    it('should render with no value and show placeholder', function() {
+  it('should render and show initial value', function() {
 
-      // when
-      const { queryByText } = render(
-        <InputEditor
-          onChange={ mockOnChange }
-          onErrorChange={ mockOnErrorChange }
-        />
-      );
+    // given
+    const initialValue = {
+      foo: 'bar',
+      baz: true,
+      nested: {
+        num: 42,
+      }
+    };
 
-      // then
-      expect(queryByText('Provide process variables in JSON format')).to.exist;
+    // when
+    const { queryByText } = renderWithProps({
+      value: JSON.stringify(initialValue, null, 2)
     });
 
+    // then
+    expect(queryByText('"bar"')).to.exist;
+    expect(queryByText('true')).to.exist;
+    expect(queryByText('42')).to.exist;
+  });
 
-    it('should render and show initial value', function() {
+
+  describe('linting', function() {
+
+    it('should call onErrorChange', async function() {
 
       // given
-      const initialValue = {
-        foo: 'bar',
-        baz: true,
-        nested: {
-          num: 42,
-        }
-      };
+      const onErrorChange = sinon.spy();
 
       // when
-      const { queryByText } = render(
+      renderWithProps({
+        value: 'not a valid JSON',
+        onErrorChange
+      });
+
+      // then
+      await waitFor(() => {
+        expect(onErrorChange).to.have.been.calledWith(true);
+      });
+    });
+
+
+    it('should call onErrorChange with false after fixed', async function() {
+
+      // given
+      const onErrorChange = sinon.spy();
+
+      // when
+      const { rerender } = renderWithProps({
+        value: 'not a valid JSON',
+        onErrorChange
+      });
+
+      // assume
+      await waitFor(() => {
+        expect(onErrorChange).to.have.been.calledWith(true);
+      });
+
+      // when
+      rerender(
         <InputEditor
-          value={ JSON.stringify(initialValue, null, 2) }
-          onChange={ mockOnChange }
-          onErrorChange={ mockOnErrorChange }
+          value={ '{"valid": "json"}' }
+          onErrorChange={ onErrorChange }
         />
       );
 
       // then
-      expect(queryByText('"bar"')).to.exist;
-      expect(queryByText('true')).to.exist;
-      expect(queryByText('42')).to.exist;
-    });
-
-  });
-
-  describe('autocompletion', function() {
-
-    it('should', function() {
-
-      // when
-      render(
-        <InputEditor
-          value=""
-          onChange={ mockOnChange }
-          onErrorChange={ mockOnErrorChange }
-        />
-      );
-
-      // then - should not throw error and render successfully
-      expect(document.querySelector('.input-editor')).to.exist;
+      await waitFor(() => {
+        expect(onErrorChange).to.have.been.calledWith(false);
+      });
     });
 
   });
 });
+
+function renderWithProps(props = {}) {
+  return render(
+    <InputEditor
+      value={ props.value || undefined }
+      onChange={ props.onChange || (() => {}) }
+      onErrorChange={ props.onErrorChange || (() => {}) }
+      autocompletion={ props.autocompletion || [] }
+    />
+  );
+}
