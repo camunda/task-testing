@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-import { set, isEqual } from 'lodash';
+import { set } from 'min-dash';
 
 import {
   useSelectedElement,
@@ -54,9 +54,9 @@ export default function TaskTesting({
       }
     };
 
-    set(newConfig, `input.${element?.id}`, input);
+    set(newConfig, [ 'input', element.id ], input);
 
-    if (isEqual(config, newConfig)) {
+    if (JSON.stringify(config) === JSON.stringify(newConfig)) {
       return;
     }
 
