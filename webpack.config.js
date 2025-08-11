@@ -15,6 +15,7 @@ module.exports = {
   },
   externals: {
     react: 'react',
+    'react-dom': 'react-dom',
     '@carbon/react': '@carbon/react',
     '@carbon/icons-react': '@carbon/icons-react'
   },
