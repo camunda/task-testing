@@ -4,8 +4,6 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { Link } from '@carbon/react';
 import { Launch } from '@carbon/icons-react';
 
-import { map } from 'lodash';
-
 import InputEditor from './InputEditor';
 import Button from '../Button/Button';
 
@@ -14,7 +12,7 @@ export default function Input({
   input,
   setInput,
   reset,
-  resolvedVariables,
+  resolvedVariables = [],
   outputVariables,
   onRunTask,
 }) {
@@ -24,13 +22,13 @@ export default function Input({
 
   const autocompletion = useMemo(() => {
 
-    const resolved = map(resolvedVariables, ({ name, detail, info }) => ({
+    const resolved = resolvedVariables.map(({ name, detail, info }) => ({
       label: name,
       type: 'variable',
       info: () => createInfo(info),
       detail: detail ? `[${detail}]` : undefined,
       value: info ? info : undefined,
-    })) ?? [];
+    }));
 
     const outputs = Object.entries(outputVariables)?.map(([ name, { value, source } ]) => ({
       label: name,
