@@ -10,6 +10,7 @@
     "start": "webpack serve --config webpack.demo.js",
     "dev": "npm test -- --auto-watch --no-single-run",
     "build": "webpack",
+    "build:watch": "webpack --watch",
     "build:demo": "webpack --config webpack.demo.js",
     "test": "karma start karma.config.js",
     "lint": "eslint ."
