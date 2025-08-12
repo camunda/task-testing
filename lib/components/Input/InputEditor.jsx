@@ -64,6 +64,24 @@ export default function InputEditor({
     };
   }, [ autocompletion ]);
 
+  useEffect(() => {
+    const view = viewRef.current;
+
+    if (!view) return;
+
+    const currentValue = view.state.doc.toString();
+
+    if (value !== currentValue) {
+      view.dispatch({
+        changes: {
+          from: 0,
+          to: currentValue.length,
+          insert: value
+        }
+      });
+    }
+  }, [value]);
+
   return <div ref={ editorRef } className="input-editor" />;
 }
 
