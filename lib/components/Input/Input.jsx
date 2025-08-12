@@ -18,7 +18,6 @@ export default function Input({
 }) {
 
   const [ error, setError ] = useState(false);
-  const [ resetKey, setResetKey ] = useState(0);
 
   const autocompletion = useMemo(() => {
 
@@ -51,7 +50,6 @@ export default function Input({
 
   const handleReset = () => {
     reset();
-    setResetKey(prev => prev + 1); // Force InputEditor to re-render
   };
 
   const elementName = element.name || element.id;
@@ -90,7 +88,6 @@ export default function Input({
       </div>
       <div className="section__content">
         <InputEditor
-          key={ resetKey }
           value={ input }
           onChange={ setInput }
           onErrorChange={ setError }
