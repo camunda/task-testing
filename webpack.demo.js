@@ -38,7 +38,7 @@ module.exports = {
         ]
       },
       {
-        test: /\.xml$/i,
+        test: /\.bpmn$/i,
         use: 'raw-loader'
       }
     ]

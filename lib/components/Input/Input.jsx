@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
+import React, { useState } from 'react';
 
 import { Link } from '@carbon/react';
 import { Launch } from '@carbon/icons-react';
+
+import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
 
 import InputEditor from './InputEditor';
 import Button from '../Button/Button';
@@ -10,56 +11,32 @@ import Button from '../Button/Button';
 export default function Input({
   element,
   input,
+  output,
   setInput,
-  reset,
-  resolvedVariables = [],
-  outputVariables,
-  onRunTask,
+  resetInput,
+  variablesForElement,
+  onRunTask
 }) {
-
-  const [ error, setError ] = useState(false);
-
-  const autocompletion = useMemo(() => {
-
-    const resolved = resolvedVariables.map(({ name, detail, info }) => ({
-      label: name,
-      type: 'variable',
-      info: () => createInfo(info),
-      detail: detail ? `[${detail}]` : undefined,
-      value: info ? info : undefined,
-    }));
-
-    const outputs = Object.entries(outputVariables)?.map(([ name, { value, source } ]) => ({
-      label: name,
-      type: 'constant',
-      info: () => createInfo(value, source),
-      detail: `[${typeof value}]`,
-      value: value,
-    }));
-
-    return [ ...resolved, ...outputs ];
-
-  }, [ resolvedVariables, outputVariables ]);
+  const [ hasError, setHasError ] = useState(false);
 
   const handleRun = async () => {
-    if (error) {
+    if (hasError) {
       return;
     }
+
     await onRunTask(input);
   };
 
   const handleReset = () => {
-    reset();
+    resetInput();
   };
-
-  const elementName = element.name || element.id;
 
   return (
     <div className="section">
       <div className="section__header">
         <div className="section__header--title">
           <div className="section__header--title-with-icon">
-            <p>Test {elementName}</p>
+            <p>Test {getName(element)}</p>
             <Link
               href="https://docs.camunda.io/docs/components/concepts/variables"
               renderIcon={ () => <Launch size="14" /> } />
@@ -79,7 +56,7 @@ export default function Input({
           <Button
             kind="primary"
             onClick={ handleRun }
-            tooltip={ error && 'Invalid JSON' }
+            tooltip={ hasError && 'Invalid JSON' }
             skeleton
           >
             Run
@@ -88,27 +65,20 @@ export default function Input({
       </div>
       <div className="section__content">
         <InputEditor
+          element={ element }
           value={ input }
           onChange={ setInput }
-          onErrorChange={ setError }
-          autocompletion={ autocompletion }
+          onHasErrorChange={ setHasError }
+          output={ output }
+          variablesForElement={ variablesForElement }
         />
       </div>
     </div>
   );
 }
 
-function createInfo(value, source) {
-  const div = document.createElement('div');
+function getName(element) {
+  const businessObject = getBusinessObject(element);
 
-  const htmlString = renderToStaticMarkup(
-    <div className="info">
-      <span>{source ? `From output variables of "${source}"` : 'From process variables'}</span>
-      {value && <pre>{typeof value === 'object' ? JSON.stringify(value, null, 2) : value}</pre>}
-    </div>
-  );
-
-  div.innerHTML = htmlString;
-
-  return div;
+  return businessObject.get('name') || businessObject.get('id');
 }
