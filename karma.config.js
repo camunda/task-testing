@@ -1,5 +1,4 @@
 module.exports = function(config) {
-
   config.set({
     frameworks: [
       'webpack',
@@ -31,6 +30,10 @@ module.exports = function(config) {
               'css-loader',
               'sass-loader'
             ]
+          },
+          {
+            test: /\.bpmn$/i,
+            use: 'raw-loader'
           }
         ]
       },

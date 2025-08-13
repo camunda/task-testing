@@ -4,17 +4,17 @@ import { CodeSnippet, InlineLoading } from '@carbon/react';
 
 
 export default function Output({ output, running }) {
+  const error = useMemo(() => {
+    return output instanceof Error;
+  }, [ output ]);
 
   const value = useMemo(() => {
     if (error) {
       return output.message;
     }
-    return JSON.stringify(output, null, 2);
-  }, [ output, error ]);
 
-  const error = useMemo(() => {
-    return output instanceof Error;
-  }, [ output ]);
+    return JSON.stringify(output.variables, null, 2);
+  }, [ output, error ]);
 
   const status = useMemo(() => {
     if (running) {

@@ -5,13 +5,7 @@ import 'camunda-bpmn-js/dist/assets/camunda-cloud-modeler.css';
 
 import TaskTesting from '../lib';
 
-import {
-  deploy,
-  startInstance,
-  getInstance,
-} from '../test/mock';
-
-import diagram from './diagram.xml';
+import diagram from './diagram.bpmn';
 
 import './style.css';
 
@@ -22,19 +16,29 @@ function App() {
   const [ tab, setTab ] = useState('test');
 
   const [ config, setConfig ] = useState({
-    input: {
-      'Task_Api':
-`{ 
-  "dummy": "value"
-}`,
-    },
-    output: {
-      'Task_Api': {
-        success: true,
-        result: 'saved result'
-      }
-    }
+    input: {},
+    output: {}
   });
+
+  useEffect(() => {
+    setTimeout(() => {
+
+      // simulate fetching config asynchronously
+      setConfig({
+        input: {
+          'ServiceTask_1': '{\n  "foo": "bar"\n}'
+        },
+        output: {
+          'ServiceTask_1': {
+            success: true,
+            variables: {
+              foo: 'baz'
+            }
+          }
+        }
+      });
+    }, 2000);
+  }, []);
 
   useEffect(() => {
     if (modelerRef.current) {
@@ -62,11 +66,17 @@ function App() {
 
   const props = {
     injector,
-    deploy,
-    startInstance,
-    getInstance,
+    deploy: () => {
+      console.log('Deploying...');
+    },
+    startInstance: () => {
+      console.log('Starting instance...');
+    },
+    getInstance: () => {
+      console.log('Getting instance...');
+    },
     config,
-    saveConfig: setConfig,
+    saveConfig: (config) => setConfig(config)
   };
 
   return (

@@ -1,13 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
-import { set } from 'min-dash';
+import { useSelectedElement } from './hooks/useSelectedElement';
 
-import {
-  useSelectedElement,
-  useOutput,
-  useInput,
-  useVariableResolver
-} from './hooks';
+import { ElementConfig } from './ElementConfig';
+import { ElementVariables } from './ElementVariables';
 
 import Input from './components/Input/Input';
 import Output from './components/Output/Output';
@@ -25,67 +21,125 @@ export default function TaskTesting({
   deploy,
   startInstance,
   getInstance,
-
-  // Inputs and outputs saved per file,
-  // provided by the modeler
   config = {},
-  saveConfig
+  onConfigChanged = () => {}
 }) {
-
   const [ running, setRunning ] = useState(false);
 
   const element = useSelectedElement(injector);
 
-  const { resolvedVariables, fetchingVariables } = useVariableResolver(injector, element);
+  const [ elementVariables, setElementVariables ] = useState(null);
 
-  const { input, setInput, reset } = useInput(element, resolvedVariables, config.input);
+  const [ variablesForElement, setVariablesForElement ] = useState([]);
 
-  const { output, setOutput, outputVariables } = useOutput(element, config.output);
+  const [ elementConfig, setElementConfig ] = useState(null);
+
+  const [ input, setInput ] = useState('{}');
+  const [ output, setOutput ] = useState({});
 
   useEffect(() => {
-    if (!element) {
-      return;
-    }
+    const elementVariables = new ElementVariables(injector);
 
-    const newConfig = {
-      ...config,
-      input: {
-        ...config.input
+    const elementConfig = new ElementConfig(injector, elementVariables, config);
+
+    setElementVariables(elementVariables);
+
+    setElementConfig(elementConfig);
+  }, []);
+
+  useEffect(() => {
+    const onVariablesChanged = async () => {
+      if (element && elementVariables) {
+        const variables = await elementVariables.getVariablesForElement(element);
+        setVariablesForElement(variables);
       }
     };
 
-    set(newConfig, [ 'input', element.id ], input);
+    if (elementVariables) {
+      elementVariables.on('variables.changed', onVariablesChanged);
 
-    if (JSON.stringify(config) === JSON.stringify(newConfig)) {
-      return;
+      if (element) {
+        onVariablesChanged();
+      }
     }
 
-    saveConfig(newConfig);
-  }, [ input ]);
+    return () => {
+      if (elementVariables) {
+        elementVariables.off('variables.changed', onVariablesChanged);
+      }
+    };
+  }, [ element, elementVariables ]);
+
+  useEffect(() => {
+    const onConfigChanged = () => {
+      if (element && elementConfig) {
+        elementConfig.getInputConfigForElement(element).then((inputConfig) => {
+          setInput(inputConfig);
+          setOutput(elementConfig.getOutputConfigForElement(element));
+        });
+      }
+    };
+
+    if (elementConfig) {
+      elementConfig.on('config.changed', onConfigChanged);
+
+      onConfigChanged();
+    }
+
+    return () => {
+      if (elementConfig) {
+        elementConfig.off('config.changed', onConfigChanged);
+      }
+    };
+  }, [ element, elementConfig ]);
+
+  useEffect(() => {
+    if (elementConfig) {
+      if (JSON.stringify(config) !== JSON.stringify(elementConfig.getConfig())) {
+        elementConfig.setConfig(config);
+      }
+    }
+  }, [ config, elementConfig ]);
+
+  const onSetInput = useCallback((newInput) => {
+    if (element && elementConfig) {
+      elementConfig.setInputConfigForElement(element, newInput);
+    }
+  }, [ element, elementConfig ]);
+
+  const onResetInput = useCallback(() => {
+    if (element && elementConfig) {
+      elementConfig.resetInputConfigForElement(element);
+    }
+  }, [ element, elementConfig ]);
 
   const handleRunTask = async () => {
-
     setRunning(true);
+
     const camundaApi = { deploy, startInstance, getInstance };
+
+    const input = elementConfig.getInputConfigForElement(element);
 
     try {
       const result = await run(element.id, input, camundaApi);
-      setOutput(result);
-      saveConfig({
+
+      elementConfig.setOutputConfigForElement(element, result);
+
+      onConfigChanged({
         ...config,
         output: {
           ...config.output,
-          [element?.id]: result
+          [element.id]: result
         }
       });
     } catch (error) {
-      setOutput(error);
+      elementConfig.setOutputConfigForElement(element, error);
     } finally {
       setRunning(false);
     }
   };
 
-  if (!element || fetchingVariables) {
+  if (!element) {
     return (
       <div className="task-testing__container">
         <div className="empty">
@@ -100,10 +154,10 @@ export default function TaskTesting({
       <Input
         element={ element }
         input={ input }
-        setInput={ setInput }
-        reset={ reset }
-        resolvedVariables={ resolvedVariables }
-        outputVariables={ outputVariables }
+        output={ output }
+        setInput={ onSetInput }
+        resetInput={ onResetInput }
+        variablesForElement={ variablesForElement }
         onRunTask={ handleRunTask }
       />
       <Output
