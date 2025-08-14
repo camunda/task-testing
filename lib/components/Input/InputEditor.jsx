@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { basicSetup } from 'codemirror';
-import { EditorState, Annotation } from '@codemirror/state';
+import { Compartment, EditorState, Annotation } from '@codemirror/state';
 import { EditorView, placeholder } from '@codemirror/view';
 import { linter } from '@codemirror/lint';
 import { json, jsonParseLinter } from '@codemirror/lang-json';
@@ -11,7 +11,9 @@ import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
 
 import { getAutocompletionExtensions } from '../../utils/autocompletion';
 
-const fromProp = Annotation.define();
+const fromPropAnnotation = Annotation.define();
+
+const autocompletionCompartment = new Compartment();
 
 const DEFAULT_OUTPUT = {},
       DEFAULT_VARIABLES_FOR_ELEMENT = [];
@@ -76,17 +78,17 @@ export default function InputEditor({
       return errors;
     };
 
-    const startState = EditorState.create({
+    const editorState = EditorState.create({
       doc: value,
       extensions: [
         basicSetup,
         json(),
         linter(source, { delay: 100 }),
-        ...getAutocompletionExtensions(autocompletion),
+        autocompletionCompartment.of(getAutocompletionExtensions(autocompletion)),
         placeholder('Provide process variables in JSON format'),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
-            if (update.transactions.some(transaction => transaction.annotation(fromProp))) {
+            if (update.transactions.some(transaction => transaction.annotation(fromPropAnnotation))) {
               return;
             }
 
@@ -99,7 +101,7 @@ export default function InputEditor({
     });
 
     const view = new EditorView({
-      state: startState,
+      state: editorState,
       parent: ref.current,
     });
 
@@ -108,7 +110,17 @@ export default function InputEditor({
     return () => {
       view.destroy();
     };
-  }, [ autocompletion ]);
+  }, []);
+
+  useEffect(() => {
+    if (!editorView) return;
+
+    editorView.dispatch({
+      effects: autocompletionCompartment.reconfigure(
+        getAutocompletionExtensions(autocompletion)
+      )
+    });
+  }, [ autocompletion, editorView ]);
 
   useEffect(() => {
     if (!editorView) return;
@@ -122,7 +134,7 @@ export default function InputEditor({
           to: editorValue.length,
           insert: value
         },
-        annotations: fromProp.of(true)
+        annotations: fromPropAnnotation.of(true)
       });
     }
   }, [ editorView, value ]);
