@@ -5,14 +5,10 @@ module.exports = {
   mode: 'development',
   entry: './demo/index.jsx',
   output: {
-    path: path.resolve(__dirname, 'demo/dist'),
+    path: path.resolve(__dirname, 'demo/public'),
     clean: true
   },
   devtool: 'source-map',
-  devServer: {
-    static: path.join(__dirname, 'demo'),
-    open: true
-  },
   module: {
     rules: [
       {

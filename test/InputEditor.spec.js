@@ -7,9 +7,9 @@ import ZeebeVariableResolver from '@bpmn-io/variable-resolver/lib/zeebe/Variable
 
 import { bootstrapModeler, getModeler, inject } from './util/Util';
 
-import InputEditor from '../lib/components/Input/InputEditor';
+import InputEditor, { PLACEHOLDER_TEXT } from '../lib/components/Input/InputEditor';
 
-import diagramXML from './fixtures/diagram.bpmn';
+import diagramXML from './fixtures/InputEditor.bpmn';
 
 describe('InputEditor', function() {
 
@@ -24,7 +24,7 @@ describe('InputEditor', function() {
     const { queryByText } = renderWithProps();
 
     // then
-    expect(queryByText('Provide process variables in JSON format')).to.exist;
+    expect(queryByText(PLACEHOLDER_TEXT)).to.exist;
   });
 
 
@@ -67,7 +67,7 @@ describe('InputEditor', function() {
 
       // then
       await waitFor(() => {
-        expect(container.querySelector('.cm-completionLabel').textContent).to.eql('bazOutput');
+        expect(container.querySelector('.cm-completionLabel').textContent).to.eql('foo');
         expect(container.querySelector('.cm-completionInfo').textContent).to.eql('From process variables');
       });
     }));
@@ -110,11 +110,11 @@ describe('InputEditor', function() {
 
       // when
       await user.click(getByRole('textbox'));
-      await user.keyboard('{ArrowRight}{Enter}b');
+      await user.keyboard('{ArrowRight}{Enter}f');
 
       // expect
       await waitFor(() => {
-        expect(container.querySelector('.cm-completionLabel').textContent).to.eql('bazOutput');
+        expect(container.querySelector('.cm-completionLabel').textContent).to.eql('foo');
         expect(container.querySelector('.cm-completionInfo').textContent).to.eql('From process variables');
       });
     }));
@@ -131,11 +131,11 @@ describe('InputEditor', function() {
 
       // when
       await user.click(getByRole('textbox'));
-      await user.keyboard('{ArrowRight}{Enter}"b');
+      await user.keyboard('{ArrowRight}{Enter}"f');
 
       // expect
       await waitFor(() => {
-        expect(container.querySelector('.cm-completionLabel').textContent).to.eql('bazOutput');
+        expect(container.querySelector('.cm-completionLabel').textContent).to.eql('foo');
         expect(container.querySelector('.cm-completionInfo').textContent).to.eql('From process variables');
       });
     }));
@@ -148,7 +148,9 @@ describe('InputEditor', function() {
 
       const variablesForElement = await getVariablesForElement(injector, element);
 
-      const { container, findByRole, getByRole } = renderWithProps({ value: '{}', variablesForElement });
+      const onChangeSpy = sinon.spy();
+
+      const { findByRole, getByRole } = renderWithProps({ value: '{}', variablesForElement, onChange: onChangeSpy });
 
       // when
       await user.click(getByRole('textbox'));
@@ -160,8 +162,13 @@ describe('InputEditor', function() {
       await user.click(option);
 
       // expect
-      const lineText = container.querySelector('.cm-activeLine').textContent;
-      expect(lineText).to.eql('  "bazOutput": ""');
+      expect(onChangeSpy).to.have.been.calledTwice;
+      expect(onChangeSpy.getCalls()[0]).to.have.been.calledWith(`{
+  
+}`);
+      expect(onChangeSpy.getCalls()[1]).to.have.been.calledWith(`{
+  "foo": ""
+}`);
     }));
 
   });
@@ -169,51 +176,51 @@ describe('InputEditor', function() {
 
   describe('linting', function() {
 
-    it('should call onHasErrorChange with true when invalid', async function() {
+    it('should call onErrorChange with error message when invalid', async function() {
 
       // given
-      const onHasErrorChange = sinon.spy();
+      const onErrorChange = sinon.spy();
 
       // when
       renderWithProps({
         value: '{',
-        onHasErrorChange
+        onErrorChange
       });
 
       // then
       await waitFor(() => {
-        expect(onHasErrorChange).to.have.been.calledWith(true);
+        expect(onErrorChange).to.have.been.calledWith('Invalid JSON');
       });
     });
 
 
-    it('should call onHasErrorChange with false after when valid', async function() {
+    it('should call onErrorChange with null after when valid', async function() {
 
       // given
-      const onHasErrorChange = sinon.spy();
+      const onErrorChange = sinon.spy();
 
       // when
       const { rerender } = renderWithProps({
         value: '{',
-        onHasErrorChange
+        onErrorChange
       });
 
       // assume
       await waitFor(() => {
-        expect(onHasErrorChange).to.have.been.calledWith(true);
+        expect(onErrorChange).to.have.been.calledWith('Invalid JSON');
       });
 
       // when
       rerender(
         <InputEditor
           value={ '{}' }
-          onHasErrorChange={ onHasErrorChange }
+          onErrorChange={ onErrorChange }
         />
       );
 
       // then
       await waitFor(() => {
-        expect(onHasErrorChange).to.have.been.calledWith(false);
+        expect(onErrorChange).to.have.been.calledWith(null);
       });
     });
 
@@ -230,7 +237,7 @@ function renderWithProps(props = {}) {
     element = elementRegistry.get('ServiceTask_1'),
     value,
     onChange = () => {},
-    onHasErrorChange = () => {},
+    onErrorChange = () => {},
     output,
     variablesForElement
   } = props;
@@ -240,7 +247,7 @@ function renderWithProps(props = {}) {
       element={ element }
       value={ value }
       onChange={ onChange }
-      onHasErrorChange={ onHasErrorChange }
+      onErrorChange={ onErrorChange }
       output={ output }
       variablesForElement={ variablesForElement }
     />

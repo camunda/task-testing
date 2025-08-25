@@ -1,84 +1,53 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-import { Link } from '@carbon/react';
-import { Launch } from '@carbon/icons-react';
-
-import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
+import { Button } from '@carbon/react';
+import { Reset } from '@carbon/icons-react';
 
 import InputEditor from './InputEditor';
-import Button from '../Button/Button';
 
 export default function Input({
   element,
   input,
+  inputError,
+  isTaskExecuting,
+  onCancelTaskExecution,
+  onErrorChange,
+  onExecuteTask,
   output,
-  setInput,
   resetInput,
-  variablesForElement,
-  onRunTask
+  setInput,
+  variablesForElement
 }) {
-  const [ hasError, setHasError ] = useState(false);
-
-  const handleRun = async () => {
-    if (hasError) {
-      return;
-    }
-
-    await onRunTask(input);
-  };
-
-  const handleReset = () => {
+  const onClickReset = () => {
     resetInput();
   };
 
   return (
-    <div className="section">
-      <div className="section__header">
-        <div className="section__header--title">
-          <div className="section__header--title-with-icon">
-            <p>Test {getName(element)}</p>
-            <Link
-              href="https://docs.camunda.io/docs/components/concepts/variables"
-              renderIcon={ () => <Launch size="14" /> } />
-          </div>
-          <p className="cds--label">
-            {'Run the selected task with the provided input variables.'}
-          </p>
+    <div className="input">
+      <div className="input__header">
+        <div className="input__header--title">
+          Configure variables
         </div>
-        <div className="section__header--buttons">
+        <div className="input__header--buttons">
           <Button
             kind="ghost"
-            onClick={ handleReset }
-            tooltip="Reset to input mapping"
-          >
-            Reset
-          </Button>
-          <Button
-            kind="primary"
-            onClick={ handleRun }
-            tooltip={ hasError && 'Invalid JSON' }
-            skeleton
-          >
-            Run
-          </Button>
+            onClick={ onClickReset }
+            size="sm"
+            renderIcon={ Reset }
+            hasIconOnly
+            tooltipPosition="right"
+            iconDescription="Reset input"
+          >Reset</Button>
         </div>
       </div>
-      <div className="section__content">
-        <InputEditor
-          element={ element }
-          value={ input }
-          onChange={ setInput }
-          onHasErrorChange={ setHasError }
-          output={ output }
-          variablesForElement={ variablesForElement }
-        />
-      </div>
+      <InputEditor
+        element={ element }
+        value={ input }
+        onChange={ setInput }
+        onErrorChange={ onErrorChange }
+        output={ output }
+        variablesForElement={ variablesForElement }
+      />
     </div>
   );
-}
-
-function getName(element) {
-  const businessObject = getBusinessObject(element);
-
-  return businessObject.get('name') || businessObject.get('id');
 }

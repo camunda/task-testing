@@ -14,7 +14,8 @@ const files = {
   ],
   build: [
     '*.js',
-    '*.cjs'
+    '*.mjs',
+    'demo/server.mjs'
   ],
   test: [
     'test/**/*.spec.js',
@@ -60,7 +61,7 @@ export default [
     return {
       ...config,
       files: files.test
-    }; 
+    };
   }),
   {
     languageOptions: {
