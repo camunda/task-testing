@@ -4,7 +4,7 @@ const files = {
   ignored: [
     'dist',
     'demo/dist',
-    'public'
+    'demo/public'
   ],
   lib: [
     '**/*.js',
