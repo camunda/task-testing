@@ -1,1 +1,1 @@
-export { default } from './TaskTesting';
+export { default } from './components/TaskTesting/TaskTesting';
