@@ -23,8 +23,6 @@ function createCamunda8Client() {
     CAMUNDA_TOKEN_DISK_CACHE_DISABLE: true
   };
 
-  console.log('Camunda 8 Client Configuration:', config);
-
   return new Camunda8(config);
 }
 
@@ -64,21 +62,6 @@ app.post('/api/startInstance', async (req, res) => {
     const { processId, elementId, variables } = req.body;
 
     const client = camunda.getCamundaRestClient();
-
-    console.log('Starting process instance with:', {
-      processDefinitionId: processId,
-      variables,
-      startInstructions:[
-        {
-          elementId
-        }
-      ],
-      runtimeInstructions: [
-        {
-          afterElementId: elementId
-        }
-      ]
-    });
 
     const response = await client.createProcessInstance({
       processDefinitionId: processId,
