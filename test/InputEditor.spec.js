@@ -115,6 +115,7 @@ describe('InputEditor', function() {
       // expect
       await waitFor(() => {
         expect(container.querySelector('.cm-completionLabel').textContent).to.eql('foo');
+        expect(container.querySelector('.cm-completionMatchedText').textContent).to.eql('f');
         expect(container.querySelector('.cm-completionInfo').textContent).to.eql('From process variables');
       });
     }));
@@ -136,6 +137,7 @@ describe('InputEditor', function() {
       // expect
       await waitFor(() => {
         expect(container.querySelector('.cm-completionLabel').textContent).to.eql('foo');
+        expect(container.querySelector('.cm-completionMatchedText').textContent).to.eql('f');
         expect(container.querySelector('.cm-completionInfo').textContent).to.eql('From process variables');
       });
     }));
