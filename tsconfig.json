@@ -10,6 +10,6 @@
     "skipLibCheck": true,
     "typeRoots": ["./node_modules/@types", "./lib"]
   },
-  "include": ["src/**/*", "lib/types.d.ts"],
+  "include": ["lib/**/*", "lib/types.d.ts"],
   "exclude": ["node_modules"]
 }
