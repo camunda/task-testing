@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "target": "esnext",
+    "module": "esnext",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "typeRoots": ["./node_modules/@types", "./lib"]
+  },
+  "include": ["src/**/*", "lib/types.d.ts"],
+  "exclude": ["node_modules"]
+}
