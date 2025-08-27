@@ -2,8 +2,8 @@ import { render, screen } from '@testing-library/react';
 
 import { bootstrapModeler, inject } from './util/Util';
 
-import TaskTesting from '../lib';
-import { NO_ELEMENT_TEXT } from '../lib/TaskTesting';
+import TaskTesting from '../lib/components/TaskTesting/TaskTesting';
+import { NO_ELEMENT_TEXT } from '../lib/components/TaskTesting/TaskTesting';
 
 import diagramXML from './fixtures/diagram.bpmn';
 
