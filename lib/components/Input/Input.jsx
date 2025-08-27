@@ -8,11 +8,7 @@ import InputEditor from './InputEditor';
 export default function Input({
   element,
   input,
-  inputError,
-  isTaskExecuting,
-  onCancelTaskExecution,
   onErrorChange,
-  onExecuteTask,
   output,
   resetInput,
   setInput,

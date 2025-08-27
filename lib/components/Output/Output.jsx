@@ -13,7 +13,6 @@ import {
 } from '@carbon/icons-react';
 
 export default function Output({
-  element,
   inputError,
   isTaskExecuting,
   onCancelTaskExecution,
