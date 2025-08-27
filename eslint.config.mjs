@@ -3,7 +3,6 @@ import bpmnIoPlugin from 'eslint-plugin-bpmn-io';
 const files = {
   ignored: [
     'dist',
-    'demo/dist',
     'demo/public'
   ],
   lib: [
