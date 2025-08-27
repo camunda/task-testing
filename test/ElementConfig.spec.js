@@ -195,7 +195,7 @@ describe('ElementConfig', function() {
       const inputConfigForElement = await elementConfig.getInputConfigForElement(element);
 
       // then
-      expect(inputConfigForElement).to.eql('{\n  "fooInput": 2\n}');
+      expect(inputConfigForElement).to.eql('{\n  "foo": ""\n}');
     }));
 
   });
