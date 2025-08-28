@@ -16,6 +16,12 @@ function removeProtocol(url) {
 }
 
 function createCamunda8Client() {
+  if (!process.env.ZEEBE_GRPC_ADDRESS || !process.env.CAMUNDA_CLIENT_ID || !process.env.CAMUNDA_CLIENT_SECRET) {
+    console.warn('Camunda environment variables not configured. API requests will return success: false');
+
+    return null;
+  }
+
   const config = {
     ...process.env,
     ZEEBE_GRPC_ADDRESS: removeProtocol(process.env.ZEEBE_GRPC_ADDRESS),
@@ -36,6 +42,10 @@ const camunda = createCamunda8Client();
 
 app.post('/api/deploy', async (req, res) => {
   try {
+    if (!camunda) {
+      return res.json({ success: false, error: 'Camunda environment not configured' });
+    }
+
     const { xml } = req.body;
 
     const client = camunda.getCamundaRestClient();
@@ -59,6 +69,10 @@ app.post('/api/deploy', async (req, res) => {
 
 app.post('/api/startInstance', async (req, res) => {
   try {
+    if (!camunda) {
+      return res.json({ success: false, error: 'Camunda environment not configured' });
+    }
+
     const { processId, elementId, variables } = req.body;
 
     const client = camunda.getCamundaRestClient();
@@ -87,6 +101,10 @@ app.post('/api/startInstance', async (req, res) => {
 
 app.get('/api/getProcessInstance/:processInstanceKey', async (req, res) => {
   try {
+    if (!camunda) {
+      return res.json({ success: false, error: 'Camunda environment not configured' });
+    }
+
     const { processInstanceKey } = req.params;
 
     const client = camunda.getCamundaRestClient();
@@ -105,6 +123,10 @@ app.get('/api/getProcessInstance/:processInstanceKey', async (req, res) => {
 
 app.get('/api/getProcessInstanceVariables/:processInstanceKey', async (req, res) => {
   try {
+    if (!camunda) {
+      return res.json({ success: false, error: 'Camunda environment not configured' });
+    }
+
     const { processInstanceKey } = req.params;
 
     const client = camunda.getCamundaRestClient();
@@ -123,6 +145,10 @@ app.get('/api/getProcessInstanceVariables/:processInstanceKey', async (req, res)
 
 app.get('/api/getProcessInstanceIncident/:processInstanceKey', async (req, res) => {
   try {
+    if (!camunda) {
+      return res.json({ success: false, error: 'Camunda environment not configured' });
+    }
+
     const { processInstanceKey } = req.params;
 
     const client = camunda.getOperateApiClient();
