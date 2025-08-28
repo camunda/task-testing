@@ -103,7 +103,7 @@ export default function InputEditor({
         new Compartment().of(EditorState.tabSize.of(2)),
         EditorView.contentAttributes.of({
           'aria-label': 'JSON editor',
-          'tabindex': 0
+          'tabindex': '0'
         }),
         linter(source, { delay: 300 }),
         autocompletionCompartment.of(getAutocompletionExtensions(autocompletions)),

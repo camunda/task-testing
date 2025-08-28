@@ -6,7 +6,7 @@
   ],
   "main": "dist/index.js",
   "scripts": {
-    "all": "run-s lint test build",
+    "all": "run-s lint types test build",
     "start:server": "node demo/server.mjs",
     "start:client": "webpack --watch --config webpack.demo.js",
     "start": "concurrently \"npm run start:server\" \"npm run start:client\" \"npm open http://localhost:3000\"",
@@ -15,7 +15,8 @@
     "build:watch": "webpack --watch",
     "build:demo": "webpack --config webpack.demo.js",
     "test": "karma start karma.config.js",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "types": "tsc --noEmit"
   },
   "license": "MIT",
   "dependencies": {
@@ -72,6 +73,7 @@
     "sinon": "^17.0.1",
     "sinon-chai": "^3.7.0",
     "style-loader": "^4.0.0",
+    "typescript": "^5.9.2",
     "webpack": "^5.100.1",
     "webpack-cli": "^6.0.1",
     "webpack-dev-server": "^5.2.2",

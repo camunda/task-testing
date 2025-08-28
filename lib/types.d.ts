@@ -1,10 +1,6 @@
 import type {
   CreateProcessInstanceResponse,
-  Deployment,
-  DeployResourceResponse
-} from '@camunda8/sdk/dist/zeebe/types';
-
-import type {
+  DeployResourceResponse,
   SearchProcessInstanceResponse,
   SearchVariablesResponse,
   SearchIncidentsResponse
@@ -28,16 +24,6 @@ export type Config = {
   output: Output;
 };
 
-export type Element = {
-  id: string;
-  businessObject: ModdleElement;
-};
-
-export type ModdleElement = {
-  $type: string;
-  id: string;
-};
-
 export type Variable = {
   name: string;
   type?: string;
@@ -49,7 +35,7 @@ export type Variable = {
 
 export type Variables = Variable[];
 
-export type DeploymentResponse = DeployResourceResponse<Deployment>;
+export type DeploymentResponse = DeployResourceResponse;
 
 export type DeploymentResult = {
   success: boolean;
@@ -102,3 +88,5 @@ export namespace TaskExecutionEvents {
   }
   export interface Start {}
 }
+
+export type { Element, ModdleElement } from 'bpmn-js/lib/model/Types';
