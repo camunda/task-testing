@@ -54,28 +54,34 @@ function App() {
           'ServiceTask_1': {
             success: true,
             variables: {
-              a: 2,
-              b: 3,
-              c: {
-                d: 4,
-                e: 5,
-                f: [ 6, 7, 8 ]
-              },
-              g: 9,
-              h: 10,
-              i: 11,
-              j: {
-                k: 12,
-                l: 13
-              },
-              m: 14,
-              n: 15,
-              o: 16,
-              p: 17,
-              q: 18,
-              r: 19,
-              s: 20,
-              t: 21
+              'm': '13',
+              'g': '8',
+              'a': '1',
+              'c': '{"d":3,"e":4,"f":[5,6,7]}',
+              'p': '16',
+              'j': '{"k":11,"l":12}',
+              'i': '10',
+              'h': '9',
+              's': '19',
+              'o': '15',
+              't': '20',
+              'n': '14',
+              'q': '17',
+              'r': '18',
+              'b': '2',
+              'fooPlusOne': 'null',
+              'output1': '1',
+              'output4': '"foo"',
+              'output2': 'true',
+              'output3': '{"foo":1}'
+            }
+          },
+          'ServiceTask_2': {
+            success: true,
+            variables: {
+              'a': 'foo',
+              'c': 'bar',
+              'e': 'baz'
             }
           },
           'ServiceTask_4': {

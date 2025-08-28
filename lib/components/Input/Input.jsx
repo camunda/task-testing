@@ -6,6 +6,7 @@ import { Reset } from '@carbon/icons-react';
 import InputEditor from './InputEditor';
 
 export default function Input({
+  allOutputs,
   element,
   input,
   onErrorChange,
@@ -37,11 +38,11 @@ export default function Input({
         </div>
       </div>
       <InputEditor
+        allOutputs={ allOutputs }
         element={ element }
         value={ input }
         onChange={ setInput }
         onErrorChange={ onErrorChange }
-        output={ output }
         variablesForElement={ variablesForElement }
       />
     </div>

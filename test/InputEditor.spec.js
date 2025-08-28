@@ -68,7 +68,7 @@ describe('InputEditor', function() {
       // then
       await waitFor(() => {
         expect(container.querySelector('.cm-completionLabel').textContent).to.eql('foo');
-        expect(container.querySelector('.cm-completionInfo').textContent).to.eql('From process variables');
+        expect(container.querySelector('.cm-completionInfo').textContent).to.eql('Process variable');
       });
     }));
 
@@ -76,15 +76,23 @@ describe('InputEditor', function() {
     it('should show for output variables', async function() {
 
       // given
-      const output = {
-        variables: {
-          foo: { value: 'bar', type: 'String' }
+      const allOutputs = {
+        'ServiceTask_1': {
+          variables: {
+            foo: '1',
+            bar: '2'
+          }
+        },
+        'ServiceTask_2': {
+          variables: {
+            foo: '3'
+          }
         }
       };
 
       const { container, getByRole } = renderWithProps({
         value: '{}',
-        output
+        allOutputs
       });
 
       // when
@@ -93,8 +101,19 @@ describe('InputEditor', function() {
 
       // then
       await waitFor(() => {
-        expect(container.querySelector('.cm-completionLabel').textContent).to.eql('foo');
-        expect(container.querySelector('.cm-completionInfo').textContent).to.contain('From output variables');
+        const completionLabels = Array.from(container.querySelectorAll('.cm-completionLabel')).map(el => el.textContent);
+
+        expect(completionLabels.length).to.eql(3);
+
+        expect(completionLabels[0]).to.eql('bar');
+        expect(completionLabels[1]).to.eql('foo');
+        expect(completionLabels[2]).to.eql('foo');
+
+        const completionInfos = Array.from(container.querySelectorAll('.cm-completionInfo .info span')).map(el => el.textContent);
+
+        expect(completionInfos.length).to.eql(1);
+
+        expect(completionInfos[0]).to.eql('Output variable from ServiceTask_1');
       });
     });
 
@@ -116,7 +135,7 @@ describe('InputEditor', function() {
       await waitFor(() => {
         expect(container.querySelector('.cm-completionLabel').textContent).to.eql('foo');
         expect(container.querySelector('.cm-completionMatchedText').textContent).to.eql('f');
-        expect(container.querySelector('.cm-completionInfo').textContent).to.eql('From process variables');
+        expect(container.querySelector('.cm-completionInfo').textContent).to.eql('Process variable');
       });
     }));
 
@@ -138,7 +157,7 @@ describe('InputEditor', function() {
       await waitFor(() => {
         expect(container.querySelector('.cm-completionLabel').textContent).to.eql('foo');
         expect(container.querySelector('.cm-completionMatchedText').textContent).to.eql('f');
-        expect(container.querySelector('.cm-completionInfo').textContent).to.eql('From process variables');
+        expect(container.querySelector('.cm-completionInfo').textContent).to.eql('Process variable');
       });
     }));
 
@@ -236,21 +255,21 @@ function renderWithProps(props = {}) {
   const elementRegistry = modeler.get('elementRegistry');
 
   const {
+    allOutputs = {},
     element = elementRegistry.get('ServiceTask_1'),
     value,
     onChange = () => {},
     onErrorChange = () => {},
-    output,
     variablesForElement
   } = props;
 
   return render(
     <InputEditor
+      allOutputs={ allOutputs }
       element={ element }
       value={ value }
       onChange={ onChange }
       onErrorChange={ onErrorChange }
-      output={ output }
       variablesForElement={ variablesForElement }
     />
   );

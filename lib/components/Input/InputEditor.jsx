@@ -23,15 +23,15 @@ const autocompletionCompartment = new Compartment();
 
 export const PLACEHOLDER_TEXT = 'Enter process variables in JSON format';
 
-const DEFAULT_OUTPUT = {},
+const DEFAULT_ALL_OUTPUTS = {},
       DEFAULT_VARIABLES_FOR_ELEMENT = [];
 
 export default function InputEditor({
+  allOutputs = DEFAULT_ALL_OUTPUTS,
   element,
   value,
   onChange,
   onErrorChange,
-  output = DEFAULT_OUTPUT,
   variablesForElement = DEFAULT_VARIABLES_FOR_ELEMENT
 }) {
   const autocompletions = useMemo(() => {
@@ -42,29 +42,23 @@ export default function InputEditor({
     }).map(({ name, detail, info }) => ({
       label: name,
       type: 'variable',
-      info: () => getAutocompletionInfo(info, 'From process variables'),
+      info: () => getAutocompletionInfo(info, 'Process variable'),
       detail,
       value: info ? info : undefined,
     }));
 
-    let outputVariablesAutocompletions = [];
+    const allOutputVariables = getAllOutputVariables(allOutputs);
 
-    if (output) {
-      const { variables } = output;
-
-      if (variables) {
-        outputVariablesAutocompletions = Object.entries(variables).map(([ key, value ]) => ({
-          label: key,
-          type: 'constant',
-          info: () => getAutocompletionInfo(value, 'From output variables'),
-          detail: getDetail(value),
-          value: value
-        }));
-      }
-    }
+    const outputVariablesAutocompletions = allOutputVariables.map(({ name, value, origin }) => ({
+      label: name,
+      type: 'variable',
+      info: () => getAutocompletionInfo(value, `Output variable from ${origin}`),
+      detail: 'String',
+      value
+    }));
 
     return [ ...variablesForElementAutocompletions, ...outputVariablesAutocompletions ];
-  }, [ output, variablesForElement ]);
+  }, [ allOutputs, variablesForElement ]);
 
   const ref = useRef(null);
 
@@ -186,34 +180,18 @@ function getAutocompletionInfo(value, description) {
   return div;
 }
 
-/**
- * Get a string representation of the type of a value.
- *
- * @example
- *
- * getDetail('foo') // String
- * getDetail(1337) // Number
- * getDetail(true) // Boolean
- * getDetail({}) // Object
- *
- * @param {any} value
- *
- * @return {string}
- */
-function getDetail(value) {
-  const type = typeof value;
+function getAllOutputVariables(allOutputs) {
+  const allOutputVariables = [];
 
-  if (type === 'object') {
-    if (Array.isArray(value)) {
-      return 'Array';
+  for (const elementId in allOutputs) {
+    if (allOutputs[elementId]) {
+      const { variables = [] } = allOutputs[ elementId ];
+
+      for (const name in variables) {
+        allOutputVariables.push({ name, value: variables[name], origin: elementId });
+      }
     }
-
-    if (value === null) {
-      return 'null';
-    }
-
-    return 'Object';
   }
 
-  return type.charAt(0).toUpperCase() + type.slice(1);
+  return allOutputVariables;
 }
