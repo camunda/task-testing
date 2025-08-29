@@ -188,7 +188,7 @@ describe('InputEditor', function() {
   
 }`);
       expect(onChangeSpy.getCalls()[1]).to.have.been.calledWith(`{
-  "foo": ,
+  "foo": 
 }`);
     }));
 
