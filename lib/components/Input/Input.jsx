@@ -13,7 +13,6 @@ export default function Input({
   output,
   resetInput,
   setInput,
-  variablesForElement
 }) {
   const onClickReset = () => {
     resetInput();
@@ -43,7 +42,6 @@ export default function Input({
         value={ input }
         onChange={ setInput }
         onErrorChange={ onErrorChange }
-        variablesForElement={ variablesForElement }
       />
     </div>
   );

@@ -17,14 +17,15 @@ import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
 
 import { getAutocompletionExtensions } from '../../utils/autocompletion';
 
+import { useElementVariables } from '../../hooks/useElementVariables';
+
 const fromPropAnnotation = Annotation.define();
 
 const autocompletionCompartment = new Compartment();
 
 export const PLACEHOLDER_TEXT = 'Enter process variables in JSON format';
 
-const DEFAULT_ALL_OUTPUTS = {},
-      DEFAULT_VARIABLES_FOR_ELEMENT = [];
+const DEFAULT_ALL_OUTPUTS = {};
 
 export default function InputEditor({
   allOutputs = DEFAULT_ALL_OUTPUTS,
@@ -32,10 +33,12 @@ export default function InputEditor({
   value,
   onChange,
   onErrorChange,
-  variablesForElement = DEFAULT_VARIABLES_FOR_ELEMENT
 }) {
+
+  const elementVariables = useElementVariables();
+
   const autocompletions = useMemo(() => {
-    const variablesForElementAutocompletions = variablesForElement.filter(variable => {
+    const variablesForElementAutocompletions = elementVariables.filter(variable => {
 
       // Filter out variables originating from the element's inputs or outputs
       return variable.origin.every(origin => origin !== getBusinessObject(element));
@@ -58,11 +61,14 @@ export default function InputEditor({
     }));
 
     return [ ...variablesForElementAutocompletions, ...outputVariablesAutocompletions ];
-  }, [ allOutputs, variablesForElement ]);
+  }, [ allOutputs, elementVariables ]);
 
   const ref = useRef(null);
 
-  const [ editorView, setEditorView ] = useState(null);
+  /**
+   * @type {ReturnType<typeof useState<EditorView>>}
+   */
+  const [ editorView, setEditorView ] = useState();
 
   const [ error, setError ] = useState(null);
 
