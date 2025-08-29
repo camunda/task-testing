@@ -7,9 +7,9 @@ import ZeebeVariableResolver from '@bpmn-io/variable-resolver/lib/zeebe/Variable
 
 import { bootstrapModeler, getModeler, inject } from './util/Util';
 
-import InputEditor from '../lib/components/Input/InputEditor';
+import InputEditor, { PLACEHOLDER_TEXT } from '../lib/components/Input/InputEditor';
 
-import diagramXML from './fixtures/diagram.bpmn';
+import diagramXML from './fixtures/InputEditor.bpmn';
 
 describe('InputEditor', function() {
 
@@ -24,7 +24,7 @@ describe('InputEditor', function() {
     const { queryByText } = renderWithProps();
 
     // then
-    expect(queryByText('Provide process variables in JSON format')).to.exist;
+    expect(queryByText(PLACEHOLDER_TEXT)).to.exist;
   });
 
 
@@ -67,8 +67,8 @@ describe('InputEditor', function() {
 
       // then
       await waitFor(() => {
-        expect(container.querySelector('.cm-completionLabel').textContent).to.eql('bazOutput');
-        expect(container.querySelector('.cm-completionInfo').textContent).to.eql('From process variables');
+        expect(container.querySelector('.cm-completionLabel').textContent).to.eql('foo');
+        expect(container.querySelector('.cm-completionInfo').textContent).to.eql('Process variable');
       });
     }));
 
@@ -76,15 +76,23 @@ describe('InputEditor', function() {
     it('should show for output variables', async function() {
 
       // given
-      const output = {
-        variables: {
-          foo: { value: 'bar', type: 'String' }
+      const allOutputs = {
+        'ServiceTask_1': {
+          variables: {
+            foo: '1',
+            bar: '2'
+          }
+        },
+        'ServiceTask_2': {
+          variables: {
+            foo: '3'
+          }
         }
       };
 
       const { container, getByRole } = renderWithProps({
         value: '{}',
-        output
+        allOutputs
       });
 
       // when
@@ -93,8 +101,19 @@ describe('InputEditor', function() {
 
       // then
       await waitFor(() => {
-        expect(container.querySelector('.cm-completionLabel').textContent).to.eql('foo');
-        expect(container.querySelector('.cm-completionInfo').textContent).to.contain('From output variables');
+        const completionLabels = Array.from(container.querySelectorAll('.cm-completionLabel')).map(el => el.textContent);
+
+        expect(completionLabels.length).to.eql(3);
+
+        expect(completionLabels[0]).to.eql('bar');
+        expect(completionLabels[1]).to.eql('foo');
+        expect(completionLabels[2]).to.eql('foo');
+
+        const completionInfos = Array.from(container.querySelectorAll('.cm-completionInfo .info span')).map(el => el.textContent);
+
+        expect(completionInfos.length).to.eql(1);
+
+        expect(completionInfos[0]).to.eql('Output variable from ServiceTask_1');
       });
     });
 
@@ -110,12 +129,13 @@ describe('InputEditor', function() {
 
       // when
       await user.click(getByRole('textbox'));
-      await user.keyboard('{ArrowRight}{Enter}b');
+      await user.keyboard('{ArrowRight}{Enter}f');
 
       // expect
       await waitFor(() => {
-        expect(container.querySelector('.cm-completionLabel').textContent).to.eql('bazOutput');
-        expect(container.querySelector('.cm-completionInfo').textContent).to.eql('From process variables');
+        expect(container.querySelector('.cm-completionLabel').textContent).to.eql('foo');
+        expect(container.querySelector('.cm-completionMatchedText').textContent).to.eql('f');
+        expect(container.querySelector('.cm-completionInfo').textContent).to.eql('Process variable');
       });
     }));
 
@@ -131,12 +151,13 @@ describe('InputEditor', function() {
 
       // when
       await user.click(getByRole('textbox'));
-      await user.keyboard('{ArrowRight}{Enter}"b');
+      await user.keyboard('{ArrowRight}{Enter}"f');
 
       // expect
       await waitFor(() => {
-        expect(container.querySelector('.cm-completionLabel').textContent).to.eql('bazOutput');
-        expect(container.querySelector('.cm-completionInfo').textContent).to.eql('From process variables');
+        expect(container.querySelector('.cm-completionLabel').textContent).to.eql('foo');
+        expect(container.querySelector('.cm-completionMatchedText').textContent).to.eql('f');
+        expect(container.querySelector('.cm-completionInfo').textContent).to.eql('Process variable');
       });
     }));
 
@@ -148,7 +169,9 @@ describe('InputEditor', function() {
 
       const variablesForElement = await getVariablesForElement(injector, element);
 
-      const { container, findByRole, getByRole } = renderWithProps({ value: '{}', variablesForElement });
+      const onChangeSpy = sinon.spy();
+
+      const { findByRole, getByRole } = renderWithProps({ value: '{}', variablesForElement, onChange: onChangeSpy });
 
       // when
       await user.click(getByRole('textbox'));
@@ -160,8 +183,13 @@ describe('InputEditor', function() {
       await user.click(option);
 
       // expect
-      const lineText = container.querySelector('.cm-activeLine').textContent;
-      expect(lineText).to.eql('  "bazOutput": ""');
+      expect(onChangeSpy).to.have.been.calledTwice;
+      expect(onChangeSpy.getCalls()[0]).to.have.been.calledWith(`{
+  
+}`);
+      expect(onChangeSpy.getCalls()[1]).to.have.been.calledWith(`{
+  "foo": 
+}`);
     }));
 
   });
@@ -169,51 +197,51 @@ describe('InputEditor', function() {
 
   describe('linting', function() {
 
-    it('should call onHasErrorChange with true when invalid', async function() {
+    it('should call onErrorChange with error message when invalid', async function() {
 
       // given
-      const onHasErrorChange = sinon.spy();
+      const onErrorChange = sinon.spy();
 
       // when
       renderWithProps({
         value: '{',
-        onHasErrorChange
+        onErrorChange
       });
 
       // then
       await waitFor(() => {
-        expect(onHasErrorChange).to.have.been.calledWith(true);
+        expect(onErrorChange).to.have.been.calledWith('Invalid JSON');
       });
     });
 
 
-    it('should call onHasErrorChange with false after when valid', async function() {
+    it('should call onErrorChange with null after when valid', async function() {
 
       // given
-      const onHasErrorChange = sinon.spy();
+      const onErrorChange = sinon.spy();
 
       // when
       const { rerender } = renderWithProps({
         value: '{',
-        onHasErrorChange
+        onErrorChange
       });
 
       // assume
       await waitFor(() => {
-        expect(onHasErrorChange).to.have.been.calledWith(true);
+        expect(onErrorChange).to.have.been.calledWith('Invalid JSON');
       });
 
       // when
       rerender(
         <InputEditor
           value={ '{}' }
-          onHasErrorChange={ onHasErrorChange }
+          onErrorChange={ onErrorChange }
         />
       );
 
       // then
       await waitFor(() => {
-        expect(onHasErrorChange).to.have.been.calledWith(false);
+        expect(onErrorChange).to.have.been.calledWith(null);
       });
     });
 
@@ -227,21 +255,21 @@ function renderWithProps(props = {}) {
   const elementRegistry = modeler.get('elementRegistry');
 
   const {
+    allOutputs = {},
     element = elementRegistry.get('ServiceTask_1'),
     value,
     onChange = () => {},
-    onHasErrorChange = () => {},
-    output,
+    onErrorChange = () => {},
     variablesForElement
   } = props;
 
   return render(
     <InputEditor
+      allOutputs={ allOutputs }
       element={ element }
       value={ value }
       onChange={ onChange }
-      onHasErrorChange={ onHasErrorChange }
-      output={ output }
+      onErrorChange={ onErrorChange }
       variablesForElement={ variablesForElement }
     />
   );

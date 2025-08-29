@@ -1,68 +1,281 @@
-@use 'layout' as *;
-@use 'editor';
-
 .task-testing__container {
   display: flex;
+  flex-direction: column;
   height: 100%;
   width: 100%;
+  padding: 10px;
+  font-size: 14px;
 
-  @include layout;
+  &.task-testing__container--empty {
+    justify-content: center;
+    align-items: center;
 
-  .empty {
-    padding: 10px;
+    .task-testing__container-no-config,
+    .task-testing__container-no-element {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+
+      .cds--inline-loading {
+        inline-size: initial;
+        min-block-size: initial;
+      }
+    }
   }
 
-  &>div.section:first-child {
-    border-right: 1px solid #E0E0E0;
+  .task-testing__container--header {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+
+    .task-testing__container--header--left,
+    .task-testing__container--header--right {
+      display: flex;
+      align-items: center;
+      width: 50%;
+    }
+
+    .task-testing__container--header--left {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+
+      .task-testing__container--header-task-name {
+        font-weight: bold;
+      }
+    }
+
+    .task-testing__container--header--right {
+      justify-content: flex-end;
+    } 
+  }
+
+  .task-testing__container--main {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    flex-grow: 1;
+
+    .task-testing__container--main--left,
+    .task-testing__container--main--right {
+      display: flex;
+      flex-direction: column;
+      width: 50%;
+    }
+  }
+
+  .input {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    .input__header {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
   }
 
   .output {
-    background: hsla(0, 0%, 93%, 0.5);
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 
-    .status {
-      font-size: 14px;
-      padding: 8px;
+    .output__header {
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
 
-    .cds--inline-loading {
-      min-block-size: unset;
+    .output__body {
+      flex-grow: 1;
+      position: relative;
+
+      .output__body--inner {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
     }
 
-    .snippet {
-      background: transparent;
-      padding: 0 8px;
+    .output__state {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid transparent;
+      border-left-width: 3px;
 
-      .cds--snippet-btn--expand {
-        display: none;
+      .output__state-title {
+        display: flex;
+        align-items: center;
+        gap: 5px;
       }
 
-      .cds--copy-btn {
-        margin-right: 20px;
+      .output__state-details {
+
+      }
+
+      &.output__state--execute {
+        border-color: #0f62fe;
+        background-color: #edf5ff;
+
+        .output__status-text {
+          color: #0f62fe;
+        }
+
+        .output__status-icon {
+          fill: #0f62fe
+        }
+
+        .cds--inline-loading {
+          inline-size: initial;
+          min-block-size: initial;
+        }
+      }
+
+      &.output__state--success {
+        border-color: #24a148;
+        background-color: #defbe6;
+
+        .output__status-text {
+          color: #24a148;
+        }
+
+        .output__status-icon {
+          fill: #24a148;
+        }
+      }
+
+      &.output__state--error {
+        border-color: #da1e28;
+        background-color: #fff1f1;
+
+        .output__status-text {
+          color: #da1e28;
+        }
+
+        .output__status-icon {
+          fill: #da1e28;
+        }
+
+        .incident-details, .error-details {
+          color: #da1e28;
+
+          .grid-table {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 5px;
+          }
+
+          .grid-row {
+            display: contents; /* So rows don’t add extra box, only cells align */
+          }
+
+          .grid-cell {
+            padding: 0;
+          }
+
+          .grid-cell.label {
+            font-weight: bold;
+          }
+        }
+      }
+    }
+
+    .output__variables {
+      .output__variables--title {
+        margin-bottom: 12px;
+      }
+
+      .cds--snippet-container {
+        width: 100%;
+      }
+
+      .cds--snippet {
+        max-inline-size: 100%
+      }
+
+      code {
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+.input__editor {
+  position: relative;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+
+  &.input__editor--error .input__editor-codemirror .input__editor-codemirror-inner .cm-editor {
+    outline: 1px solid #da1e28;
+    outline-offset: -1px;
+    background-color: #fff1f1;
+  }
+
+  .input__editor-codemirror {
+    position: relative;
+    flex-grow: 1;
+
+    .input__editor-codemirror-inner {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+
+      .cm-editor {
+        height: 100%;
+        background-color: var(--cds-layer, #f4f4f4);
+      }
+
+      .cm-scroller {
+        overflow-y: auto !important;
+      }
+
+      .cm-content {
+        padding: 15px;
+      }
+
+      .cm-focused {
+        outline: none;
+      }
+
+      .cm-tooltip {
+        font-size: 14px;
+      }
+
+      .info {
+        padding: 5px;
+        font-family: monospace;
+        font-size: 12px;
+        max-width: 300px;
+        word-wrap: break-word;
+
+        span {
+          font-style: italic;
+        }
+
+        pre {
+          margin-top: 5px;
+        }
       }
     }
   }
 
-
-  // Overriding Carbon styles
-
-  .section__header--buttons {
-    .cds--btn--sm {
-      width: 80px;
-      padding: 6px;
-    }
-
-    .cds--btn.cds--skeleton {
-      padding: 0;
-      inline-size: 80px;
-    }
-  }
-
-  .cds--tooltip-content {
-    font-size: 12px;
-    padding: 5px;
-  }
-
-  .hide-tooltip .cds--popover {
-    display: none;
+  .input__editor-error {
+    color: #da1e28;
+    font-size: 13px;
+    margin-top: 5px;
   }
 }

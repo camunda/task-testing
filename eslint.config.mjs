@@ -3,8 +3,7 @@ import bpmnIoPlugin from 'eslint-plugin-bpmn-io';
 const files = {
   ignored: [
     'dist',
-    'demo/dist',
-    'public'
+    'demo/public'
   ],
   lib: [
     '**/*.js',
@@ -14,7 +13,8 @@ const files = {
   ],
   build: [
     '*.js',
-    '*.cjs'
+    '*.mjs',
+    'demo/server.mjs'
   ],
   test: [
     'test/**/*.spec.js',
@@ -60,7 +60,7 @@ export default [
     return {
       ...config,
       files: files.test
-    }; 
+    };
   }),
   {
     languageOptions: {

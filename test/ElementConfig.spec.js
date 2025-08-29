@@ -5,7 +5,7 @@ import { bootstrapModeler, inject } from './util/Util';
 import { ElementConfig } from '../lib/ElementConfig';
 import { ElementVariables } from '../lib/ElementVariables';
 
-import diagramXML from './fixtures/diagram.bpmn';
+import diagramXML from './fixtures/ElementConfig.bpmn';
 
 const DEFAULT_CONFIG = {
   input: {
@@ -195,7 +195,7 @@ describe('ElementConfig', function() {
       const inputConfigForElement = await elementConfig.getInputConfigForElement(element);
 
       // then
-      expect(inputConfigForElement).to.eql('{\n  "foo": "",\n  "bar": {\n    "baz": ""\n  }\n}');
+      expect(inputConfigForElement).to.eql('{\n  "foo": ""\n}');
     }));
 
   });

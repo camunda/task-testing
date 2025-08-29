@@ -24,7 +24,6 @@ describe('Input', function() {
     });
 
     // then
-    expect(container.querySelector('.section__header--title p').textContent).to.match(/Test No Inputs/i);
     expect(container.textContent).to.match(/"foo": "bar"/i);
     expect(container.textContent).to.match(/"baz": 1337/i);
   });

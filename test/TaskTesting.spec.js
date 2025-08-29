@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import { bootstrapModeler, inject } from './util/Util';
 
-import TaskTesting from '../lib';
+import TaskTesting, { NO_ELEMENT_TEXT } from '../lib/components/TaskTesting/TaskTesting';
 
 import diagramXML from './fixtures/diagram.bpmn';
 
@@ -24,7 +24,7 @@ describe('TaskTesting', function() {
     />);
 
     // then
-    expect(screen.getByText('Select a single task on the canvas.')).to.exist;
+    expect(screen.getByText(NO_ELEMENT_TEXT)).to.exist;
   }));
 
 });

@@ -1,11 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import { basicSetup } from 'codemirror';
+import { autocompletion, closeBrackets } from '@codemirror/autocomplete';
+import { defaultKeymap } from '@codemirror/commands';
+import { bracketMatching, indentOnInput } from '@codemirror/language';
 import { Compartment, EditorState, Annotation } from '@codemirror/state';
-import { EditorView, placeholder } from '@codemirror/view';
+import { EditorView, keymap, placeholder } from '@codemirror/view';
 import { linter } from '@codemirror/lint';
 import { json, jsonParseLinter } from '@codemirror/lang-json';
+
+import classNames from 'classnames';
+
+import theme from './InputEditorTheme';
 
 import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
 
@@ -15,18 +21,20 @@ const fromPropAnnotation = Annotation.define();
 
 const autocompletionCompartment = new Compartment();
 
-const DEFAULT_OUTPUT = {},
+export const PLACEHOLDER_TEXT = 'Enter process variables in JSON format';
+
+const DEFAULT_ALL_OUTPUTS = {},
       DEFAULT_VARIABLES_FOR_ELEMENT = [];
 
 export default function InputEditor({
+  allOutputs = DEFAULT_ALL_OUTPUTS,
   element,
   value,
   onChange,
-  onHasErrorChange,
-  output = DEFAULT_OUTPUT,
+  onErrorChange,
   variablesForElement = DEFAULT_VARIABLES_FOR_ELEMENT
 }) {
-  const autocompletion = useMemo(() => {
+  const autocompletions = useMemo(() => {
     const variablesForElementAutocompletions = variablesForElement.filter(variable => {
 
       // Filter out variables originating from the element's inputs or outputs
@@ -34,27 +42,29 @@ export default function InputEditor({
     }).map(({ name, detail, info }) => ({
       label: name,
       type: 'variable',
-      info: () => getAutocompletionInfo(info, 'From process variables'),
-      detail: detail ? `[${ detail }]` : undefined,
+      info: () => getAutocompletionInfo(info, 'Process variable'),
+      detail,
       value: info ? info : undefined,
     }));
 
-    const { variables = {} } = output;
+    const allOutputVariables = getAllOutputVariables(allOutputs);
 
-    const outputVariablesAutocompletions = Object.entries(variables).map(([ name, variable ]) => ({
+    const outputVariablesAutocompletions = allOutputVariables.map(({ name, value, origin }) => ({
       label: name,
-      type: 'constant',
-      info: () => getAutocompletionInfo(variable.value, 'From output variables'),
-      detail: `[${ typeof variable.value }]`,
-      value: variable.value
+      type: 'variable',
+      info: () => getAutocompletionInfo(value, `Output variable from ${origin}`),
+      detail: getDetail(value),
+      value
     }));
 
     return [ ...variablesForElementAutocompletions, ...outputVariablesAutocompletions ];
-  }, [ output, variablesForElement ]);
+  }, [ allOutputs, variablesForElement ]);
 
   const ref = useRef(null);
 
   const [ editorView, setEditorView ] = useState(null);
+
+  const [ error, setError ] = useState(null);
 
   useEffect(() => {
     if (!ref.current) {
@@ -66,14 +76,9 @@ export default function InputEditor({
 
       const hasError = errors && errors.length > 0;
 
-      onHasErrorChange(hasError);
+      onErrorChange(hasError ? 'Invalid JSON' : null);
 
-      if (errors && errors.length > 0) {
-        const errorMessage = errors[0].message || 'Error';
-        ref.current?.style.setProperty('--error-message', `"${errorMessage}"`);
-      } else {
-        ref.current?.style.removeProperty('--error-message');
-      }
+      setError(hasError ? 'Invalid JSON' : null);
 
       return errors;
     };
@@ -81,11 +86,24 @@ export default function InputEditor({
     const editorState = EditorState.create({
       doc: value,
       extensions: [
-        basicSetup,
-        json(),
-        linter(source, { delay: 100 }),
-        autocompletionCompartment.of(getAutocompletionExtensions(autocompletion)),
-        placeholder('Provide process variables in JSON format'),
+        autocompletion(),
+        closeBrackets(),
+        bracketMatching(),
+        indentOnInput(),
+        keymap.of([
+          ...defaultKeymap
+        ]),
+        new Compartment().of(json()),
+        new Compartment().of(EditorState.tabSize.of(2)),
+        EditorView.contentAttributes.of({
+          'aria-label': 'JSON editor',
+          'tabindex': '0'
+        }),
+        linter(source, { delay: 300 }),
+        autocompletionCompartment.of(getAutocompletionExtensions(autocompletions)),
+        placeholder(PLACEHOLDER_TEXT),
+        theme,
+        EditorView.lineWrapping,
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             if (update.transactions.some(transaction => transaction.annotation(fromPropAnnotation))) {
@@ -96,8 +114,8 @@ export default function InputEditor({
 
             onChange(newValue);
           }
-        }),
-      ],
+        })
+      ]
     });
 
     const view = new EditorView({
@@ -117,10 +135,10 @@ export default function InputEditor({
 
     editorView.dispatch({
       effects: autocompletionCompartment.reconfigure(
-        getAutocompletionExtensions(autocompletion)
+        getAutocompletionExtensions(autocompletions)
       )
     });
-  }, [ autocompletion, editorView ]);
+  }, [ autocompletions, editorView ]);
 
   useEffect(() => {
     if (!editorView) return;
@@ -139,7 +157,12 @@ export default function InputEditor({
     }
   }, [ editorView, value ]);
 
-  return <div ref={ ref } className="input-editor" />;
+  return <div className={ classNames('input__editor', { 'input__editor--error': error }) }>
+    <div className="input__editor-codemirror">
+      <div ref={ ref } className="input__editor-codemirror-inner"></div>
+    </div>
+    { error && <div className="input__editor-error">{ error }</div> }
+  </div>;
 }
 
 function getAutocompletionInfo(value, description) {
@@ -155,4 +178,52 @@ function getAutocompletionInfo(value, description) {
   div.innerHTML = htmlString;
 
   return div;
+}
+
+function getAllOutputVariables(allOutputs) {
+  const allOutputVariables = [];
+
+  for (const elementId in allOutputs) {
+    if (allOutputs[elementId]) {
+      const { variables = [] } = allOutputs[ elementId ];
+
+      for (const name in variables) {
+        allOutputVariables.push({ name, value: variables[name], origin: elementId });
+      }
+    }
+  }
+
+  return allOutputVariables;
+}
+
+/**
+ * Get a string representation of the type of a value.
+ *
+ * @example
+ *
+ * getDetail('foo') // String
+ * getDetail(1337) // Number
+ * getDetail(true) // Boolean
+ * getDetail({}) // Object
+ *
+ * @param {any} value
+ *
+ * @return {string}
+ */
+function getDetail(value) {
+  const type = typeof value;
+
+  if (type === 'object') {
+    if (Array.isArray(value)) {
+      return 'Array';
+    }
+
+    if (value === null) {
+      return 'null';
+    }
+
+    return 'Object';
+  }
+
+  return type.charAt(0).toUpperCase() + type.slice(1);
 }
