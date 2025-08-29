@@ -3,7 +3,6 @@ import sinon from 'sinon';
 import { bootstrapModeler, inject } from './util/Util';
 
 import { ElementConfig } from '../lib/ElementConfig';
-import { ElementVariables } from '../lib/ElementVariables';
 
 import diagramXML from './fixtures/ElementConfig.bpmn';
 
@@ -21,7 +20,9 @@ describe('ElementConfig', function() {
   let elementVariables;
 
   beforeEach(inject(function(injector) {
-    elementVariables = new ElementVariables(injector, elementVariables);
+
+    // TODO(@jarekdanielak): Mock resolved variables
+    elementVariables = [];
   }));
 
 
