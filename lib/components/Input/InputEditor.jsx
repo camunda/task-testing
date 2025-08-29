@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useContext } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { autocompletion, closeBrackets } from '@codemirror/autocomplete';
@@ -17,7 +17,7 @@ import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
 
 import { getAutocompletionExtensions } from '../../utils/autocompletion';
 
-import { useElementVariables } from '../../hooks/useElementVariables';
+import { ElementVariablesContext } from '../../contexts/ElementVariablesContext';
 
 const fromPropAnnotation = Annotation.define();
 
@@ -35,7 +35,7 @@ export default function InputEditor({
   onErrorChange,
 }) {
 
-  const elementVariables = useElementVariables();
+  const elementVariables = useContext(ElementVariablesContext);
 
   const autocompletions = useMemo(() => {
     const variablesForElementAutocompletions = elementVariables.filter(variable => {
