@@ -11,8 +11,6 @@
     "moduleResolution": "NodeNext",
     "noEmit": true,
     "skipLibCheck": true,
-    "typeRoots": ["./node_modules/@types", "./lib/types.d.ts"]
   },
-  "include": ["lib/**/*", "lib/types.d.ts"],
-  "exclude": ["node_modules"]
+  "include": [ "lib/**/*" ]
 }
