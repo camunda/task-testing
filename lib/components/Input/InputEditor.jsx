@@ -53,7 +53,7 @@ export default function InputEditor({
       label: name,
       type: 'variable',
       info: () => getAutocompletionInfo(value, `Output variable from ${origin}`),
-      detail: 'String',
+      detail: getDetail(value),
       value
     }));
 
@@ -194,4 +194,36 @@ function getAllOutputVariables(allOutputs) {
   }
 
   return allOutputVariables;
+}
+
+/**
+ * Get a string representation of the type of a value.
+ *
+ * @example
+ *
+ * getDetail('foo') // String
+ * getDetail(1337) // Number
+ * getDetail(true) // Boolean
+ * getDetail({}) // Object
+ *
+ * @param {any} value
+ *
+ * @return {string}
+ */
+function getDetail(value) {
+  const type = typeof value;
+
+  if (type === 'object') {
+    if (Array.isArray(value)) {
+      return 'Array';
+    }
+
+    if (value === null) {
+      return 'null';
+    }
+
+    return 'Object';
+  }
+
+  return type.charAt(0).toUpperCase() + type.slice(1);
 }
