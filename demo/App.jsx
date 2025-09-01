@@ -204,9 +204,7 @@ function App() {
         <TestTab
           injector={ injector }
           canExecuteTask={ canExecuteTask }
-          cannotExecuteTaskLabel="Cannot test task"
-          cannotExecuteTaskDescription="Configure your connection to test the task"
-          cannotExecuteTaskCallback={ () => setCanExecuteTask(true) }
+          onMissingDeployConfig={ () => setCanExecuteTask(true) }
           api={ {
             deploy,
             startInstance,
