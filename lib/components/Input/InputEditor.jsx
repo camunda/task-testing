@@ -57,14 +57,25 @@ export default function InputEditor({
       value
     }));
 
-    return [ ...variablesForElementAutocompletions, ...outputVariablesAutocompletions ];
+    /**
+     * @type {import('@codemirror/autocomplete').Completion[]}
+     */
+    const result = [ ...variablesForElementAutocompletions, ...outputVariablesAutocompletions ];
+
+    return result;
   }, [ allOutputs, variablesForElement ]);
 
   const ref = useRef(null);
 
-  const [ editorView, setEditorView ] = useState(null);
+  /**
+   * @type {ReturnType<typeof useState<EditorView>>}
+   */
+  const [ editorView, setEditorView ] = useState();
 
-  const [ error, setError ] = useState(null);
+  /**
+   * @type {ReturnType<typeof useState<string?>>}
+   */
+  const [ error, setError ] = useState();
 
   useEffect(() => {
     if (!ref.current) {
