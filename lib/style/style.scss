@@ -1,3 +1,12 @@
+// Color variables
+$color-primary: #0f62fe;
+$color-error: #da1e28;
+$color-success: #24a148;
+
+$background-error: #fff1f1;
+$background-success: #defbe6;
+$background-grey: #edf5ff;
+
 .task-testing__container {
   display: flex;
   flex-direction: column;
@@ -7,8 +16,6 @@
   font-size: 14px;
 
   &.task-testing__container--empty {
-    justify-content: center;
-    align-items: center;
 
     .task-testing__container-no-config,
     .task-testing__container-no-element {
@@ -47,6 +54,12 @@
 
     .task-testing__container--header--right {
       justify-content: flex-end;
+
+      .btn-error {
+        svg path {
+          fill: $color-error;
+        }
+      }
     } 
   }
 
@@ -120,20 +133,16 @@
         gap: 5px;
       }
 
-      .output__state-details {
-
-      }
-
       &.output__state--execute {
-        border-color: #0f62fe;
-        background-color: #edf5ff;
+        border-color: $color-primary;
+        background-color: $background-grey;
 
         .output__status-text {
-          color: #0f62fe;
+          color: $color-primary;
         }
 
         .output__status-icon {
-          fill: #0f62fe
+          fill: $color-primary
         }
 
         .cds--inline-loading {
@@ -143,32 +152,32 @@
       }
 
       &.output__state--success {
-        border-color: #24a148;
-        background-color: #defbe6;
+        border-color: $color-success;
+        background-color: $background-success;
 
         .output__status-text {
-          color: #24a148;
+          color: $color-success;
         }
 
         .output__status-icon {
-          fill: #24a148;
+          fill: $color-success;
         }
       }
 
       &.output__state--error {
-        border-color: #da1e28;
-        background-color: #fff1f1;
+        border-color: $color-error;
+        background-color: $background-error;
 
         .output__status-text {
-          color: #da1e28;
+          color: $color-error;
         }
 
         .output__status-icon {
-          fill: #da1e28;
+          fill: $color-error;
         }
 
         .incident-details, .error-details {
-          color: #da1e28;
+          color: $color-error;
 
           .grid-table {
             display: grid;
@@ -218,9 +227,9 @@
   flex-direction: column;
 
   &.input__editor--error .input__editor-codemirror .input__editor-codemirror-inner .cm-editor {
-    outline: 1px solid #da1e28;
+    outline: 1px solid $color-error;
     outline-offset: -1px;
-    background-color: #fff1f1;
+    background-color: $background-error;
   }
 
   .input__editor-codemirror {
@@ -274,7 +283,7 @@
   }
 
   .input__editor-error {
-    color: #da1e28;
+    color: $color-error;
     font-size: 13px;
     margin-top: 5px;
   }
