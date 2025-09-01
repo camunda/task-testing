@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { map } from 'min-dash';
+
 import {
   Button,
   CodeSnippet,
@@ -145,60 +147,20 @@ function IncidentDetails({ incident }) {
     return null;
   }
 
-  const {
-    key,
-    processDefinitionKey,
-    processInstanceKey,
-    type,
-    message,
-    creationTime,
-    state,
-    jobKey,
-    tenantId
-  } = incident;
-
   return (
     <div className="incident-details">
       <div className="grid-table">
-        <div className="grid-row">
-          <div className="grid-cell label">Incident key:</div>
-          <div className="grid-cell value">{ key }</div>
-        </div>
-        <div className="grid-row">
-          <div className="grid-cell label">Process definition key:</div>
-          <div className="grid-cell value">{ processDefinitionKey }</div>
-        </div>
-        <div className="grid-row">
-          <div className="grid-cell label">Process instance key:</div>
-          <div className="grid-cell value">{ processInstanceKey }</div>
-        </div>
-        <div className="grid-row">
-          <div className="grid-cell label">Type:</div>
-          <div className="grid-cell value">{ type }</div>
-        </div>
-        <div className="grid-row">
-          <div className="grid-cell label">Message:</div>
-          <div className="grid-cell value">{ message }</div>
-        </div>
-        <div className="grid-row">
-          <div className="grid-cell label">Creation time:</div>
-          <div className="grid-cell value">{ new Date(creationTime).toLocaleString() }</div>
-        </div>
-        <div className="grid-row">
-          <div className="grid-cell label">State:</div>
-          <div className="grid-cell value">{ state }</div>
-        </div>
-        <div className="grid-row">
-          <div className="grid-cell label">Job key:</div>
-          <div className="grid-cell value">{ jobKey }</div>
-        </div>
         {
-          tenantId && (
-            <div className="grid-row">
-              <div className="grid-cell label">Tenant ID:</div>
-              <div className="grid-cell value">{ tenantId }</div>
-            </div>
-          )
+          map(incident, (value, key) => {
+            const { label, display } = incidentProperties[key];
+
+            return (
+              <div key={ key } className="grid-row">
+                <div className="grid-cell label">{ label }</div>
+                <div className="grid-cell value">{ display ? display(value) : value }</div>
+              </div>
+            );
+          })
         }
       </div>
     </div>
@@ -233,3 +195,43 @@ function ErrorDetails({ error }) {
     </div>
   );
 }
+
+const incidentProperties = {
+  key: {
+    key: 'key',
+    label: 'Incident key:'
+  },
+  processDefinitionKey: {
+    key: 'processDefinitionKey',
+    label: 'Process definition key:'
+  },
+  processInstanceKey: {
+    key: 'processInstanceKey',
+    label: 'Process instance key:'
+  },
+  type: {
+    key: 'type',
+    label: 'Type:'
+  },
+  message: {
+    key: 'message',
+    label: 'Message:'
+  },
+  creationTime: {
+    key: 'creationTime',
+    label: 'Creation time:',
+    display: (value) => new Date(value).toLocaleString()
+  },
+  state: {
+    key: 'state',
+    label: 'State:'
+  },
+  jobKey: {
+    key: 'jobKey',
+    label: 'Job key:'
+  },
+  tenantId: {
+    key: 'tenantId',
+    label: 'Tenant ID:'
+  }
+};
