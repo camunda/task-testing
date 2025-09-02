@@ -83,9 +83,6 @@ export namespace TaskExecutionEvents {
     success: boolean;
     variables?: { [key: string]: any };
   }
-  export interface Progress {
-    description: string;
-  }
   export interface Start {}
 }
 

@@ -47,6 +47,15 @@
 
     .task-testing__container--header--right {
       justify-content: flex-end;
+
+      .cds--popover-container:not(.has-error) .cds--popover {
+        display: none;
+      }
+
+      .cds--btn .cds--inline-loading {
+        inline-size: initial;
+        min-block-size: initial;
+      }
     } 
   }
 
@@ -108,50 +117,27 @@
 
     .output__state {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       gap: 12px;
       padding: 12px;
       border: 1px solid transparent;
       border-left-width: 3px;
 
-      .output__state-title {
+      .output__state-content {
         display: flex;
-        align-items: center;
-        gap: 5px;
-      }
+        flex-direction: column;
+        gap: 6px;
+        flex-grow: 1;
+        margin-top: 1px;
 
-      .output__state-details {
+        .output__state-title {
+          display: flex;
+          justify-content: space-between;
+          font-weight: bold;
 
-      }
-
-      &.output__state--execute {
-        border-color: #0f62fe;
-        background-color: #edf5ff;
-
-        .output__status-text {
-          color: #0f62fe;
-        }
-
-        .output__status-icon {
-          fill: #0f62fe
-        }
-
-        .cds--inline-loading {
-          inline-size: initial;
-          min-block-size: initial;
-        }
-      }
-
-      &.output__state--success {
-        border-color: #24a148;
-        background-color: #defbe6;
-
-        .output__status-text {
-          color: #24a148;
-        }
-
-        .output__status-icon {
-          fill: #24a148;
+          .cds--link {
+            cursor: pointer;
+          }
         }
       }
 
@@ -159,39 +145,18 @@
         border-color: #da1e28;
         background-color: #fff1f1;
 
-        .output__status-text {
-          color: #da1e28;
-        }
-
-        .output__status-icon {
+        .output__state-icon svg {
           fill: #da1e28;
-        }
-
-        .incident-details, .error-details {
-          color: #da1e28;
-
-          .grid-table {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            gap: 5px;
-          }
-
-          .grid-row {
-            display: contents; /* So rows don’t add extra box, only cells align */
-          }
-
-          .grid-cell {
-            padding: 0;
-          }
-
-          .grid-cell.label {
-            font-weight: bold;
-          }
         }
       }
     }
 
     .output__variables {
+      &.output__variables--no-results .cds--snippet-container {
+        min-height: 0 !important;
+        outline: none;
+      }
+
       .output__variables--title {
         margin-bottom: 12px;
       }
@@ -203,10 +168,10 @@
       .cds--snippet {
         max-inline-size: 100%
       }
+    }
 
-      code {
-        font-size: 14px;
-      }
+    code {
+      font-size: 14px;
     }
   }
 }
