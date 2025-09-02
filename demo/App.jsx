@@ -206,7 +206,11 @@ function App() {
           canExecuteTask={ canExecuteTask }
           cannotExecuteTaskLabel="Cannot test task"
           cannotExecuteTaskDescription="Configure your connection to test the task"
-          cannotExecuteTaskCallback={ () => setCanExecuteTask(true) }
+          cannotExecuteTaskCallback={ () => {
+            if (window.confirm('Can execute task?')) {
+              setCanExecuteTask(true);
+            }
+          } }
           api={ {
             deploy,
             startInstance,
