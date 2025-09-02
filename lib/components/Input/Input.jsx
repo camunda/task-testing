@@ -10,7 +10,6 @@ export default function Input({
   element,
   input,
   onErrorChange,
-  output,
   resetInput,
   setInput,
   variablesForElement
