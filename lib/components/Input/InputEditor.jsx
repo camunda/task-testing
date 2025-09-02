@@ -13,8 +13,6 @@ import classNames from 'classnames';
 
 import theme from './InputEditorTheme';
 
-import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
-
 import { getAutocompletionExtensions } from '../../utils/autocompletion';
 
 const fromPropAnnotation = Annotation.define();
@@ -35,11 +33,7 @@ export default function InputEditor({
   variablesForElement = DEFAULT_VARIABLES_FOR_ELEMENT
 }) {
   const autocompletions = useMemo(() => {
-    const variablesForElementAutocompletions = variablesForElement.filter(variable => {
-
-      // Filter out variables originating from the element's inputs or outputs
-      return variable.origin.every(origin => origin !== getBusinessObject(element));
-    }).map(({ name, detail, info }) => ({
+    const variablesForElementAutocompletions = variablesForElement.map(({ name, detail, info }) => ({
       label: name,
       type: 'variable',
       info: () => getAutocompletionInfo(info, 'Process variable'),
