@@ -3,23 +3,24 @@ import React from 'react';
 import {
   Button,
   CodeSnippet,
-  InlineLoading
+  Link
 } from '@carbon/react';
 
 import {
-  CheckmarkFilled,
-  Reset,
-  WarningFilled
+  ErrorFilled,
+  Reset
 } from '@carbon/icons-react';
 
+import { isString } from 'min-dash';
+
 export default function Output({
-  inputError,
+  canExecuteTask,
+  cannotExecuteTaskCallback,
+  cannotExecuteTaskTitle,
+  cannotExecuteTaskMessage,
   isTaskExecuting,
-  onCancelTaskExecution,
-  onExecuteTask,
   output,
-  resetOutput,
-  taskExecutionStateDescription
+  resetOutput
 }) {
   return (
     <div className="output">
@@ -41,17 +42,24 @@ export default function Output({
       </div>
       <div className="output__body">
         <div className="output__body--inner">
-          <Execute
+          <CannotExecuteTask
+            canExecuteTask={ canExecuteTask }
+            cannotExecuteTaskMessage={ cannotExecuteTaskMessage }
+            cannotExecuteTaskTitle={ cannotExecuteTaskTitle }
+            cannotExecuteTaskCallback={ cannotExecuteTaskCallback }
+          />
+          <NoResults
+            canExecuteTask={ canExecuteTask }
             isTaskExecuting={ isTaskExecuting }
-            inputError={ inputError }
-            onCancelTaskExecution={ onCancelTaskExecution }
-            onExecuteTask={ onExecuteTask }
             output={ output }
-            taskExecutionStateDescription={ taskExecutionStateDescription }
           />
           <Success
+            canExecuteTask={ canExecuteTask }
+            isTaskExecuting={ isTaskExecuting }
             output={ output } />
           <Error
+            canExecuteTask={ canExecuteTask }
+            isTaskExecuting={ isTaskExecuting }
             output={ output } />
         </div>
       </div>
@@ -59,67 +67,90 @@ export default function Output({
   );
 }
 
-function Execute(props) {
+function CannotExecuteTask(props) {
   const {
-    isTaskExecuting,
-    output,
-    taskExecutionStateDescription
+    canExecuteTask,
+    cannotExecuteTaskCallback,
+    cannotExecuteTaskMessage,
+    cannotExecuteTaskTitle
   } = props;
 
-  if (output) {
-    return null;
-  }
-
-  return <div className="output__state output__state--execute">
-    <div className="output__state-title">
-      {
-        isTaskExecuting
-          ? <>
-            <InlineLoading status="active" />
-            <span className="output__status-text">{ taskExecutionStateDescription }</span>
-          </>
-          : <>
-            <CheckmarkFilled className="output__status-icon" />
-            <span className="output__status-text">Ready to test</span>
-          </>
-      }
-    </div>
-  </div>;
-}
-
-function Success({
-  output
-}) {
-  if (!output || !output.success) {
+  if (canExecuteTask) {
     return null;
   }
 
   return <>
-    <div className="output__state output__state--success">
-      <div className="output__state-title">
-        <CheckmarkFilled className="output__status-icon" />
-        <span className="output__status-text">Task executed successfully</span>
+    <div className="output__state output__state--error">
+      <div className="output__state-icon">
+        <ErrorFilled className="output__status-icon" />
       </div>
-    </div>
-    <div className="output__variables">
-      <div className="output__variables--title">Variables</div>
-      <CodeSnippet
-        type="multi"
-        feedback="Copied to clipboard"
-        hideCopyButton={ false }
-        maxCollapsedNumberOfRows={ 100 }
-        align="left"
-      >
-        { JSON.stringify(output.variables, null, 2) }
-      </CodeSnippet>
+      <div className="output__state-content">
+        <div className="output__state-title">
+          <span>
+            { cannotExecuteTaskTitle || 'Connection required' }
+          </span>
+          <Link onClick={ cannotExecuteTaskCallback }>
+            Configure
+          </Link>
+        </div>
+        <div className="output__state-details">
+          <span>{ cannotExecuteTaskMessage || 'Configure a connection to start testing.' }</span>
+        </div>
+      </div>
     </div>
   </>;
 }
 
-function Error({
+function NoResults(props) {
+  const {
+    canExecuteTask,
+    isTaskExecuting,
+    output
+  } = props;
+
+  if (!canExecuteTask || isTaskExecuting || output) {
+    return null;
+  }
+
+  return <div className="output__variables output__variables--no-results">
+    <CodeSnippet
+      type="multi"
+      hideCopyButton={ true }
+      maxCollapsedNumberOfRows={ 100 }
+    >
+      { 'Test task to see results' }
+    </CodeSnippet>
+  </div>;
+}
+
+function Success({
+  canExecuteTask,
+  isTaskExecuting,
   output
 }) {
-  if (!output || output.success) {
+  if (!canExecuteTask || isTaskExecuting || !output || !output.success) {
+    return null;
+  }
+
+  return <div className="output__variables">
+    <CodeSnippet
+      type="multi"
+      feedback="Copied to clipboard"
+      hideCopyButton={ false }
+      maxCollapsedNumberOfRows={ 100 }
+      align="left"
+    >
+      { JSON.stringify(output.variables, null, 2) }
+    </CodeSnippet>
+  </div>;
+}
+
+function Error({
+  canExecuteTask,
+  isTaskExecuting,
+  output
+}) {
+  if (!canExecuteTask || isTaskExecuting || !output || output.success) {
     return null;
   }
 
@@ -128,108 +159,75 @@ function Error({
     incident
   } = output;
 
-  return <div className="output__state output__state--error">
-    <div className="output__state-title">
-      <WarningFilled className="output__status-icon" />
-      <span className="output__status-text">{ incident ? 'Task execution failed due to incident' : 'Task execution failed due to error' }</span>
-    </div>
-    <div className="output__state-details">
-      <IncidentDetails incident={ incident } />
-      <ErrorDetails error={ error } />
-    </div>
-  </div>;
-}
-
-function IncidentDetails({ incident }) {
-  if (!incident) {
-    return null;
-  }
-
-  const {
-    key,
-    processDefinitionKey,
-    processInstanceKey,
-    type,
-    message,
-    creationTime,
-    state,
-    jobKey,
-    tenantId
-  } = incident;
-
-  return (
-    <div className="incident-details">
-      <div className="grid-table">
-        <div className="grid-row">
-          <div className="grid-cell label">Incident key:</div>
-          <div className="grid-cell value">{ key }</div>
+  return <>
+    <div className="output__state output__state--error">
+      <div className="output__state-icon">
+        <ErrorFilled className="output__status-icon" />
+      </div>
+      <div className="output__state-content">
+        <div className="output__state-title">
+          Task execution failed
         </div>
-        <div className="grid-row">
-          <div className="grid-cell label">Process definition key:</div>
-          <div className="grid-cell value">{ processDefinitionKey }</div>
+        <div className="output__state-details">
+          {
+            incident && <span>Incident: { incident.type }</span>
+          }
+          {
+            error && <span>Error: { error.message }</span>
+          }
         </div>
-        <div className="grid-row">
-          <div className="grid-cell label">Process instance key:</div>
-          <div className="grid-cell value">{ processInstanceKey }</div>
-        </div>
-        <div className="grid-row">
-          <div className="grid-cell label">Type:</div>
-          <div className="grid-cell value">{ type }</div>
-        </div>
-        <div className="grid-row">
-          <div className="grid-cell label">Message:</div>
-          <div className="grid-cell value">{ message }</div>
-        </div>
-        <div className="grid-row">
-          <div className="grid-cell label">Creation time:</div>
-          <div className="grid-cell value">{ new Date(creationTime).toLocaleString() }</div>
-        </div>
-        <div className="grid-row">
-          <div className="grid-cell label">State:</div>
-          <div className="grid-cell value">{ state }</div>
-        </div>
-        <div className="grid-row">
-          <div className="grid-cell label">Job key:</div>
-          <div className="grid-cell value">{ jobKey }</div>
-        </div>
-        {
-          tenantId && (
-            <div className="grid-row">
-              <div className="grid-cell label">Tenant ID:</div>
-              <div className="grid-cell value">{ tenantId }</div>
-            </div>
-          )
-        }
       </div>
     </div>
-  );
+    {
+      incident && <CodeSnippet
+        type="multi"
+        feedback="Copied to clipboard"
+        hideCopyButton={ false }
+        maxCollapsedNumberOfRows={ 100 }
+        align="left"
+      >
+        { printError(incident) }
+      </CodeSnippet>
+    }
+    {
+      error && <CodeSnippet
+        type="multi"
+        feedback="Copied to clipboard"
+        hideCopyButton={ false }
+        maxCollapsedNumberOfRows={ 100 }
+        align="left"
+      >
+        { printError(error) }
+      </CodeSnippet>
+    }
+  </>;
 }
 
-function ErrorDetails({ error }) {
-  if (!error) {
-    return null;
+function printError(error) {
+  let text = '';
+
+  Object.keys(error).forEach((key) => {
+    text += `${capitalize(key)}: ${error[key]}\n`;
+  });
+
+  return text;
+}
+
+/**
+ * Capitalize a string, adding spaces before capital letters.
+ *
+ * @example
+ *
+ * capitalize('fooBar'); // Foo Bar
+ *
+ * @param {string} string
+ *
+ * @returns {string}
+ */
+function capitalize(string) {
+  if (!isString(string)) {
+    string = string == null ? '' : String(string);
   }
 
-  const { message, response = {} } = error;
-
-  const { error: responseError } = response;
-
-  return (
-    <div className="error-details">
-      <div className="grid-table">
-        <div className="grid-row">
-          <div className="grid-cell label">Message:</div>
-          <div className="grid-cell value">{ message }</div>
-        </div>
-        {
-          responseError && (
-            <div className="grid-row">
-              <div className="grid-cell label">Response error:</div>
-              <div className="grid-cell value">{ JSON.stringify(responseError, null, 2) }</div>
-            </div>
-          )
-        }
-      </div>
-    </div>
-  );
+  return string.replace(/([A-Z])/g, ' $1').replace(/^./, (match) => match.toUpperCase());
 }
