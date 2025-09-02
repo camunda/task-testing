@@ -23,7 +23,7 @@ export default function Input({
     <div className="input">
       <div className="input__header">
         <div className="input__header--title">
-          Configure variables
+          Configure input variables
         </div>
         <div className="input__header--buttons">
           <Button
