@@ -11,8 +11,6 @@ import {
   Reset
 } from '@carbon/icons-react';
 
-import { isString } from 'min-dash';
-
 export default function Output({
   isConnectionConfigured,
   configureConnectionCallback,
@@ -203,7 +201,7 @@ function printError(error) {
   let text = '';
 
   Object.keys(error).forEach((key) => {
-    text += `${capitalize(key)}: ${error[key]}\n`;
+    text += `${capitalize(key)}: ${JSON.stringify(error[key], null, 2)}\n`;
   });
 
   return text;
@@ -221,9 +219,5 @@ function printError(error) {
  * @returns {string}
  */
 function capitalize(string) {
-  if (!isString(string)) {
-    string = string == null ? '' : String(string);
-  }
-
   return string.replace(/([A-Z])/g, ' $1').replace(/^./, (match) => match.toUpperCase());
 }
