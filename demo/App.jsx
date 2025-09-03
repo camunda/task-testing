@@ -204,7 +204,7 @@ function App() {
         <TestTab
           injector={ injector }
           isConnectionConfigured={ isConnectionConfigured }
-          configureConnectionCallback={ () => {
+          onConfigureConnection={ () => {
             if (window.confirm('Can execute task?')) {
               setIsConnectionConfigured(true);
             }

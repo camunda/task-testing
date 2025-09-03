@@ -13,7 +13,7 @@ import {
 
 export default function Output({
   isConnectionConfigured,
-  configureConnectionCallback,
+  onConfigureConnection,
   isTaskExecuting,
   output,
   onResetOutput
@@ -40,7 +40,7 @@ export default function Output({
         <div className="output__body--inner">
           <ConfigureConnection
             isConnectionConfigured={ isConnectionConfigured }
-            configureConnectionCallback={ configureConnectionCallback }
+            onConfigureConnection={ onConfigureConnection }
           />
           <NoResults
             isConnectionConfigured={ isConnectionConfigured }
@@ -64,7 +64,7 @@ export default function Output({
 function ConfigureConnection(props) {
   const {
     isConnectionConfigured,
-    configureConnectionCallback
+    onConfigureConnection
   } = props;
 
   if (isConnectionConfigured) {
@@ -82,7 +82,7 @@ function ConfigureConnection(props) {
             Connection required
           </span>
           {
-            configureConnectionCallback && <Link onClick={ configureConnectionCallback }>
+            onConfigureConnection && <Link onClick={ onConfigureConnection }>
               Configure
             </Link>
           }
