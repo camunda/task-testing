@@ -5,28 +5,28 @@ body {
 }
 
 #root {
-  height: 100vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
 
 .modeler {
-  flex: 1 1 auto;
   overflow: auto;
   display: flex;
+  height: calc(100% - 300px);
 }
 
 .canvas {
-  width: 100%;
+  width: calc(100% - 300px);
 }
 
 .properties-panel {
-  width: 400px;
+  width: 300px;
   border-left: 1px solid hsl(225, 10%, 75%);
 }
 
 .task-testing {
-  height: 400px;
+  height: 300px;
   border-top: 1px solid hsl(225, 10%, 75%);
 }
 
