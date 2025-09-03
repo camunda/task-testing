@@ -17,7 +17,7 @@ function App() {
 
   const [ modeler, setModeler ] = useState(null);
 
-  const [ canExecuteTask, setCanExecuteTask ] = useState(false);
+  const [ isConnectionConfigured, setIsConnectionConfigured ] = useState(false);
 
   const [ config, setConfig ] = useState(undefined);
 
@@ -203,12 +203,10 @@ function App() {
       <div className="task-testing">
         <TestTab
           injector={ injector }
-          canExecuteTask={ canExecuteTask }
-          cannotExecuteTaskLabel="Cannot test task"
-          cannotExecuteTaskDescription="Configure your connection to test the task"
-          cannotExecuteTaskCallback={ () => {
+          isConnectionConfigured={ isConnectionConfigured }
+          configureConnectionCallback={ () => {
             if (window.confirm('Can execute task?')) {
-              setCanExecuteTask(true);
+              setIsConnectionConfigured(true);
             }
           } }
           api={ {

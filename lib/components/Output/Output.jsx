@@ -14,10 +14,8 @@ import {
 import { isString } from 'min-dash';
 
 export default function Output({
-  canExecuteTask,
-  cannotExecuteTaskCallback,
-  cannotExecuteTaskTitle,
-  cannotExecuteTaskMessage,
+  isConnectionConfigured,
+  configureConnectionCallback,
   isTaskExecuting,
   output,
   onResetOutput
@@ -42,23 +40,21 @@ export default function Output({
       </div>
       <div className="output__body">
         <div className="output__body--inner">
-          <CannotExecuteTask
-            canExecuteTask={ canExecuteTask }
-            cannotExecuteTaskMessage={ cannotExecuteTaskMessage }
-            cannotExecuteTaskTitle={ cannotExecuteTaskTitle }
-            cannotExecuteTaskCallback={ cannotExecuteTaskCallback }
+          <ConfigureConnection
+            isConnectionConfigured={ isConnectionConfigured }
+            configureConnectionCallback={ configureConnectionCallback }
           />
           <NoResults
-            canExecuteTask={ canExecuteTask }
+            isConnectionConfigured={ isConnectionConfigured }
             isTaskExecuting={ isTaskExecuting }
             output={ output }
           />
           <Success
-            canExecuteTask={ canExecuteTask }
+            isConnectionConfigured={ isConnectionConfigured }
             isTaskExecuting={ isTaskExecuting }
             output={ output } />
           <Error
-            canExecuteTask={ canExecuteTask }
+            isConnectionConfigured={ isConnectionConfigured }
             isTaskExecuting={ isTaskExecuting }
             output={ output } />
         </div>
@@ -67,15 +63,13 @@ export default function Output({
   );
 }
 
-function CannotExecuteTask(props) {
+function ConfigureConnection(props) {
   const {
-    canExecuteTask,
-    cannotExecuteTaskCallback,
-    cannotExecuteTaskMessage,
-    cannotExecuteTaskTitle
+    isConnectionConfigured,
+    configureConnectionCallback
   } = props;
 
-  if (canExecuteTask) {
+  if (isConnectionConfigured) {
     return null;
   }
 
@@ -87,14 +81,16 @@ function CannotExecuteTask(props) {
       <div className="output__state-content">
         <div className="output__state-title">
           <span>
-            { cannotExecuteTaskTitle || 'Connection required' }
+            Connection required
           </span>
-          <Link onClick={ cannotExecuteTaskCallback }>
-            Configure
-          </Link>
+          {
+            configureConnectionCallback && <Link onClick={ configureConnectionCallback }>
+              Configure
+            </Link>
+          }
         </div>
         <div className="output__state-details">
-          <span>{ cannotExecuteTaskMessage || 'Configure a connection to start testing.' }</span>
+          <span>Configure a connection to start testing.</span>
         </div>
       </div>
     </div>
@@ -103,12 +99,12 @@ function CannotExecuteTask(props) {
 
 function NoResults(props) {
   const {
-    canExecuteTask,
+    isConnectionConfigured,
     isTaskExecuting,
     output
   } = props;
 
-  if (!canExecuteTask || isTaskExecuting || output) {
+  if (!isConnectionConfigured || isTaskExecuting || output) {
     return null;
   }
 
@@ -124,11 +120,11 @@ function NoResults(props) {
 }
 
 function Success({
-  canExecuteTask,
+  isConnectionConfigured,
   isTaskExecuting,
   output
 }) {
-  if (!canExecuteTask || isTaskExecuting || !output || !output.success) {
+  if (!isConnectionConfigured || isTaskExecuting || !output || !output.success) {
     return null;
   }
 
@@ -146,11 +142,11 @@ function Success({
 }
 
 function Error({
-  canExecuteTask,
+  isConnectionConfigured,
   isTaskExecuting,
   output
 }) {
-  if (!canExecuteTask || isTaskExecuting || !output || output.success) {
+  if (!isConnectionConfigured || isTaskExecuting || !output || output.success) {
     return null;
   }
 
