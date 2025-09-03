@@ -7,14 +7,12 @@
   font-size: 14px;
 
   &.task-testing__container--empty {
-    justify-content: center;
-    align-items: center;
-
     .task-testing__container-no-config,
     .task-testing__container-no-element {
       display: flex;
-      gap: 5px;
       align-items: center;
+      gap: 5px;
+      height: 32px;
 
       .cds--inline-loading {
         inline-size: initial;
