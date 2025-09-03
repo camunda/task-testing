@@ -20,7 +20,7 @@ export default function Output({
   cannotExecuteTaskMessage,
   isTaskExecuting,
   output,
-  resetOutput
+  onResetOutput
 }) {
   return (
     <div className="output">
@@ -31,7 +31,7 @@ export default function Output({
         <div className="output__header--buttons">
           <Button
             kind="ghost"
-            onClick={ resetOutput }
+            onClick={ onResetOutput }
             size="sm"
             renderIcon={ Reset }
             hasIconOnly

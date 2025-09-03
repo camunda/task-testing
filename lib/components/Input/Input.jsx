@@ -10,12 +10,12 @@ export default function Input({
   element,
   input,
   onErrorChange,
-  resetInput,
-  setInput,
+  onResetInput,
+  onSetInput,
   variablesForElement
 }) {
-  const onClickReset = () => {
-    resetInput();
+  const handleResetInput = () => {
+    onResetInput();
   };
 
   return (
@@ -27,7 +27,7 @@ export default function Input({
         <div className="input__header--buttons">
           <Button
             kind="ghost"
-            onClick={ onClickReset }
+            onClick={ handleResetInput }
             size="sm"
             renderIcon={ Reset }
             hasIconOnly
@@ -40,7 +40,7 @@ export default function Input({
         allOutputs={ allOutputs }
         element={ element }
         value={ input }
-        onChange={ setInput }
+        onChange={ onSetInput }
         onErrorChange={ onErrorChange }
         variablesForElement={ variablesForElement }
       />
