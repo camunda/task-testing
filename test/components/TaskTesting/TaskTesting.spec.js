@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react';
 
-import { bootstrapModeler, inject } from './util/Util';
+import { bootstrapModeler, inject } from '../../util/Util';
 
-import TaskTesting, { NO_ELEMENT_TEXT } from '../lib/components/TaskTesting/TaskTesting';
+import TaskTesting, { NO_ELEMENT_TEXT } from '../../../lib/components/TaskTesting/TaskTesting';
 
-import diagramXML from './fixtures/diagram.bpmn';
+import diagramXML from '../../fixtures/diagram.bpmn';
 
 describe('TaskTesting', function() {
 

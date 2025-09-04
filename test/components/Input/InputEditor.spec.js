@@ -5,11 +5,11 @@ import userEvent from '@testing-library/user-event';
 
 import ZeebeVariableResolver from '@bpmn-io/variable-resolver/lib/zeebe/VariableResolver';
 
-import { bootstrapModeler, getModeler, inject } from './util/Util';
+import { bootstrapModeler, getModeler, inject } from '../../util/Util';
 
-import InputEditor, { PLACEHOLDER_TEXT } from '../lib/components/Input/InputEditor';
+import InputEditor, { PLACEHOLDER_TEXT } from '../../../lib/components/Input/InputEditor';
 
-import diagramXML from './fixtures/InputEditor.bpmn';
+import diagramXML from '../../fixtures/InputEditor.bpmn';
 
 describe('InputEditor', function() {
 
