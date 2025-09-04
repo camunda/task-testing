@@ -180,7 +180,7 @@ function Error({
         maxCollapsedNumberOfRows={ 100 }
         align="left"
       >
-        { printError(incident) }
+        { printIncident(incident) }
       </CodeSnippet>
     }
     {
@@ -191,17 +191,24 @@ function Error({
         maxCollapsedNumberOfRows={ 100 }
         align="left"
       >
-        { printError(error) }
+        { error.detail || 'No error details available' }
       </CodeSnippet>
     }
   </>;
 }
 
-function printError(error) {
+/**
+ * Print the details of an incident.
+ *
+ * @param {Object} incident
+ *
+ * @returns {string}
+ */
+function printIncident(incident) {
   let text = '';
 
-  Object.keys(error).forEach((key) => {
-    text += `${capitalize(key)}: ${JSON.stringify(error[key], null, 2)}\n`;
+  Object.keys(incident).forEach((key) => {
+    text += `${capitalize(key)}: ${JSON.stringify(incident[key], null, 2)}\n`;
   });
 
   return text;

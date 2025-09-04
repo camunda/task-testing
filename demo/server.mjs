@@ -63,7 +63,7 @@ app.post('/api/deploy', async (req, res) => {
   } catch (err) {
     console.error('Deployment error:', err);
 
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -95,7 +95,7 @@ app.post('/api/startInstance', async (req, res) => {
 
     res.json({ success: true, response });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -117,7 +117,7 @@ app.get('/api/getProcessInstance/:processInstanceKey', async (req, res) => {
 
     res.json({ success: true, response });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -139,7 +139,7 @@ app.get('/api/getProcessInstanceVariables/:processInstanceKey', async (req, res)
 
     res.json({ success: true, response });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -161,7 +161,7 @@ app.get('/api/getProcessInstanceIncident/:processInstanceKey', async (req, res) 
 
     res.json({ success: true, response });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ sucess: false, error: err.message });
   }
 });
 
