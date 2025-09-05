@@ -161,7 +161,7 @@ app.get('/api/getProcessInstanceIncident/:processInstanceKey', async (req, res) 
 
     res.json({ success: true, response });
   } catch (err) {
-    res.status(500).json({ sucess: false, error: err.message });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
