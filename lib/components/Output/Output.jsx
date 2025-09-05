@@ -1,132 +1,255 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import {
   Button,
   CodeSnippet,
-  Link
+  CodeSnippetSkeleton,
+  Link,
+  InlineLoading,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel
 } from '@carbon/react';
 
 import {
   ErrorFilled,
-  Reset
+  Reset,
+  CheckmarkFilled,
+  InProgress
 } from '@carbon/icons-react';
 
+export const TASK_EXECUTION_STATUS_LABEL = {
+  deploying: 'Deploying...',
+  'starting-instance': 'Starting instance...',
+  executing: 'Waiting for task to be completed...'
+};
+
+/**
+ * @param {Object} props
+ * @param {boolean} props.isConnectionConfigured
+ * @param {Function} [props.onConfigureConnection]
+ * @param {boolean} props.isTaskExecuting
+ * @param {import('../../types').ElementOutput} props.output
+ * @param {Function} props.onResetOutput
+ * @param {import('../../types').TaskExecutionStatus} props.taskExecutionStatus
+ */
 export default function Output({
   isConnectionConfigured,
   onConfigureConnection,
   isTaskExecuting,
   output,
-  onResetOutput
+  onResetOutput,
+  taskExecutionStatus
 }) {
+
+  const statusIcon = useMemo(() => {
+    if (output?.error || output?.incident || !isConnectionConfigured) {
+      return <ErrorFilled className="output__status-icon--error" />;
+    }
+
+    if (output?.success) {
+      return <CheckmarkFilled className="output__status-icon--success" />;
+    }
+
+    if (isTaskExecuting) {
+      return <InlineLoading />;
+    }
+
+    return <InProgress className="output__status-icon--ready" />;
+  }, [ output, isTaskExecuting, isConnectionConfigured ]);
+
+  const showResetButton = isConnectionConfigured && (output?.success || output?.error || output?.incident);
+  const headerText = isTaskExecuting ? TASK_EXECUTION_STATUS_LABEL[taskExecutionStatus] : 'Results';
+
   return (
     <div className="output">
       <div className="output__header">
         <div className="output__header--title">
-          Results
+          { statusIcon }
+          <span>{headerText}</span>
         </div>
-        <div className="output__header--buttons">
-          <Button
-            kind="ghost"
-            onClick={ onResetOutput }
-            size="sm"
-            renderIcon={ Reset }
-            hasIconOnly
-            tooltipPosition="right"
-            iconDescription="Reset output"
-          >Reset</Button>
-        </div>
+        { showResetButton && <Button
+          kind="ghost"
+          onClick={ () => onResetOutput() }
+          size="sm"
+          renderIcon={ Reset }
+          hasIconOnly
+          tooltipPosition="right"
+          iconDescription="Reset output"
+        >Reset</Button>}
+
+        {output?.operateUrl && <Link
+          href={ output.operateUrl }
+          className="output__header--button-operate">
+          View in Operate
+        </Link>}
       </div>
       <div className="output__body">
         <div className="output__body--inner">
-          <ConfigureConnection
+          <OutputBanner
             isConnectionConfigured={ isConnectionConfigured }
             onConfigureConnection={ onConfigureConnection }
-          />
-          <NoResults
-            isConnectionConfigured={ isConnectionConfigured }
-            isTaskExecuting={ isTaskExecuting }
             output={ output }
           />
-          <Success
-            isConnectionConfigured={ isConnectionConfigured }
-            isTaskExecuting={ isTaskExecuting }
-            output={ output } />
-          <Error
-            isConnectionConfigured={ isConnectionConfigured }
-            isTaskExecuting={ isTaskExecuting }
-            output={ output } />
+          <div className="output__variables">
+            {isConnectionConfigured && <OutputVariables
+              isTaskExecuting={ isTaskExecuting }
+              output={ output }
+            />}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function ConfigureConnection(props) {
-  const {
-    isConnectionConfigured,
-    onConfigureConnection
-  } = props;
-
-  if (isConnectionConfigured) {
-    return null;
-  }
-
-  return <>
-    <div className="output__state output__state--error">
-      <div className="output__state-icon">
-        <ErrorFilled className="output__status-icon" />
-      </div>
-      <div className="output__state-content">
-        <div className="output__state-title">
-          <span>
-            Connection required
-          </span>
-          {
-            onConfigureConnection && <Link onClick={ onConfigureConnection }>
-              Configure
-            </Link>
-          }
-        </div>
-        <div className="output__state-details">
-          <span>Configure a connection to start testing.</span>
-        </div>
-      </div>
-    </div>
-  </>;
-}
-
-function NoResults(props) {
-  const {
-    isConnectionConfigured,
-    isTaskExecuting,
-    output
-  } = props;
-
-  if (!isConnectionConfigured || isTaskExecuting || output) {
-    return null;
-  }
-
-  return <div className="output__variables output__variables--no-results">
-    <CodeSnippet
-      type="multi"
-      hideCopyButton={ true }
-      maxCollapsedNumberOfRows={ 100 }
-    >
-      { 'Test task to see results' }
-    </CodeSnippet>
-  </div>;
-}
-
-function Success({
+function OutputBanner({
   isConnectionConfigured,
+  onConfigureConnection,
+  output
+}) {
+
+  if (!isConnectionConfigured) {
+    return <ErrorBanner
+      title="Connection required"
+      description="Configure a connection to start testing."
+      actionLabel="Configure"
+      onActionClick={ onConfigureConnection }
+    />;
+  }
+
+  if (output?.error) {
+    return <ErrorBanner
+      title="Task execution failed"
+      description={ `Error: ${output.error.message}` }
+    />;
+  }
+
+  if (output?.incident) {
+    const action = output.incident.operateUrl ?
+      { actionLabel: 'View in Operate', actionUrl: output.incident.operateUrl } : {};
+
+    return <ErrorBanner
+      title="Task execution failed"
+      description={ `Incident: ${output.incident.errorType}` }
+      { ...action }
+    />;
+  }
+
+  return null;
+}
+
+function OutputVariables({
   isTaskExecuting,
   output
 }) {
-  if (!isConnectionConfigured || isTaskExecuting || !output || !output.success) {
-    return null;
+
+  if (isTaskExecuting) {
+    return <CodeSnippetSkeleton className="output__variables--skeleton" type="multi" />;
   }
 
-  return <div className="output__variables">
+  if (output?.success) {
+    return (
+      <Tabs>
+        <TabList>
+          <Tab>Process variables</Tab>
+          <Tab>Task variables</Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel>
+            <Snippet content={ JSON.stringify(output.variables, null, 2) } />
+          </TabPanel>
+          <TabPanel>
+            <Snippet content={ JSON.stringify(output.variables, null, 2) } />
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
+    );
+  }
+
+  if (output?.error) {
+    return <CodeSnippet
+      type="multi"
+      feedback="Copied to clipboard"
+      hideCopyButton={ false }
+      maxCollapsedNumberOfRows={ 100 }
+      align="left"
+      wrapText={ true }
+    >
+      { output?.error.response || 'No error details available' }
+    </CodeSnippet>;
+  }
+
+  if (output?.incident) {
+    return (
+      <Tabs>
+        <TabList>
+          <Tab>Incident</Tab>
+          <Tab>Process variables</Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel>
+            <Snippet content={ printIncident(output.incident) } />
+          </TabPanel>
+          <TabPanel>
+            <Snippet content={ JSON.stringify(output.variables, null, 2) } />
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
+    );
+  }
+
+  return <CodeSnippet
+    className="output__variables--empty-snippet"
+    type="multi"
+    hideCopyButton={ true }
+  >
+    Enter input variables, then click <span className="output__variables--empty-action">Test task</span> to see results
+  </CodeSnippet>;
+}
+
+/**
+ *
+ * @param {Object} props
+ * @param {string} props.title
+ * @param {string} props.description
+ * @param {string} [props.actionLabel]
+ * @param {string} [props.actionUrl]
+ * @param {Function} [props.onActionClick]
+ */
+function ErrorBanner({
+  title,
+  description,
+  actionLabel,
+  actionUrl = '#',
+  onActionClick = () => {}
+}) {
+  return (
+    <div className="output__error">
+      <div className="output__error--icon">
+        <ErrorFilled />
+      </div>
+      <div className="output__error--content">
+        <div className="output__error--title">
+          <span>{title}</span>
+          {
+            actionLabel && <Link href={ actionUrl } onClick={ () => onActionClick }>
+              { actionLabel }
+            </Link>
+          }
+        </div>
+        <div>
+          <span>{ description }</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Snippet({ content }) {
+  return (
     <CodeSnippet
       type="multi"
       feedback="Copied to clipboard"
@@ -134,67 +257,9 @@ function Success({
       maxCollapsedNumberOfRows={ 100 }
       align="left"
     >
-      { JSON.stringify(output.variables, null, 2) }
+      { content }
     </CodeSnippet>
-  </div>;
-}
-
-function Error({
-  isConnectionConfigured,
-  isTaskExecuting,
-  output
-}) {
-  if (!isConnectionConfigured || isTaskExecuting || !output || output.success) {
-    return null;
-  }
-
-  const {
-    error,
-    incident
-  } = output;
-
-  return <>
-    <div className="output__state output__state--error">
-      <div className="output__state-icon">
-        <ErrorFilled className="output__status-icon" />
-      </div>
-      <div className="output__state-content">
-        <div className="output__state-title">
-          Task execution failed
-        </div>
-        <div className="output__state-details">
-          {
-            incident && <span>Incident: { incident.errorType }</span>
-          }
-          {
-            error && <span>Error: { error.message }</span>
-          }
-        </div>
-      </div>
-    </div>
-    {
-      incident && <CodeSnippet
-        type="multi"
-        feedback="Copied to clipboard"
-        hideCopyButton={ false }
-        maxCollapsedNumberOfRows={ 100 }
-        align="left"
-      >
-        { printIncident(incident) }
-      </CodeSnippet>
-    }
-    {
-      error && <CodeSnippet
-        type="multi"
-        feedback="Copied to clipboard"
-        hideCopyButton={ false }
-        maxCollapsedNumberOfRows={ 100 }
-        align="left"
-      >
-        { error.detail || 'No error details available' }
-      </CodeSnippet>
-    }
-  </>;
+  );
 }
 
 /**

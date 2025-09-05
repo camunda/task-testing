@@ -7,17 +7,19 @@ import type {
 } from '@camunda8/sdk/dist/c8/lib/C8Dto';
 
 export type Input = {
-  [id: string]: string;
+  [elementId: string]: string;
 };
 
 export type Output = {
-  [id: string]: {
-    error?: any;
-    incident?: any;
-    success: boolean;
-    variables?: { [key: string]: any };
-  }
+  [elementId: string]: ElementOutput
 };
+
+export type ElementOutput = {
+  error?: TaskExecutionEvents.Error;
+  incident?: any;
+  success: boolean;
+  variables?: { [key: string]: string };
+} | undefined;
 
 export type Config = {
   input: Input;
@@ -68,6 +70,8 @@ export type GetProcessInstanceIncidentResult = {
   response?: SearchIncidentsResponse;
   error?: string;
 }
+
+export type TaskExecutionStatus = 'deploying' | 'starting-instance' | 'executing' | undefined;
 
 export type TaskExecutionApi = {
   deploy: () => Promise<DeploymentResult>;
