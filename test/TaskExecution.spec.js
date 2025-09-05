@@ -209,7 +209,7 @@ describe('TaskExecution', function() {
 
       expect(errorSpy).to.have.been.calledWithMatch({
         message: 'Failed to deploy process definition',
-        detail: DEPLOY_ERROR
+        response: DEPLOY_ERROR
       });
     });
 
@@ -295,7 +295,7 @@ describe('TaskExecution', function() {
 
       expect(errorSpy).to.have.been.calledWithMatch({
         message: 'Failed to start process instance',
-        detail: START_INSTANCE_ERROR
+        response: START_INSTANCE_ERROR
       });
     });
 
@@ -383,13 +383,9 @@ describe('TaskExecution', function() {
 
       expect(errorSpy).to.have.been.calledWithMatch({
         message: 'Failed to get process instance',
-        detail: GET_PROCESS_INSTANCE_ERROR
+        response: GET_PROCESS_INSTANCE_ERROR
       });
     });
-
-
-
-
   });
 
 
