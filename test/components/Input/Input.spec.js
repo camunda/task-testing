@@ -2,11 +2,11 @@ import React from 'react';
 
 import { render } from '@testing-library/react';
 
-import { bootstrapModeler, getModeler } from './util/Util';
+import { bootstrapModeler, getModeler } from '../../util/Util';
 
-import Input from '../lib/components/Input/Input';
+import Input from '../../../lib/components/Input/Input';
 
-import diagramXML from './fixtures/diagram.bpmn';
+import diagramXML from '../../fixtures/diagram.bpmn';
 
 describe('Input', function() {
 

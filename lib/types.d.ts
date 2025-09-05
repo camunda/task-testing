@@ -39,29 +39,34 @@ export type DeploymentResponse = DeployResourceResponse;
 
 export type DeploymentResult = {
   success: boolean;
-  response: DeploymentResponse;
+  response?: DeploymentResponse;
+  error?: string;
 }
 
 export type StartInstanceResponse = CreateProcessInstanceResponse;
 
 export type StartInstanceResult = {
   success: boolean;
-  response: StartInstanceResponse;
+  response?: StartInstanceResponse;
+  error?: string;
 }
 
 export type GetProcessInstanceResult = {
   success: boolean;
-  response: SearchProcessInstanceResponse;
+  response?: SearchProcessInstanceResponse;
+  error?: string;
 }
 
 export type GetProcessInstanceVariablesResult = {
   success: boolean;
-  response: SearchVariablesResponse;
+  response?: SearchVariablesResponse;
+  error?: string;
 }
 
 export type GetProcessInstanceIncidentResult = {
   success: boolean;
-  response: SearchIncidentsResponse;
+  response?: SearchIncidentsResponse;
+  error?: string;
 }
 
 export type TaskExecutionApi = {
