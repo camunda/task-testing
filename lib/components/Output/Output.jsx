@@ -164,7 +164,7 @@ function Error({
         </div>
         <div className="output__state-details">
           {
-            incident && <span>Incident: { incident.type }</span>
+            incident && <span>Incident: { incident.errorType }</span>
           }
           {
             error && <span>Error: { error.message }</span>
