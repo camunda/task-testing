@@ -84,5 +84,8 @@
     "camunda-bpmn-js": "*",
     "react": "*",
     "react-dom": "*"
+  },
+  "overrides": {
+    "react-is": "^18.0.0"
   }
 }
