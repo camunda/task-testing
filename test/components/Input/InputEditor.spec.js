@@ -7,7 +7,7 @@ import ZeebeVariableResolver from '@bpmn-io/variable-resolver/lib/zeebe/Variable
 
 import { bootstrapModeler, getModeler, inject } from '../../util/Util';
 
-import InputEditor, { PLACEHOLDER_TEXT } from '../../../lib/components/Input/InputEditor';
+import InputEditor, { PLACEHOLDER_TEXT, INVALID_JSON_ERROR } from '../../../lib/components/Input/InputEditor';
 
 import diagramXML from '../../fixtures/InputEditor.bpmn';
 
@@ -210,7 +210,7 @@ describe('InputEditor', function() {
 
       // then
       await waitFor(() => {
-        expect(onErrorChange).to.have.been.calledWith('Invalid JSON');
+        expect(onErrorChange).to.have.been.calledWith(INVALID_JSON_ERROR);
       });
     });
 
@@ -228,7 +228,7 @@ describe('InputEditor', function() {
 
       // assume
       await waitFor(() => {
-        expect(onErrorChange).to.have.been.calledWith('Invalid JSON');
+        expect(onErrorChange).to.have.been.calledWith(INVALID_JSON_ERROR);
       });
 
       // when
