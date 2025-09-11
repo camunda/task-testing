@@ -21,6 +21,8 @@ const autocompletionCompartment = new Compartment();
 
 export const PLACEHOLDER_TEXT = 'Enter process variables in JSON format';
 
+export const INVALID_JSON_ERROR = 'JSON contains errors';
+
 const DEFAULT_ALL_OUTPUTS = {},
       DEFAULT_VARIABLES_FOR_ELEMENT = [];
 
@@ -81,9 +83,9 @@ export default function InputEditor({
 
       const hasError = errors && errors.length > 0;
 
-      onErrorChange(hasError ? 'Invalid JSON' : null);
+      onErrorChange(hasError ? INVALID_JSON_ERROR : null);
 
-      setError(hasError ? 'Invalid JSON' : null);
+      setError(hasError ? INVALID_JSON_ERROR : null);
 
       return errors;
     };
