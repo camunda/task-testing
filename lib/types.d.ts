@@ -15,10 +15,11 @@ export type Output = {
 };
 
 export type ElementOutput = {
-  error?: TaskExecutionEvents.Error;
-  incident?: any;
   success: boolean;
   variables?: { [key: string]: string };
+  error?: TaskExecutionEvents.Error;
+  incident?: any;
+  operateUrl?: string;
 } | undefined;
 
 export type Config = {
