@@ -2,7 +2,7 @@ import sinon from 'sinon';
 
 import { bootstrapModeler, inject } from './util/Util';
 
-import TaskExecution from '../lib/TaskExecution';
+import TaskExecution, { INTERVAL_MS } from '../lib/TaskExecution';
 
 describe('TaskExecution', function() {
 
@@ -20,6 +20,10 @@ describe('TaskExecution', function() {
 
   let api, taskExecution;
 
+  const statusChangeSpy = sinon.spy();
+  const finishedSpy = sinon.spy();
+  const errorSpy = sinon.spy();
+
   beforeEach(inject(function(injector) {
     api = {
       deploy: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
@@ -30,8 +34,19 @@ describe('TaskExecution', function() {
     };
 
     taskExecution = new TaskExecution(injector, api);
+
+    taskExecution.on('taskExecution.status.changed', statusChangeSpy);
+    taskExecution.on('taskExecution.finished', finishedSpy);
+    taskExecution.on('taskExecution.error', errorSpy);
   }));
 
+  afterEach(function() {
+    taskExecution.removeAllListeners();
+
+    statusChangeSpy.resetHistory();
+    finishedSpy.resetHistory();
+    errorSpy.resetHistory();
+  });
 
   it('should execute a task', async function() {
 
@@ -41,33 +56,25 @@ describe('TaskExecution', function() {
     api.getProcessInstance.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_RESPONSE });
     api.getProcessInstanceVariables.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_VARIABLES_RESPONSE });
 
-    const cancelSpy = sinon.spy();
-    const endSpy = sinon.spy();
-    const errorSpy = sinon.spy();
-    const startSpy = sinon.spy();
-
-    taskExecution.on('taskExecution.cancelled', cancelSpy);
-    taskExecution.on('taskExecution.end', endSpy);
-    taskExecution.on('taskExecution.error', errorSpy);
-    taskExecution.on('taskExecution.start', startSpy);
-
     // when
     taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
 
     await clock.tickAsync(1500);
 
     // then
-    expect(cancelSpy).to.not.have.been.called;
-    expect(endSpy).to.have.been.called;
+    expect(statusChangeSpy).to.have.been.calledWith('deploying');
+    expect(statusChangeSpy).to.have.been.calledWith('starting-instance');
+    expect(statusChangeSpy).to.have.been.calledWith('executing');
+
     expect(errorSpy).to.not.have.been.called;
-    expect(startSpy).to.have.been.calledOnce;
+
     expect(api.deploy).to.have.been.calledOnce;
     expect(api.startInstance).to.have.been.calledOnce;
     expect(api.getProcessInstance).to.have.been.calledOnce;
     expect(api.getProcessInstanceVariables).to.have.been.calledOnce;
     expect(api.getProcessInstanceIncident).to.not.have.been.called;
 
-    expect(endSpy).to.have.been.calledWithMatch({
+    expect(finishedSpy).to.have.been.calledWithMatch({
       'incident': null,
       'success': true,
       'variables': {
@@ -87,35 +94,22 @@ describe('TaskExecution', function() {
     api.getProcessInstance.onSecondCall().resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_RESPONSE });
     api.getProcessInstanceVariables.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_VARIABLES_RESPONSE });
 
-    const cancelSpy = sinon.spy();
-    const endSpy = sinon.spy();
-    const errorSpy = sinon.spy();
-    const startSpy = sinon.spy();
-
-    taskExecution.on('taskExecution.cancelled', cancelSpy);
-    taskExecution.on('taskExecution.end', endSpy);
-    taskExecution.on('taskExecution.error', errorSpy);
-    taskExecution.on('taskExecution.start', startSpy);
-
     // when
     taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
 
     await clock.tickAsync(2500);
 
     // then
-    expect(cancelSpy).to.not.have.been.called;
-    expect(endSpy).to.have.been.called;
+    expect(finishedSpy).to.have.been.called;
     expect(errorSpy).to.not.have.been.called;
-    expect(startSpy).to.have.been.calledOnce;
     expect(api.deploy).to.have.been.calledOnce;
     expect(api.startInstance).to.have.been.calledOnce;
     expect(api.getProcessInstance).to.have.been.calledTwice;
     expect(api.getProcessInstanceVariables).to.have.been.calledOnce;
     expect(api.getProcessInstanceIncident).to.not.have.been.called;
 
-    expect(endSpy).to.have.been.calledWithMatch({
+    expect(finishedSpy).to.have.been.calledWithMatch({
       'incident': null,
-      'success': true,
       'variables': {
         'foo': 'bar',
         'baz': 42
@@ -146,26 +140,14 @@ describe('TaskExecution', function() {
       ]
     } });
 
-    const cancelSpy = sinon.spy();
-    const endSpy = sinon.spy();
-    const errorSpy = sinon.spy();
-    const startSpy = sinon.spy();
-
-    taskExecution.on('taskExecution.cancelled', cancelSpy);
-    taskExecution.on('taskExecution.end', endSpy);
-    taskExecution.on('taskExecution.error', errorSpy);
-    taskExecution.on('taskExecution.start', startSpy);
-
     // when
     taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
 
     await clock.tickAsync(2500);
 
     // then
-    expect(cancelSpy).to.not.have.been.called;
-    expect(endSpy).to.not.have.been.called;
+    expect(finishedSpy).to.not.have.been.called;
     expect(errorSpy).to.not.have.been.called;
-    expect(startSpy).to.have.been.calledOnce;
     expect(api.deploy).to.have.been.calledOnce;
     expect(api.startInstance).to.have.been.calledOnce;
     expect(api.getProcessInstance).to.have.been.calledTwice;
@@ -181,26 +163,15 @@ describe('TaskExecution', function() {
       // given
       api.deploy.resolves({ success: false, error: DEPLOY_ERROR });
 
-      const cancelSpy = sinon.spy();
-      const endSpy = sinon.spy();
-      const errorSpy = sinon.spy();
-      const startSpy = sinon.spy();
-
-      taskExecution.on('taskExecution.cancelled', cancelSpy);
-      taskExecution.on('taskExecution.end', endSpy);
-      taskExecution.on('taskExecution.error', errorSpy);
-      taskExecution.on('taskExecution.start', startSpy);
-
       // when
       taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
 
       await clock.tickAsync(500);
 
       // then
-      expect(cancelSpy).to.have.been.calledOnce;
-      expect(endSpy).to.not.have.been.called;
+      expect(finishedSpy).to.not.have.been.called;
       expect(errorSpy).to.have.been.calledOnce;
-      expect(startSpy).to.have.been.calledOnce;
+      expect(statusChangeSpy).to.have.been.calledWith('deploying');
       expect(api.deploy).to.have.been.calledOnce;
       expect(api.startInstance).to.not.have.been.called;
       expect(api.getProcessInstance).to.not.have.been.called;
@@ -229,26 +200,15 @@ describe('TaskExecution', function() {
         ]
       } });
 
-      const cancelSpy = sinon.spy();
-      const endSpy = sinon.spy();
-      const errorSpy = sinon.spy();
-      const startSpy = sinon.spy();
-
-      taskExecution.on('taskExecution.cancelled', cancelSpy);
-      taskExecution.on('taskExecution.end', endSpy);
-      taskExecution.on('taskExecution.error', errorSpy);
-      taskExecution.on('taskExecution.start', startSpy);
-
       // when
       taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
 
       await clock.tickAsync(500);
 
       // then
-      expect(cancelSpy).to.have.been.calledOnce;
-      expect(endSpy).to.not.have.been.called;
+      expect(finishedSpy).to.not.have.been.called;
       expect(errorSpy).to.have.been.calledOnce;
-      expect(startSpy).to.have.been.calledOnce;
+      expect(statusChangeSpy).to.have.been.calledWith('deploying');
       expect(api.deploy).to.have.been.calledOnce;
       expect(api.startInstance).to.not.have.been.called;
       expect(api.getProcessInstance).to.not.have.been.called;
@@ -267,27 +227,17 @@ describe('TaskExecution', function() {
       api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
       api.startInstance.resolves({ success: false, error: START_INSTANCE_ERROR });
 
-      const cancelSpy = sinon.spy();
-      const endSpy = sinon.spy();
-      const errorSpy = sinon.spy();
-      const startSpy = sinon.spy();
-
-      taskExecution.on('taskExecution.cancelled', cancelSpy);
-      taskExecution.on('taskExecution.end', endSpy);
-      taskExecution.on('taskExecution.error', errorSpy);
-      taskExecution.on('taskExecution.start', startSpy);
-
       // when
       taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
 
       await clock.tickAsync(500);
 
       // then
-      expect(cancelSpy).to.have.been.calledOnce;
-      expect(endSpy).to.not.have.been.called;
+      expect(finishedSpy).to.not.have.been.called;
       expect(errorSpy).to.have.been.calledOnce;
-      expect(startSpy).to.have.been.calledOnce;
+      expect(statusChangeSpy).to.have.been.calledWith('deploying');
       expect(api.deploy).to.have.been.calledOnce;
+      expect(statusChangeSpy).to.have.been.calledWith('starting-instance');
       expect(api.startInstance).to.have.been.calledOnce;
       expect(api.getProcessInstance).to.not.have.been.called;
       expect(api.getProcessInstanceVariables).to.not.have.been.called;
@@ -314,27 +264,17 @@ describe('TaskExecution', function() {
         'tags': []
       } });
 
-      const cancelSpy = sinon.spy();
-      const endSpy = sinon.spy();
-      const errorSpy = sinon.spy();
-      const startSpy = sinon.spy();
-
-      taskExecution.on('taskExecution.cancelled', cancelSpy);
-      taskExecution.on('taskExecution.end', endSpy);
-      taskExecution.on('taskExecution.error', errorSpy);
-      taskExecution.on('taskExecution.start', startSpy);
-
       // when
       taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
 
       await clock.tickAsync(500);
 
       // then
-      expect(cancelSpy).to.have.been.calledOnce;
-      expect(endSpy).to.not.have.been.called;
+      expect(finishedSpy).to.not.have.been.called;
       expect(errorSpy).to.have.been.calledOnce;
-      expect(startSpy).to.have.been.calledOnce;
+      expect(statusChangeSpy).to.have.been.calledWith('starting-instance');
       expect(api.deploy).to.have.been.calledOnce;
+      expect(statusChangeSpy).to.have.been.calledWith('deploying');
       expect(api.startInstance).to.have.been.calledOnce;
       expect(api.getProcessInstance).to.not.have.been.called;
       expect(api.getProcessInstanceVariables).to.not.have.been.called;
@@ -355,26 +295,14 @@ describe('TaskExecution', function() {
       api.getProcessInstance.onSecondCall().resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_RESPONSE });
       api.getProcessInstanceVariables.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_VARIABLES_RESPONSE });
 
-      const cancelSpy = sinon.spy();
-      const endSpy = sinon.spy();
-      const errorSpy = sinon.spy();
-      const startSpy = sinon.spy();
-
-      taskExecution.on('taskExecution.cancelled', cancelSpy);
-      taskExecution.on('taskExecution.end', endSpy);
-      taskExecution.on('taskExecution.error', errorSpy);
-      taskExecution.on('taskExecution.start', startSpy);
-
       // when
       taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
 
-      await clock.tickAsync(2500);
+      await clock.tickAsync(INTERVAL_MS * 2);
 
       // then
-      expect(cancelSpy).to.not.have.been.called;
-      expect(endSpy).to.have.been.calledOnce;
+      expect(finishedSpy).to.have.been.calledOnce;
       expect(errorSpy).to.have.been.calledOnce;
-      expect(startSpy).to.have.been.calledOnce;
       expect(api.deploy).to.have.been.calledOnce;
       expect(api.startInstance).to.have.been.calledOnce;
       expect(api.getProcessInstance).to.have.been.calledTwice;
@@ -427,16 +355,7 @@ describe('TaskExecution', function() {
           }
         ]
       } });
-
-      const cancelSpy = sinon.spy();
-      const endSpy = sinon.spy();
-      const errorSpy = sinon.spy();
-      const startSpy = sinon.spy();
-
-      taskExecution.on('taskExecution.cancelled', cancelSpy);
-      taskExecution.on('taskExecution.end', endSpy);
-      taskExecution.on('taskExecution.error', errorSpy);
-      taskExecution.on('taskExecution.start', startSpy);
+      api.getProcessInstanceVariables.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_VARIABLES_RESPONSE });
 
       // when
       taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
@@ -444,19 +363,20 @@ describe('TaskExecution', function() {
       await clock.tickAsync(1500);
 
       // then
-      expect(cancelSpy).to.not.have.been.called;
-      expect(endSpy).to.have.been.calledOnce;
+      expect(finishedSpy).to.have.been.calledOnce;
       expect(errorSpy).to.not.have.been.called;
-      expect(startSpy).to.have.been.calledOnce;
       expect(api.deploy).to.have.been.calledOnce;
       expect(api.startInstance).to.have.been.calledOnce;
       expect(api.getProcessInstance).to.have.been.calledOnce;
-      expect(api.getProcessInstanceVariables).to.not.have.been.called;
+      expect(api.getProcessInstanceVariables).to.have.been.called;
       expect(api.getProcessInstanceIncident).to.have.been.calledOnce;
 
-      expect(endSpy).to.have.been.calledWithMatch({
+      expect(finishedSpy).to.have.been.calledWithMatch({
         'success': false,
-        'variables': null,
+        'variables': {
+          'foo': 'bar',
+          'baz': 42
+        },
         'incident': {
           key: '2251799814592731',
           processDefinitionKey: '2251799814239639',
@@ -483,16 +403,6 @@ describe('TaskExecution', function() {
       api.startInstance.resolves({ success: true, response: DEFAULT_START_INSTANCE_RESPONSE });
       api.getProcessInstance.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_RESPONSE });
 
-      const cancelSpy = sinon.spy();
-      const endSpy = sinon.spy();
-      const errorSpy = sinon.spy();
-      const startSpy = sinon.spy();
-
-      taskExecution.on('taskExecution.cancelled', cancelSpy);
-      taskExecution.on('taskExecution.end', endSpy);
-      taskExecution.on('taskExecution.error', errorSpy);
-      taskExecution.on('taskExecution.start', startSpy);
-
       // when
       taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
 
@@ -503,10 +413,8 @@ describe('TaskExecution', function() {
       await clock.tickAsync(500);
 
       // then
-      expect(cancelSpy).to.have.been.calledOnce;
-      expect(endSpy).to.not.have.been.called;
+      expect(finishedSpy).to.not.have.been.called;
       expect(errorSpy).to.not.have.been.called;
-      expect(startSpy).to.have.been.calledOnce;
       expect(api.deploy).to.have.been.calledOnce;
       expect(api.startInstance).to.have.been.calledOnce;
       expect(api.getProcessInstance).to.not.have.been.called;
@@ -517,27 +425,13 @@ describe('TaskExecution', function() {
 
     it('should noop when cancelling without running task execution', async function() {
 
-      // given
-      const cancelSpy = sinon.spy();
-      const endSpy = sinon.spy();
-      const errorSpy = sinon.spy();
-      const startSpy = sinon.spy();
-
-      taskExecution.on('taskExecution.cancelled', cancelSpy);
-      taskExecution.on('taskExecution.end', endSpy);
-      taskExecution.on('taskExecution.error', errorSpy);
-      taskExecution.on('taskExecution.start', startSpy);
-
       // when
       taskExecution.cancelTaskExecution();
 
       await clock.tickAsync(500);
 
       // then
-      expect(cancelSpy).to.not.have.been.called;
-      expect(endSpy).to.not.have.been.called;
-      expect(errorSpy).to.not.have.been.called;
-      expect(startSpy).to.not.have.been.called;
+      expect(finishedSpy).to.not.have.been.called;
     });
 
   });

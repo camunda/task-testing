@@ -72,8 +72,6 @@ export type GetProcessInstanceIncidentResult = {
   error?: string;
 }
 
-export type TaskExecutionStatus = 'deploying' | 'starting-instance' | 'executing' | undefined;
-
 export type TaskExecutionApi = {
   deploy: () => Promise<DeploymentResult>;
   startInstance: (processId: string, elementId: string, variables: { [key: string]: any }) => Promise<StartInstanceResult>;
@@ -82,18 +80,28 @@ export type TaskExecutionApi = {
   getProcessInstanceIncident: (processInstanceKey: string) => Promise<GetProcessInstanceIncidentResult>;
 };
 
-export namespace TaskExecutionEvents {
-  export interface Cancelled {}
-  export interface Error {
-    message: string;
-    response?: any;
-  }
-  export interface End {
-    incident?: any;
-    success: boolean;
-    variables?: { [key: string]: any };
-  }
-  export interface Start {}
+export type TaskExecutionStatus =
+  'idle' |
+  'deploying' |
+  'starting-instance' |
+  'executing';
+
+export type TaskExecutionEvents = 
+  'taskExecution.status.changed' |
+  'taskExecution.finished' |
+  'taskExecution.error';
+
+export type TaskExecutionResult = {
+  success: boolean;
+  variables?: { [key: string]: any };
+  error?: TaskExecutionError;
+  incident?: any;
+  operateUrl?: string;
 }
+
+export type TaskExecutionError = {
+  message: string;
+  response?: any;
+};
 
 export type { Element, ModdleElement } from 'bpmn-js/lib/model/Types';
