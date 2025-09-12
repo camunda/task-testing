@@ -132,9 +132,13 @@
       flex-grow: 1;
       position: relative;
 
+      .cds--tabs {
+        --cds-layout-size-height-local: 20px;
+      }
+      
       .cds--tab-content {
         padding: 0;
-        height: calc(100% - 40px);
+        height: calc(100% - 20px);
       }
 
       .cds--tab-content:not([hidden]) {
@@ -176,6 +180,9 @@
     }
 
     .output__variables--empty {
+      height: 32px;
+      display: flex;
+      align-items: center;
       color: #525252;
     }
 
