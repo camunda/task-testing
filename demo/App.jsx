@@ -104,7 +104,7 @@ function App() {
               key: '2251799814592731',
               processDefinitionKey: '2251799814239639',
               processInstanceKey: '2251799814592711',
-              errorType: 'JOB_NO_RETRIES',
+              type: 'JOB_NO_RETRIES',
               message: 'Bad gateway',
               creationTime: '2025-08-21T14:40:55.402+0000',
               state: 'ACTIVE',
