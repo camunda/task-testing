@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 
 import {
   Button,
-  CodeSnippet,
   CodeSnippetSkeleton,
   Link,
   InlineLoading,
@@ -19,6 +18,8 @@ import {
   CheckmarkFilled,
   InProgress
 } from '@carbon/icons-react';
+
+import OutputEditor from './OutputEditor';
 
 export const TASK_EXECUTION_STATUS_LABEL = {
   deploying: 'Deploying...',
@@ -87,19 +88,18 @@ export default function Output({
         </Link>}
       </div>
       <div className="output__body">
-        <div className="output__body--inner">
-          <OutputBanner
-            isConnectionConfigured={ isConnectionConfigured }
-            onConfigureConnection={ onConfigureConnection }
-            output={ output }
-          />
-          <div className="output__variables">
-            {isConnectionConfigured && <OutputVariables
+        <OutputBanner
+          isConnectionConfigured={ isConnectionConfigured }
+          onConfigureConnection={ onConfigureConnection }
+          output={ output }
+        />
+        {
+          isConnectionConfigured &&
+            <OutputVariables
               isTaskExecuting={ isTaskExecuting }
               output={ output }
-            />}
-          </div>
-        </div>
+            />
+        }
       </div>
     </div>
   );
@@ -159,10 +159,10 @@ function OutputVariables({
         </TabList>
         <TabPanels>
           <TabPanel>
-            <Snippet content={ JSON.stringify(output.variables, null, 2) } />
+            <OutputEditor value={ JSON.stringify(output.variables, null, 2) } />
           </TabPanel>
           <TabPanel>
-            <Snippet content={ JSON.stringify(output.variables, null, 2) } />
+            <OutputEditor value={ JSON.stringify(output.variables, null, 2) } />
           </TabPanel>
         </TabPanels>
       </Tabs>
@@ -170,16 +170,9 @@ function OutputVariables({
   }
 
   if (output?.error) {
-    return <CodeSnippet
-      type="multi"
-      feedback="Copied to clipboard"
-      hideCopyButton={ false }
-      maxCollapsedNumberOfRows={ 100 }
-      align="left"
-      wrapText={ true }
-    >
-      { output?.error.response || 'No error details available' }
-    </CodeSnippet>;
+    return <OutputEditor
+      value={ output?.error.response || 'No error details available' }
+    />;
   }
 
   if (output?.incident) {
@@ -191,23 +184,19 @@ function OutputVariables({
         </TabList>
         <TabPanels>
           <TabPanel>
-            <Snippet content={ printIncident(output.incident) } />
+            <OutputEditor value={ printIncident(output.incident) } />
           </TabPanel>
           <TabPanel>
-            <Snippet content={ JSON.stringify(output.variables, null, 2) } />
+            <OutputEditor value={ JSON.stringify(output.variables, null, 2) } />
           </TabPanel>
         </TabPanels>
       </Tabs>
     );
   }
 
-  return <CodeSnippet
-    className="output__variables--empty-snippet"
-    type="multi"
-    hideCopyButton={ true }
-  >
-    Enter input variables, then click <span className="output__variables--empty-action">Test task</span> to see results
-  </CodeSnippet>;
+  return <div className="output__variables--empty">
+    Enter input variables, then click <span className="output__variables--empty-action">Test task</span> to see results.
+  </div>;
 }
 
 /**
@@ -235,7 +224,7 @@ function ErrorBanner({
         <div className="output__error--title">
           <span>{title}</span>
           {
-            actionLabel && <Link href={ actionUrl } onClick={ () => onActionClick }>
+            actionLabel && <Link href={ actionUrl } onClick={ () => onActionClick() }>
               { actionLabel }
             </Link>
           }
@@ -245,20 +234,6 @@ function ErrorBanner({
         </div>
       </div>
     </div>
-  );
-}
-
-function Snippet({ content }) {
-  return (
-    <CodeSnippet
-      type="multi"
-      feedback="Copied to clipboard"
-      hideCopyButton={ false }
-      maxCollapsedNumberOfRows={ 100 }
-      align="left"
-    >
-      { content }
-    </CodeSnippet>
   );
 }
 

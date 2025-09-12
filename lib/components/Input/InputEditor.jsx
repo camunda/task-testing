@@ -11,7 +11,7 @@ import { json, jsonParseLinter } from '@codemirror/lang-json';
 
 import classNames from 'classnames';
 
-import theme from './InputEditorTheme';
+import theme from '../shared/CodeMirrorTheme';
 
 import { getAutocompletionExtensions } from '../../utils/autocompletion';
 
@@ -164,11 +164,11 @@ export default function InputEditor({
     }
   }, [ editorView, value ]);
 
-  return <div className={ classNames('input__editor', { 'input__editor--error': error }) }>
-    <div className="input__editor-codemirror">
-      <div ref={ ref } className="input__editor-codemirror-inner"></div>
+  return <div className={ classNames('code__editor', { 'code__editor--error': error }) }>
+    <div className="code__editor-codemirror">
+      <div ref={ ref } className="code__editor-codemirror-inner"></div>
     </div>
-    { error && <div className="input__editor-error">{ error }</div> }
+    { error && <div className="code__editor-error">{ error }</div> }
   </div>;
 }
 
