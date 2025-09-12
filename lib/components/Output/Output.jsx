@@ -133,7 +133,7 @@ function OutputBanner({
 
     return <ErrorBanner
       title="Task execution failed"
-      description={ `Incident: ${output.incident.errorType}` }
+      description={ `Incident: ${output.incident.type}` }
       { ...action }
     />;
   }
