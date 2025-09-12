@@ -144,6 +144,11 @@
       .cds--tab-content:not([hidden]) {
         display: flex;
       }
+
+      // Tooltip on Carbon Button with absolute position is broken.
+      .cds--popover {
+        display: none;
+      }
     }
 
     .output__error {

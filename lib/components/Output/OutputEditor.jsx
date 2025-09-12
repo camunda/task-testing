@@ -71,7 +71,6 @@ export default function OutputEditor({ value }) {
       size="sm"
       kind="ghost"
       hasIconOnly
-      tooltipPosition="left"
       onClick={ () => {
         navigator.clipboard.writeText(value);
       } } />
