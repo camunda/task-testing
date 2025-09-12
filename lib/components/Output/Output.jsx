@@ -151,22 +151,27 @@ function OutputVariables({
   }
 
   if (output?.success) {
-    return (
-      <Tabs>
-        <TabList>
-          <Tab>Process variables</Tab>
-          <Tab>Task variables</Tab>
-        </TabList>
-        <TabPanels>
-          <TabPanel>
-            <OutputEditor value={ JSON.stringify(output.variables, null, 2) } />
-          </TabPanel>
-          <TabPanel>
-            <OutputEditor value={ JSON.stringify(output.variables, null, 2) } />
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
-    );
+    return <OutputEditor
+      value={ JSON.stringify(output.variables, null, 2) }
+    />;
+
+    // TODO: Introduce tabs when able to filter variables by `scopeKey`
+    // return (
+    //   <Tabs>
+    //     <TabList>
+    //       <Tab>Process variables</Tab>
+    //       <Tab>Task variables</Tab>
+    //     </TabList>
+    //     <TabPanels>
+    //       <TabPanel>
+    //         <OutputEditor value={ JSON.stringify(output.variables, null, 2) } />
+    //       </TabPanel>
+    //       <TabPanel>
+    //         <OutputEditor value={ JSON.stringify(output.variables, null, 2) } />
+    //       </TabPanel>
+    //     </TabPanels>
+    //   </Tabs>
+    // );
   }
 
   if (output?.error) {
@@ -195,7 +200,9 @@ function OutputVariables({
   }
 
   return <div className="output__variables--empty">
-    Enter input variables, then click <span className="output__variables--empty-action">Test task</span> to see results.
+    <div>
+      Enter input variables, then click <span className="output__variables--empty-action">Test task</span> to see results.
+    </div>
   </div>;
 }
 
