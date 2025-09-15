@@ -96,7 +96,6 @@ export type TaskExecutionResult = {
   variables?: { [key: string]: any };
   error?: TaskExecutionError;
   incident?: any;
-  operateUrl?: string;
 }
 
 export type TaskExecutionError = {
