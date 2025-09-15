@@ -98,19 +98,45 @@ function App() {
             }
           },
           'ServiceTask_4': {
-            success: false,
-            variables: null,
-            incident: {
-              key: '2251799814592731',
-              processDefinitionKey: '2251799814239639',
-              processInstanceKey: '2251799814592711',
-              type: 'JOB_NO_RETRIES',
-              message: 'Bad gateway',
-              creationTime: '2025-08-21T14:40:55.402+0000',
-              state: 'ACTIVE',
-              jobKey: '2251799814592726',
-              tenantId: '<default>'
-            }
+            'success': false,
+            'incident': {
+              'key': '2251799813897058',
+              'processDefinitionKey': '2251799813894253',
+              'processInstanceKey': '2251799813897034',
+              'type': 'JOB_NO_RETRIES',
+              'message': 'Bad gateway',
+              'creationTime': '2025-09-15T12:24:25.639+0000',
+              'state': 'ACTIVE',
+              'jobKey': '2251799813897044',
+              'tenantId': '<default>'
+            },
+            'variables': {
+              'readTimeoutInSeconds': 20,
+              'method': 'GET',
+              'ignoreNullValues': false,
+              'authentication': {
+                'type': 'noAuth'
+              },
+              'url': 'https://camunda.foobar',
+              'storeResponse': false,
+              'connectionTimeoutInSeconds': 20,
+              'error': {
+                'code': '502',
+                'variables': {
+                  'response': {
+                    'headers': {
+                      'Content-Length': '88',
+                      'X-Smokescreen-Error': 'Failed to resolve remote hostname: lookup camunda.foobar on 10.44.0.10:53: no such host',
+                      'Content-Type': 'text/plain'
+                    },
+                    'body': 'Failed to resolve remote hostname: lookup camunda.foobar on 10.44.0.10:53: no such host\n'
+                  }
+                },
+                'message': 'Bad gateway',
+                'type': 'io.camunda.connector.api.error.ConnectorException'
+              }
+            },
+            'operateUrl': 'http://localhost:3000/operate/processes/2251799813897034'
           }
         }
       });
