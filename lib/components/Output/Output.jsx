@@ -30,6 +30,9 @@ export const TASK_EXECUTION_STATUS_LABEL = {
 /**
  * @param {Object} props
  * @param {boolean} props.isConnectionConfigured
+ * @param {string} [props.configureConnectionBannerTitle]
+ * @param {string} [props.configureConnectionBannerDescription]
+ * @param {string} [props.configureConnectionLabel]
  * @param {Function} [props.onConfigureConnection]
  * @param {boolean} props.isTaskExecuting
  * @param {import('../../types').ElementOutput} props.output
@@ -38,6 +41,9 @@ export const TASK_EXECUTION_STATUS_LABEL = {
  */
 export default function Output({
   isConnectionConfigured,
+  configureConnectionBannerTitle,
+  configureConnectionBannerDescription,
+  configureConnectionLabel,
   onConfigureConnection,
   isTaskExecuting,
   output,
@@ -91,6 +97,9 @@ export default function Output({
       <div className="output__body">
         <OutputBanner
           isConnectionConfigured={ isConnectionConfigured }
+          configureConnectionBannerTitle={ configureConnectionBannerTitle }
+          configureConnectionBannerDescription={ configureConnectionBannerDescription }
+          configureConnectionLabel={ configureConnectionLabel }
           onConfigureConnection={ onConfigureConnection }
           output={ output }
         />
@@ -108,15 +117,18 @@ export default function Output({
 
 function OutputBanner({
   isConnectionConfigured,
+  configureConnectionBannerTitle,
+  configureConnectionBannerDescription,
+  configureConnectionLabel,
   onConfigureConnection,
   output
 }) {
 
   if (!isConnectionConfigured) {
     return <ErrorBanner
-      title="Connection required"
-      description="Configure a connection to start testing."
-      actionLabel="Configure"
+      title={ configureConnectionBannerTitle }
+      description={ configureConnectionBannerDescription }
+      actionLabel={ configureConnectionLabel }
       onActionClick={ onConfigureConnection }
     />;
   }

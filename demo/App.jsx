@@ -232,6 +232,9 @@ function App() {
         <TestTab
           injector={ injector }
           isConnectionConfigured={ isConnectionConfigured }
+          configureConnectionBannerTitle="Not prompted yet"
+          configureConnectionBannerDescription="Click Configure, then Ok when prompted."
+          configureConnectionLabel="Get prompted"
           onConfigureConnection={ () => {
             if (window.confirm('Can execute task?')) {
               setIsConnectionConfigured(true);
