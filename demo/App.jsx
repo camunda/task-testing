@@ -218,6 +218,7 @@ function App() {
           } }
           config={ config }
           onConfigChanged={ onConfigChanged }
+          operateBaseUrl="http://localhost:3000/operate"
         />
       </div>
     </>
