@@ -83,6 +83,7 @@ export default function Output({
 
         {output?.operateUrl && <Link
           href={ output.operateUrl }
+          target="_blank"
           className="output__header--button-operate">
           View in Operate
         </Link>}
