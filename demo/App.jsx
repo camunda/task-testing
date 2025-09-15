@@ -135,8 +135,7 @@ function App() {
                 'message': 'Bad gateway',
                 'type': 'io.camunda.connector.api.error.ConnectorException'
               }
-            },
-            'operateUrl': 'http://localhost:3000/operate/processes/2251799813897034'
+            }
           }
         }
       });
@@ -220,6 +219,9 @@ function App() {
     setConfig(config);
   };
 
+  // eslint-disable-next-line no-undef
+  const operateURL = `https://${ process.env.CAMUNDA_CLUSTER_REGION }.operate.camunda.io/${ process.env.CAMUNDA_CLUSTER_ID }/operate`;
+
   return (
     <>
       <div className="modeler" ref={ modelerRef }>
@@ -244,7 +246,7 @@ function App() {
           } }
           config={ config }
           onConfigChanged={ onConfigChanged }
-          operateBaseUrl="http://localhost:3000/operate"
+          operateBaseUrl={ operateURL }
         />
       </div>
     </>
