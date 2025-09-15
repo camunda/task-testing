@@ -100,7 +100,7 @@ describe('TaskExecution', function() {
     await clock.tickAsync(2500);
 
     // then
-    expect(finishedSpy).to.have.been.called;
+    expect(finishedSpy).to.have.been.calledOnce;
     expect(errorSpy).to.not.have.been.called;
     expect(api.deploy).to.have.been.calledOnce;
     expect(api.startInstance).to.have.been.calledOnce;
@@ -368,7 +368,7 @@ describe('TaskExecution', function() {
       expect(api.deploy).to.have.been.calledOnce;
       expect(api.startInstance).to.have.been.calledOnce;
       expect(api.getProcessInstance).to.have.been.calledOnce;
-      expect(api.getProcessInstanceVariables).to.have.been.called;
+      expect(api.getProcessInstanceVariables).to.have.been.calledOnce;
       expect(api.getProcessInstanceIncident).to.have.been.calledOnce;
 
       expect(finishedSpy).to.have.been.calledWithMatch({
