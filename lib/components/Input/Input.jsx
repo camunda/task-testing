@@ -36,14 +36,14 @@ export default function Input({
           >Reset</Button>
         </div>
       </div>
-      <InputEditor
+      {input && <InputEditor
         allOutputs={ allOutputs }
         element={ element }
         value={ input }
         onChange={ onSetInput }
         onErrorChange={ onErrorChange }
         variablesForElement={ variablesForElement }
-      />
+      />}
     </div>
   );
 }
