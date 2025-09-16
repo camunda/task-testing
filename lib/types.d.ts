@@ -90,7 +90,7 @@ export type TaskExecutionEvents =
   'taskExecution.status.changed' |
   'taskExecution.finished' |
   'taskExecution.error' |
-  'taskExecution.canceled';
+  'taskExecution.interrupted';
 
 export type TaskExecutionResult = {
   success: boolean;
