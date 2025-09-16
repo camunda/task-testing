@@ -28,7 +28,6 @@ const DEFAULT_ALL_OUTPUTS = {},
 
 export default function InputEditor({
   allOutputs = DEFAULT_ALL_OUTPUTS,
-  element,
   value,
   onChange,
   onErrorChange,
@@ -135,7 +134,7 @@ export default function InputEditor({
     return () => {
       view.destroy();
     };
-  }, []);
+  }, [ onChange ]);
 
   useEffect(() => {
     if (!editorView) return;
