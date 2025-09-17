@@ -44,10 +44,13 @@
     gap: 12px;
     width: 100%;
 
-    .task-name {
+    .task-header {
       display: flex;
-      font-weight: bold;
       gap: 6px;
+      
+      .task-type {
+        font-weight: bold;
+      }
     }
 
     .btn-execute {
