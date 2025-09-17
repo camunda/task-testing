@@ -38,46 +38,22 @@ export type Variable = {
 
 export type Variables = Variable[];
 
-export type DeploymentResponse = DeployResourceResponse;
-
-export type DeploymentResult = {
-  success: boolean;
-  response?: DeploymentResponse;
-  error?: string;
-}
-
-export type StartInstanceResponse = CreateProcessInstanceResponse;
-
-export type StartInstanceResult = {
-  success: boolean;
-  response?: StartInstanceResponse;
-  error?: string;
-}
-
-export type GetProcessInstanceResult = {
-  success: boolean;
-  response?: SearchProcessInstanceResponse;
-  error?: string;
-}
-
-export type GetProcessInstanceVariablesResult = {
-  success: boolean;
-  response?: SearchVariablesResponse;
-  error?: string;
-}
-
-export type GetProcessInstanceIncidentResult = {
-  success: boolean;
-  response?: SearchIncidentsResponse;
-  error?: string;
-}
+export type ApiResponse<T> =
+  | {
+      success: true;
+      response: T;
+    }
+  | {
+      success: false;
+      error: string;
+    }
 
 export type TaskExecutionApi = {
-  deploy: () => Promise<DeploymentResult>;
-  startInstance: (processId: string, elementId: string, variables: { [key: string]: any }) => Promise<StartInstanceResult>;
-  getProcessInstance: (processInstanceKey: string) => Promise<GetProcessInstanceResult>;
-  getProcessInstanceVariables: (processInstanceKey: string) => Promise<GetProcessInstanceVariablesResult>;
-  getProcessInstanceIncident: (processInstanceKey: string) => Promise<GetProcessInstanceIncidentResult>;
+  deploy: () => Promise<ApiResponse<DeployResourceResponse>>;
+  startInstance: (processId: string, elementId: string, variables: { [key: string]: any }) => Promise<ApiResponse<CreateProcessInstanceResponse>>;
+  getProcessInstance: (processInstanceKey: string) => Promise<ApiResponse<SearchProcessInstanceResponse>>;
+  getProcessInstanceVariables: (processInstanceKey: string) => Promise<ApiResponse<SearchVariablesResponse>>;
+  getProcessInstanceIncident: (processInstanceKey: string) => Promise<ApiResponse<SearchIncidentsResponse>>;
 };
 
 export type TaskExecutionStatus =
