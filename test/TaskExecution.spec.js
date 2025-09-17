@@ -423,6 +423,33 @@ describe('TaskExecution', function() {
     });
 
 
+    it('should handle canceling after starting instance', async function() {
+
+      // given
+      api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
+      api.startInstance.resolves({ success: true, response: DEFAULT_START_INSTANCE_RESPONSE });
+      api.getProcessInstance.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_RESPONSE });
+
+      // when
+      taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
+
+      await clock.tickAsync(500);
+
+      // assume
+      expect(statusChangeSpy).to.have.been.calledWith('executing');
+      expect(api.startInstance).to.have.been.calledOnce;
+
+      // when
+      taskExecution.cancelTaskExecution();
+
+      // then
+      expect(statusChangeSpy).to.have.been.calledWith('idle');
+      expect(finishedSpy).to.not.have.been.called;
+      expect(api.getProcessInstanceVariables).to.not.have.been.called;
+      expect(api.getProcessInstanceIncident).to.not.have.been.called;
+    });
+
+
     it('should noop when cancelling without running task execution', async function() {
 
       // when
