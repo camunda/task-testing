@@ -6,6 +6,11 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+## 0.2.1
+
+- `FIX`: properly handle canceling execution at every stage ([#19](https://github.com/camunda/task-testing/pull/19))
+- `DEPS`: update to `@bpmn-io/variable-resolver@1.3.4`
+
 ## 0.2.0
 
 - `FEAT`: show current execution state in results ([#9](https://github.com/camunda/task-testing/pull/9))
