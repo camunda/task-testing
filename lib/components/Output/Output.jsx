@@ -237,21 +237,18 @@ function ErrorBanner({
 }) {
   return (
     <div className="output__error">
-      <div className="output__error--icon">
-        <ErrorFilled />
-      </div>
-      <div className="output__error--content">
-        <div className="output__error--title">
-          <span>{title}</span>
-          {
-            actionLabel && <Link href={ actionUrl } onClick={ () => onActionClick() }>
+      <div className="output__error--title">
+        <span>{title}</span>
+        {
+          actionLabel && <div className="output__error--action">
+            <Link href={ actionUrl } onClick={ () => onActionClick() }>
               { actionLabel }
             </Link>
-          }
-        </div>
-        <div>
-          <span>{ description }</span>
-        </div>
+          </div>
+        }
+      </div>
+      <div className="output__error--content">
+        <span>{ description }</span>
       </div>
     </div>
   );
