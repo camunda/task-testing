@@ -6,6 +6,12 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+## 0.2.3
+
+- `FIX`: call `onTaskExecutionStarted` before the execution
+- `FIX`: properly unsubscribe from `taskExecution.interrupted` event
+- `FIX`: change incident error type property to `errorType`
+
 ## 0.2.2
 
 - `FIX`: remove `operateUrl` from output if execution canceled
