@@ -103,7 +103,7 @@ function App() {
               'key': '2251799813897058',
               'processDefinitionKey': '2251799813894253',
               'processInstanceKey': '2251799813897034',
-              'type': 'JOB_NO_RETRIES',
+              'errorType': 'JOB_NO_RETRIES',
               'message': 'Bad gateway',
               'creationTime': '2025-09-15T12:24:25.639+0000',
               'state': 'ACTIVE',
