@@ -250,6 +250,7 @@ function App() {
           config={ config }
           onConfigChanged={ onConfigChanged }
           operateBaseUrl={ operateURL }
+          documentationUrl="https://docs.camunda.io/"
         />
       </div>
     </>
