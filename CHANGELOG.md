@@ -6,6 +6,10 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+## 0.2.5
+
+* re-release of 0.2.4
+
 ## 0.2.4
 
 * `FIX`: don't show Operate URL if configuration error ([65e80b](https://github.com/camunda/task-testing/commit/65e80b6223a1d1def4f6ac0e6c03e241f2ae7f44))
