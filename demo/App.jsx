@@ -87,7 +87,8 @@ function App() {
               'output3': {
                 'foo': 1
               }
-            }
+            },
+            operateUrl: 'https://camunda.com'
           },
           'ServiceTask_2': {
             success: true,

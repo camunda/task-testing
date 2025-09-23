@@ -68,6 +68,7 @@ export default function Output({
   }, [ output, isTaskExecuting, isConnectionConfigured ]);
 
   const showResetButton = isConnectionConfigured && (output?.success || output?.error || output?.incident);
+  const showOperateUrl = isConnectionConfigured && output?.operateUrl;
   const headerText = isTaskExecuting ? TASK_EXECUTION_STATUS_LABEL[taskExecutionStatus] : 'Results';
 
   return (
@@ -77,22 +78,25 @@ export default function Output({
           { statusIcon }
           <span>{headerText}</span>
         </div>
-        { showResetButton && <Button
-          kind="ghost"
-          onClick={ () => onResetOutput() }
-          size="sm"
-          renderIcon={ Reset }
-          hasIconOnly
-          tooltipPosition="right"
-          iconDescription="Reset output"
-        >Reset</Button>}
-
-        {output?.operateUrl && <Link
-          href={ output.operateUrl }
-          target="_blank"
-          className="output__header--button-operate">
-          View in Operate
-        </Link>}
+        {
+          showResetButton && <Button
+            kind="ghost"
+            onClick={ () => onResetOutput() }
+            size="sm"
+            renderIcon={ Reset }
+            hasIconOnly
+            tooltipPosition="right"
+            iconDescription="Reset output"
+          >Reset</Button>
+        }
+        {
+          showOperateUrl && <Link
+            href={ output.operateUrl }
+            target="_blank"
+            className="output__header--button-operate">
+            View in Operate
+          </Link>
+        }
       </div>
       <div className="output__body">
         <OutputBanner
