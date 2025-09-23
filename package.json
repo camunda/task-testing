@@ -16,7 +16,8 @@
     "build:demo": "webpack --config webpack.demo.js",
     "test": "karma start karma.config.js",
     "lint": "eslint .",
-    "types": "tsc --noEmit"
+    "types": "tsc --noEmit",
+    "prepare": "npm run build"
   },
   "license": "MIT",
   "dependencies": {
