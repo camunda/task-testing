@@ -1,6 +1,6 @@
 {
   "name": "@camunda/task-testing",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "files": [
     "dist"
   ],
