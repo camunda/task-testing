@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 
+import { debounce } from 'min-dash';
+
 import BpmnModeler from 'camunda-bpmn-js/lib/camunda-cloud/Modeler';
 import 'camunda-bpmn-js/dist/assets/camunda-cloud-modeler.css';
 
@@ -216,9 +218,12 @@ function App() {
       .then(response => response.json());
   };
 
-  const onConfigChanged = (config) => {
-    setConfig(config);
-  };
+  const [ onConfigChanged, setOnConfigChanged ] = useState(() => debounce((config) => setConfig(config), 300));
+
+  useEffect(() => {
+    onConfigChanged.flush();
+    setOnConfigChanged(() => debounce((config) => setConfig(config), 300));
+  }, [ setConfig ]);
 
   // eslint-disable-next-line no-undef
   const operateURL = `https://${ process.env.CAMUNDA_CLUSTER_REGION }.operate.camunda.io/${ process.env.CAMUNDA_CLUSTER_ID }/operate`;
