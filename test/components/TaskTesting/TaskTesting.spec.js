@@ -4,7 +4,9 @@ import { render, screen, waitFor } from '@testing-library/react';
 
 import { bootstrapModeler, getModeler, inject } from '../../util/Util';
 
-import TaskTesting, { NO_ELEMENT_TEXT } from '../../../lib/components/TaskTesting/TaskTesting';
+import TaskTesting from '../../../lib/components/TaskTesting/TaskTesting';
+
+import { SINGLE_TASK_SELECTION_REQUIRED_MESSAGE } from '../../../lib/hooks/useSelectedElement';
 
 import diagramXML from '../../fixtures/diagram.bpmn';
 
@@ -19,7 +21,7 @@ describe('TaskTesting', function() {
     renderTaskTesting();
 
     // then
-    expect(screen.getByText(NO_ELEMENT_TEXT)).to.exist;
+    expect(screen.getByText(SINGLE_TASK_SELECTION_REQUIRED_MESSAGE)).to.exist;
   });
 
 
