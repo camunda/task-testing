@@ -47,9 +47,20 @@
     .task-header {
       display: flex;
       gap: 6px;
+      min-width: 0;
       
       .task-type {
         font-weight: bold;
+      }
+
+      .task-type,
+      .task-name {
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        flex-shrink: 1;
+        flex-grow: 1;
       }
     }
 
