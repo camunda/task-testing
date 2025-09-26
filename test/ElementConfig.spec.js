@@ -25,7 +25,7 @@ describe('ElementConfig', function() {
   }));
 
 
-  it('initial config', inject(async function(elementRegistry, injector) {
+  it('initial config', inject(function(elementRegistry, injector) {
 
     // given
     const element = elementRegistry.get('ServiceTask_1');
@@ -34,7 +34,7 @@ describe('ElementConfig', function() {
     const elementConfig = new ElementConfig(injector, elementVariables, DEFAULT_CONFIG);
 
     // then
-    const inputConfigForElement = await elementConfig.getInputConfigForElement(element);
+    const inputConfigForElement = elementConfig.getInputConfigForElement(element);
 
     expect(inputConfigForElement).to.eql('{"foo": "bar"}');
   }));
@@ -49,7 +49,7 @@ describe('ElementConfig', function() {
     }));
 
 
-    it('should set config', inject(async function(elementRegistry) {
+    it('should set config', inject(function(elementRegistry) {
 
       // given
       const element = elementRegistry.get('ServiceTask_1');
@@ -68,7 +68,7 @@ describe('ElementConfig', function() {
       });
 
       // then
-      const inputConfigForElement = await elementConfig.getInputConfigForElement(element);
+      const inputConfigForElement = elementConfig.getInputConfigForElement(element);
 
       expect(inputConfigForElement).to.eql('{"foo": "baz"}');
 
@@ -76,7 +76,7 @@ describe('ElementConfig', function() {
     }));
 
 
-    it('should set input config for element', inject(async function(elementRegistry) {
+    it('should set input config for element', inject(function(elementRegistry) {
 
       // given
       const element = elementRegistry.get('ServiceTask_1');
@@ -89,7 +89,7 @@ describe('ElementConfig', function() {
       elementConfig.setInputConfigForElement(element, '{"foo": "baz"}');
 
       // then
-      const inputConfigForElement = await elementConfig.getInputConfigForElement(element);
+      const inputConfigForElement = elementConfig.getInputConfigForElement(element);
 
       expect(inputConfigForElement).to.eql('{"foo": "baz"}');
 
@@ -97,7 +97,7 @@ describe('ElementConfig', function() {
     }));
 
 
-    it('should reset input config for element', inject(async function(elementRegistry) {
+    it('should reset input config for element', inject(function(elementRegistry) {
 
       // given
       const element = elementRegistry.get('ServiceTask_1');
@@ -110,7 +110,7 @@ describe('ElementConfig', function() {
       elementConfig.resetInputConfigForElement(element);
 
       // then
-      const inputConfigForElement = await elementConfig.getInputConfigForElement(element);
+      const inputConfigForElement = elementConfig.getInputConfigForElement(element);
 
       expect(inputConfigForElement).to.eql('{}');
 
@@ -118,7 +118,7 @@ describe('ElementConfig', function() {
     }));
 
 
-    it('should not set input config and throw error for unsupported element type', inject(async function(elementRegistry) {
+    it('should not set input config and throw error for unsupported element type', inject(function(elementRegistry) {
 
       // given
       const element = elementRegistry.get('Process_1');
@@ -130,7 +130,7 @@ describe('ElementConfig', function() {
     }));
 
 
-    it('should set output config for element', inject(async function(elementRegistry) {
+    it('should set output config for element', inject(function(elementRegistry) {
 
       // given
       const element = elementRegistry.get('ServiceTask_1');
@@ -143,7 +143,7 @@ describe('ElementConfig', function() {
       elementConfig.setOutputConfigForElement(element, { result: 'success' });
 
       // then
-      const outputConfigForElement = await elementConfig.getOutputConfigForElement(element);
+      const outputConfigForElement = elementConfig.getOutputConfigForElement(element);
 
       expect(outputConfigForElement).to.eql({ result: 'success' });
 
@@ -151,7 +151,7 @@ describe('ElementConfig', function() {
     }));
 
 
-    it('should not set output config and throw error for unsupported element type', inject(async function(elementRegistry) {
+    it('should not set output config and throw error for unsupported element type', inject(function(elementRegistry) {
 
       // given
       const element = elementRegistry.get('Process_1');
@@ -173,26 +173,26 @@ describe('ElementConfig', function() {
     }));
 
 
-    it('should return input config for element', inject(async function(elementRegistry) {
+    it('should return input config for element', inject(function(elementRegistry) {
 
       // given
       const element = elementRegistry.get('ServiceTask_1');
 
       // when
-      const inputConfigForElement = await elementConfig.getInputConfigForElement(element);
+      const inputConfigForElement = elementConfig.getInputConfigForElement(element);
 
       // then
       expect(inputConfigForElement).to.eql('{"foo": "bar"}');
     }));
 
 
-    it('should return default input config for element', inject(async function(elementRegistry) {
+    it('should return default input config for element', inject(function(elementRegistry) {
 
       // given
       const element = elementRegistry.get('ServiceTask_2');
 
       // when
-      const inputConfigForElement = await elementConfig.getInputConfigForElement(element);
+      const inputConfigForElement = elementConfig.getInputConfigForElement(element);
 
       // then
       expect(inputConfigForElement).to.eql('{}');
