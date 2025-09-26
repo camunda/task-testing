@@ -7,12 +7,11 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 ___Note:__ Yet to be released changes appear here._
 
 * `FIX`: call configure connection callback when clicking _Test task_ and connection not configured ([#25](https://github.com/camunda/task-testing/pull/25))
+* `FIX`: do not prefill inputs based on input parameters ((#26)[https://github.com/camunda/task-testing/pull/26])
 
 ## 0.2.5
 
 * re-release of 0.2.4
-
-* `FIX`: do not prefill inputs based on input parameters ((#26)[https://github.com/camunda/task-testing/pull/26])
 
 ## 0.2.4
 
