@@ -7,7 +7,7 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 ___Note:__ Yet to be released changes appear here._
 
 * `FIX`: call configure connection callback when clicking _Test task_ and connection not configured ([#25](https://github.com/camunda/task-testing/pull/25))
-* `FIX`: do not prefill inputs based on input parameters ((#26)[https://github.com/camunda/task-testing/pull/26])
+* `FIX`: do not prefill inputs based on input parameters ([#26](https://github.com/camunda/task-testing/pull/26))
 * `FIX`: always render input editor regardless of content ([#28](https://github.com/camunda/task-testing/pull/28))
 * `FIX`: indicate unsupported element selection ([#29](https://github.com/camunda/task-testing/pull/29))
 
