@@ -218,12 +218,7 @@ function App() {
       .then(response => response.json());
   };
 
-  const [ onConfigChanged, setOnConfigChanged ] = useState(() => debounce((config) => setConfig(config), 300));
-
-  useEffect(() => {
-    onConfigChanged.flush();
-    setOnConfigChanged(() => debounce((config) => setConfig(config), 300));
-  }, [ setConfig ]);
+  const { current: onConfigChanged } = useRef(debounce(config => setConfig(config), 300));
 
   // eslint-disable-next-line no-undef
   const operateURL = `https://${ process.env.CAMUNDA_CLUSTER_REGION }.operate.camunda.io/${ process.env.CAMUNDA_CLUSTER_ID }/operate`;
