@@ -78,6 +78,7 @@ export type TaskExecutionApi = {
   getProcessInstance: (processInstanceKey: string) => Promise<GetProcessInstanceResult>;
   getProcessInstanceVariables: (processInstanceKey: string) => Promise<GetProcessInstanceVariablesResult>;
   getProcessInstanceIncident: (processInstanceKey: string) => Promise<GetProcessInstanceIncidentResult>;
+  cancelProcessInstance: (processInstanceKey: string) => Promise<any>;
 };
 
 export type TaskExecutionStatus =

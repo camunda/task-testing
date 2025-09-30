@@ -218,6 +218,10 @@ function App() {
       .then(response => response.json());
   };
 
+  const cancelProcessInstance = async (processInstanceKey) => {
+    return fetch(`/api/cancelProcessInstance/${processInstanceKey}`, { method: 'POST' });
+  };
+
   const { current: onConfigChanged } = useRef(debounce(config => setConfig(config), 300));
 
   // eslint-disable-next-line no-undef
@@ -246,7 +250,8 @@ function App() {
             startInstance,
             getProcessInstance,
             getProcessInstanceVariables,
-            getProcessInstanceIncident
+            getProcessInstanceIncident,
+            cancelProcessInstance
           } }
           config={ config }
           onConfigChanged={ onConfigChanged }

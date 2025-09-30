@@ -165,6 +165,26 @@ app.get('/api/getProcessInstanceIncident/:processInstanceKey', async (req, res) 
   }
 });
 
+app.post('/api/cancelProcessInstance/:processInstanceKey', async (req, res) => {
+  try {
+    if (!camunda) {
+      return res.json({ success: false, error: 'Camunda environment not configured' });
+    }
+
+    const { processInstanceKey } = req.params;
+
+    const client = camunda.getCamundaRestClient();
+
+    const response = await client.cancelProcessInstance({
+      processInstanceKey
+    });
+
+    res.json({ success: true, response });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message, source: err.source });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {

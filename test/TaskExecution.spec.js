@@ -30,7 +30,8 @@ describe('TaskExecution', function() {
       startInstance: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
       getProcessInstance: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
       getProcessInstanceVariables: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
-      getProcessInstanceIncident: sinon.stub().resolves({ success: false, error: 'Not implemented' })
+      getProcessInstanceIncident: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
+      cancelProcessInstance: sinon.stub().resolves({ success: false, error: 'Not implemented' })
     };
 
     taskExecution = new TaskExecution(injector, api);
@@ -73,6 +74,7 @@ describe('TaskExecution', function() {
     expect(api.getProcessInstance).to.have.been.calledOnce;
     expect(api.getProcessInstanceVariables).to.have.been.calledOnce;
     expect(api.getProcessInstanceIncident).to.not.have.been.called;
+    expect(api.cancelProcessInstance).to.not.have.been.called;
 
     expect(finishedSpy).to.have.been.calledWithMatch({
       'incident': null,
@@ -107,6 +109,7 @@ describe('TaskExecution', function() {
     expect(api.getProcessInstance).to.have.been.calledTwice;
     expect(api.getProcessInstanceVariables).to.have.been.calledOnce;
     expect(api.getProcessInstanceIncident).to.not.have.been.called;
+    expect(api.cancelProcessInstance).to.not.have.been.called;
 
     expect(finishedSpy).to.have.been.calledWithMatch({
       'incident': null,
@@ -417,6 +420,7 @@ describe('TaskExecution', function() {
       expect(errorSpy).to.not.have.been.called;
       expect(api.deploy).to.have.been.calledOnce;
       expect(api.startInstance).to.have.been.calledOnce;
+      expect(api.cancelProcessInstance).to.have.been.calledOnce;
       expect(api.getProcessInstance).to.not.have.been.called;
       expect(api.getProcessInstanceVariables).to.not.have.been.called;
       expect(api.getProcessInstanceIncident).to.not.have.been.called;
