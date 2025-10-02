@@ -8,7 +8,7 @@ ___Note:__ Yet to be released changes appear here._
 
 ## 0.2.7
 
-* `FIX`: use provided variable resolver
+* `FIX`: use provided variable resolver ([#33](https://github.com/camunda/task-testing/pull/33))
 
 ## 0.2.6
 
