@@ -3,8 +3,6 @@ import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import ZeebeVariableResolver from '@bpmn-io/variable-resolver/lib/zeebe/VariableResolver';
-
 import { bootstrapModeler, getModeler, inject } from '../../util/Util';
 
 import InputEditor, { PLACEHOLDER_TEXT, INVALID_JSON_ERROR } from '../../../lib/components/Input/InputEditor';
@@ -184,12 +182,8 @@ describe('InputEditor', function() {
 
       // expect
       expect(onChangeSpy).to.have.been.calledTwice;
-      expect(onChangeSpy.getCalls()[0]).to.have.been.calledWith(`{
-  
-}`);
-      expect(onChangeSpy.getCalls()[1]).to.have.been.calledWith(`{
-  "foo": 
-}`);
+      expect(onChangeSpy.getCalls()[0]).to.have.been.calledWith('{\n  \n}');
+      expect(onChangeSpy.getCalls()[1]).to.have.been.calledWith('{\n  "foo": \n}');
     }));
 
   });
@@ -276,10 +270,7 @@ function renderWithProps(props = {}) {
 }
 
 async function getVariablesForElement(injector, element) {
-  const bpmnjs = injector.get('bpmnjs'),
-        eventBus = injector.get('eventBus');
-
-  const variableResolver = new ZeebeVariableResolver(eventBus, bpmnjs);
+  const variableResolver = injector.get('variableResolver');
 
   return variableResolver.getVariablesForElement(element)
     .catch(() => {
