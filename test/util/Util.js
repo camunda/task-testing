@@ -8,6 +8,7 @@
 
 import Modeler from 'bpmn-js-headless/lib/Modeler';
 import zeebeModdleExtension from 'zeebe-bpmn-moddle/resources/zeebe.json';
+import { ZeebeVariableResolverModule } from '@bpmn-io/variable-resolver';
 
 const initialDiagram = `<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Web Modeler" exporterVersion="dev" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.4.0">
@@ -31,13 +32,17 @@ export function bootstrapModeler(xml = initialDiagram, options = {}) {
       modeler.destroy();
     }
 
+    const modules = [
+      ZeebeVariableResolverModule
+    ];
+
     const { additionalModules = [] } = options;
 
     modeler = new Modeler({
       moddleExtensions: {
         zeebe: zeebeModdleExtension
       },
-      additionalModules
+      additionalModules: modules.concat(additionalModules)
     });
 
     return modeler.importXML(xml);
