@@ -21,6 +21,8 @@ import {
 
 import OutputEditor from './OutputEditor';
 
+import { jsonDiff } from '../../utils/json-diff';
+
 export const TASK_EXECUTION_STATUS_LABEL = {
   deploying: 'Deploying...',
   'starting-instance': 'Starting instance...',
@@ -35,6 +37,7 @@ export const TASK_EXECUTION_STATUS_LABEL = {
  * @param {string} [props.configureConnectionLabel]
  * @param {Function} [props.onConfigureConnection]
  * @param {boolean} props.isTaskExecuting
+ * @param {string} props.input
  * @param {import('../../types').ElementOutput} props.output
  * @param {Function} props.onResetOutput
  * @param {import('../../types').TaskExecutionStatus} props.taskExecutionStatus
@@ -46,6 +49,7 @@ export default function Output({
   configureConnectionLabel,
   onConfigureConnection,
   isTaskExecuting,
+  input,
   output,
   onResetOutput,
   taskExecutionStatus
@@ -112,6 +116,7 @@ export default function Output({
             <OutputVariables
               isTaskExecuting={ isTaskExecuting }
               output={ output }
+              input={ input }
             />
         }
       </div>
@@ -160,7 +165,8 @@ function OutputBanner({
 
 function OutputVariables({
   isTaskExecuting,
-  output
+  output,
+  input
 }) {
 
   if (isTaskExecuting) {
@@ -168,8 +174,12 @@ function OutputVariables({
   }
 
   if (output?.success) {
+    const { added, modified } = jsonDiff(JSON.parse(input || '{}'), output.variables);
+
     return <OutputEditor
       value={ JSON.stringify(output.variables, null, 2) }
+      added={ added }
+      modified={ modified }
     />;
 
     // TODO: Introduce tabs when able to filter variables by `scopeKey`
