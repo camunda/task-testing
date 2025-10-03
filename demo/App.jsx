@@ -93,11 +93,10 @@ function App() {
             operateUrl: 'https://camunda.com'
           },
           'ServiceTask_2': {
-            success: true,
-            variables: {
-              'a': 'foo',
-              'c': 'bar',
-              'e': 'baz'
+            success: false,
+            error: {
+              message: 'Network error',
+              response: 'Could not reach the endpoint'
             }
           },
           'ServiceTask_4': {
@@ -138,11 +137,12 @@ function App() {
                 'message': 'Bad gateway',
                 'type': 'io.camunda.connector.api.error.ConnectorException'
               }
-            }
+            },
+            operateUrl: 'https://camunda.com'
           }
         }
       });
-    }, 3000);
+    }, 1000);
   }, []);
 
   useEffect(() => {
