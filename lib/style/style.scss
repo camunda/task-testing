@@ -92,10 +92,16 @@
       display: flex;
       align-items: center;
       gap: 5px;
+      width: 100%;
+      padding-top: 5px;
     }
 
     .input__header--title {
       color: #525252;
+    }
+
+    .cds--popover-container:has(.input__header--button-reset) {
+      margin-left: auto;
     }
   }
 
