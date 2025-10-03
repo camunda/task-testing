@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { Button } from '@carbon/react';
-import { Reset } from '@carbon/icons-react';
+import { Button, Link } from '@carbon/react';
+import { Reset, Launch } from '@carbon/icons-react';
 
 import InputEditor from './InputEditor';
 
@@ -21,19 +21,21 @@ export default function Input({
     <div className="input">
       <div className="input__header">
         <div className="input__header--title">
-          Configure input variables
+          Process variables
         </div>
-        <div className="input__header--buttons">
-          <Button
-            kind="ghost"
-            onClick={ handleResetInput }
-            size="sm"
-            renderIcon={ Reset }
-            hasIconOnly
-            tooltipPosition="right"
-            iconDescription="Reset input"
-          >Reset</Button>
-        </div>
+        <Link href="https://docs.camunda.io/docs/components/concepts/variables/" target="_blank" title="Open documentation">
+          <Launch />
+        </Link>
+        <Button
+          className="input__header--button-reset"
+          kind="ghost"
+          onClick={ handleResetInput }
+          size="sm"
+          renderIcon={ Reset }
+          hasIconOnly
+          tooltipPosition="left"
+          iconDescription="Clear"
+        />
       </div>
       <InputEditor
         allOutputs={ allOutputs }
