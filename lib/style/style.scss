@@ -114,6 +114,7 @@
     .output__header {
       display: flex;
       align-items: center;
+      justify-content: flex-end;
       height: 32px;
       width: 100%;
     }
@@ -123,6 +124,7 @@
       display: flex;
       align-items: center;
       gap: 6px;
+      margin-right: auto;
 
       svg.output__status-icon--ready {
         fill: #0043ce;
@@ -140,10 +142,6 @@
         inline-size: 16px;
         min-block-size: initial;
       }
-    }
-
-    .output__header--button-operate {
-      margin-left: auto;
     }
 
     .output__body {

@@ -30,9 +30,9 @@ export const TASK_EXECUTION_STATUS_LABEL = {
 /**
  * @param {Object} props
  * @param {boolean} props.isConnectionConfigured
- * @param {string} [props.configureConnectionBannerTitle]
- * @param {string} [props.configureConnectionBannerDescription]
- * @param {string} [props.configureConnectionLabel]
+ * @param {string} props.configureConnectionBannerTitle
+ * @param {string} props.configureConnectionBannerDescription
+ * @param {string} props.configureConnectionLabel
  * @param {Function} [props.onConfigureConnection]
  * @param {boolean} props.isTaskExecuting
  * @param {import('../../types').ElementOutput} props.output
@@ -69,7 +69,32 @@ export default function Output({
 
   const showResetButton = isConnectionConfigured && (output?.success || output?.error || output?.incident);
   const showOperateUrl = isConnectionConfigured && output?.operateUrl;
-  const headerText = isTaskExecuting ? TASK_EXECUTION_STATUS_LABEL[taskExecutionStatus] : 'Results';
+
+  const headerText = useMemo(() => {
+    if (isTaskExecuting) {
+      return TASK_EXECUTION_STATUS_LABEL[taskExecutionStatus];
+    }
+
+    if (!isConnectionConfigured) {
+      return 'Connection error';
+    }
+
+    if (output) {
+      if (output.error) {
+        return output.error.message ? `Error: ${output.error.message}` : 'Error';
+      }
+
+      if (output.incident) {
+        return output.incident.errorType ? `Incident: ${output.incident.errorType}` : 'Incident';
+      }
+
+      if (output.success) {
+        return 'Process variables after execution';
+      }
+    }
+
+    return 'Ready';
+  }, [ isTaskExecuting, taskExecutionStatus, output, isConnectionConfigured ]);
 
   return (
     <div className="output">
@@ -79,17 +104,6 @@ export default function Output({
           <span>{headerText}</span>
         </div>
         {
-          showResetButton && <Button
-            kind="ghost"
-            onClick={ () => onResetOutput() }
-            size="sm"
-            renderIcon={ Reset }
-            hasIconOnly
-            tooltipPosition="right"
-            iconDescription="Reset output"
-          >Reset</Button>
-        }
-        {
           showOperateUrl && <Link
             href={ output.operateUrl }
             target="_blank"
@@ -97,65 +111,36 @@ export default function Output({
             View in Operate
           </Link>
         }
+        {
+          showResetButton && <Button
+            kind="ghost"
+            onClick={ () => onResetOutput() }
+            size="sm"
+            renderIcon={ Reset }
+            hasIconOnly
+            tooltipPosition="left"
+            iconDescription="Clear"
+          />
+        }
       </div>
       <div className="output__body">
-        <OutputBanner
-          isConnectionConfigured={ isConnectionConfigured }
-          configureConnectionBannerTitle={ configureConnectionBannerTitle }
-          configureConnectionBannerDescription={ configureConnectionBannerDescription }
-          configureConnectionLabel={ configureConnectionLabel }
-          onConfigureConnection={ onConfigureConnection }
-          output={ output }
-        />
         {
-          isConnectionConfigured &&
+          isConnectionConfigured ?
             <OutputVariables
               isTaskExecuting={ isTaskExecuting }
               output={ output }
+            />
+            :
+            <ErrorBanner
+              title={ configureConnectionBannerTitle }
+              description={ configureConnectionBannerDescription }
+              actionLabel={ configureConnectionLabel }
+              onActionClick={ onConfigureConnection }
             />
         }
       </div>
     </div>
   );
-}
-
-function OutputBanner({
-  isConnectionConfigured,
-  configureConnectionBannerTitle,
-  configureConnectionBannerDescription,
-  configureConnectionLabel,
-  onConfigureConnection,
-  output
-}) {
-
-  if (!isConnectionConfigured) {
-    return <ErrorBanner
-      title={ configureConnectionBannerTitle }
-      description={ configureConnectionBannerDescription }
-      actionLabel={ configureConnectionLabel }
-      onActionClick={ onConfigureConnection }
-    />;
-  }
-
-  if (output?.error) {
-    return <ErrorBanner
-      title="Task execution failed"
-      description={ `Error: ${output.error.message}` }
-    />;
-  }
-
-  if (output?.incident) {
-    const action = output.incident.operateUrl ?
-      { actionLabel: 'View in Operate', actionUrl: output.incident.operateUrl } : {};
-
-    return <ErrorBanner
-      title="Task execution failed"
-      description={ `Incident: ${output.incident.errorType}` }
-      { ...action }
-    />;
-  }
-
-  return null;
 }
 
 function OutputVariables({
@@ -218,7 +203,7 @@ function OutputVariables({
 
   return <div className="output__variables--empty">
     <div>
-      Enter input variables, then click <span className="output__variables--empty-action">Test task</span> to see results.
+      Enter process variables, then click <span className="output__variables--empty-action">Test task</span> to see how they change once the task has executed.
     </div>
   </div>;
 }
