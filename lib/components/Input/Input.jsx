@@ -21,7 +21,7 @@ export default function Input({
     <div className="input">
       <div className="input__header">
         <div className="input__header--title">
-          Process variables
+          Input process variables
         </div>
         <Link href="https://docs.camunda.io/docs/components/concepts/variables/" target="_blank" title="Open documentation">
           <Launch />
