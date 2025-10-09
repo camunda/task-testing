@@ -423,6 +423,35 @@ describe('TaskExecution', function() {
     });
 
 
+    it('should cancel on <selection.changed>', inject(async function(elementRegistry, selection) {
+
+      // given
+      api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
+      api.startInstance.resolves({ success: true, response: DEFAULT_START_INSTANCE_RESPONSE });
+      api.getProcessInstance.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_RESPONSE });
+
+      taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
+
+      await clock.tickAsync(500);
+
+      // when
+      const task = elementRegistry.get('StartEvent_1');
+
+      selection.select(task);
+
+      await clock.tickAsync(500);
+
+      // then
+      expect(finishedSpy).to.not.have.been.called;
+      expect(errorSpy).to.not.have.been.called;
+      expect(api.deploy).to.have.been.calledOnce;
+      expect(api.startInstance).to.have.been.calledOnce;
+      expect(api.getProcessInstance).to.not.have.been.called;
+      expect(api.getProcessInstanceVariables).to.not.have.been.called;
+      expect(api.getProcessInstanceIncident).to.not.have.been.called;
+    }));
+
+
     it('should handle canceling after starting instance', async function() {
 
       // given
@@ -450,7 +479,7 @@ describe('TaskExecution', function() {
     });
 
 
-    it('should noop when cancelling without running task execution', async function() {
+    it('should noop when canceling without running task execution', async function() {
 
       // when
       taskExecution.cancelTaskExecution();
