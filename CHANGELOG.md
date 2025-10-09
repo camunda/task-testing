@@ -6,6 +6,12 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+## 0.2.8
+
+* `FIX`: do not cancel task execution on every diagram change ([#32](https://github.com/camunda/task-testing/issues/32))
+* `FIX`: cancel execution when switching between different diagrams ([#38](https://github.com/camunda/task-testing/pull/38))
+* `FIX`: react to Operate URL change from modeler ([camunda/camunda-modeler#5290](https://github.com/camunda/camunda-modeler/issues/5290))
+
 ## 0.2.7
 
 * `FIX`: use provided variable resolver ([#33](https://github.com/camunda/task-testing/pull/33))
