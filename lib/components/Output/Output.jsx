@@ -21,6 +21,8 @@ import {
 
 import OutputEditor from './OutputEditor';
 
+import { SCOPES } from '../../TaskExecution';
+
 export const TASK_EXECUTION_STATUS_LABEL = {
   deploying: 'Deploying...',
   'starting-instance': 'Starting instance...',
@@ -89,7 +91,7 @@ export default function Output({
       }
 
       if (output.success) {
-        return 'Process variables after execution';
+        return 'Success';
       }
     }
 
@@ -153,27 +155,22 @@ function OutputVariables({
   }
 
   if (output?.success) {
-    return <OutputEditor
-      value={ JSON.stringify(output.variables, null, 2) }
-    />;
-
-    // TODO: Introduce tabs when able to filter variables by `scopeKey`
-    // return (
-    //   <Tabs>
-    //     <TabList>
-    //       <Tab>Process variables</Tab>
-    //       <Tab>Task variables</Tab>
-    //     </TabList>
-    //     <TabPanels>
-    //       <TabPanel>
-    //         <OutputEditor value={ JSON.stringify(output.variables, null, 2) } />
-    //       </TabPanel>
-    //       <TabPanel>
-    //         <OutputEditor value={ JSON.stringify(output.variables, null, 2) } />
-    //       </TabPanel>
-    //     </TabPanels>
-    //   </Tabs>
-    // );
+    return (
+      <Tabs>
+        <TabList>
+          <Tab>Process variables</Tab>
+          <Tab>Local variables</Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel>
+            <OutputEditor value={ JSON.stringify(pickVariables(output.variables, SCOPES.PROCESS), null, 2) } />
+          </TabPanel>
+          <TabPanel>
+            <OutputEditor value={ JSON.stringify(pickVariables(output.variables, SCOPES.LOCAL), null, 2) } />
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
+    );
   }
 
   if (output?.error) {
@@ -273,4 +270,22 @@ function printIncident(incident) {
  */
 function capitalize(string) {
   return string.replace(/([A-Z])/g, ' $1').replace(/^./, (match) => match.toUpperCase());
+}
+
+/**
+ * Pick variables for a given scope.
+ *
+ * @param {Object} variables
+ * @param {string} scope
+ *
+ * @returns {Object}
+ */
+function pickVariables(variables, scope) {
+  return Object.entries(variables).reduce((variables, [ name, variable ]) => {
+    if (scope === variable.scope) {
+      variables[name] = variable.value;
+    }
+
+    return variables;
+  }, {});
 }

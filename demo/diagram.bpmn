@@ -21,6 +21,7 @@
           <zeebe:input source="={ foo: 1 }" target="contextInput" />
           <zeebe:input source="=foo + bar + baz" target="complexInput" />
           <zeebe:output source="=fooOutput" target="foo" />
+          <zeebe:output source="=true" target="baz" />
         </zeebe:ioMapping>
         <zeebe:script expression="=fooInput + 2" resultVariable="fooOutput" />
       </bpmn:extensionElements>

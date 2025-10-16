@@ -3,6 +3,7 @@ import type {
   DeployResourceResponse,
   SearchProcessInstanceResponse,
   SearchVariablesResponse,
+  SearchElementInstancesResponse,
   SearchIncidentsResponse
 } from '@camunda8/sdk/dist/c8/lib/C8Dto';
 
@@ -20,6 +21,7 @@ export type ElementOutput = {
   error?: TaskExecutionEvents.Error;
   incident?: any;
   operateUrl?: string;
+  [key: string]: any;
 } | undefined;
 
 export type Config = {
@@ -53,6 +55,7 @@ export type TaskExecutionApi = {
   startInstance: (processId: string, elementId: string, variables: { [key: string]: any }) => Promise<ApiResponse<CreateProcessInstanceResponse>>;
   getProcessInstance: (processInstanceKey: string) => Promise<ApiResponse<SearchProcessInstanceResponse>>;
   getProcessInstanceVariables: (processInstanceKey: string) => Promise<ApiResponse<SearchVariablesResponse>>;
+  getProcessInstanceElementInstances: (processInstanceKey: string) => Promise<ApiResponse<SearchElementInstancesResponse>>;
   getProcessInstanceIncident: (processInstanceKey: string) => Promise<ApiResponse<SearchIncidentsResponse>>;
 };
 
