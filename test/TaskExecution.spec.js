@@ -2,7 +2,7 @@ import sinon from 'sinon';
 
 import { bootstrapModeler, inject } from './util/Util';
 
-import TaskExecution, { INTERVAL_MS } from '../lib/TaskExecution';
+import TaskExecution, { getVariables, INTERVAL_MS, SCOPES } from '../lib/TaskExecution';
 
 describe('TaskExecution', function() {
 
@@ -30,6 +30,7 @@ describe('TaskExecution', function() {
       startInstance: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
       getProcessInstance: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
       getProcessInstanceVariables: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
+      getProcessInstanceElementInstances: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
       getProcessInstanceIncident: sinon.stub().resolves({ success: false, error: 'Not implemented' })
     };
 
@@ -48,6 +49,7 @@ describe('TaskExecution', function() {
     errorSpy.resetHistory();
   });
 
+
   it('should execute a task', async function() {
 
     // given
@@ -55,6 +57,7 @@ describe('TaskExecution', function() {
     api.startInstance.resolves({ success: true, response: DEFAULT_START_INSTANCE_RESPONSE });
     api.getProcessInstance.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_RESPONSE });
     api.getProcessInstanceVariables.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_VARIABLES_RESPONSE });
+    api.getProcessInstanceElementInstances.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_ELEMENT_INSTANCES_RESPONSE });
 
     // when
     taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
@@ -72,14 +75,21 @@ describe('TaskExecution', function() {
     expect(api.startInstance).to.have.been.calledOnce;
     expect(api.getProcessInstance).to.have.been.calledOnce;
     expect(api.getProcessInstanceVariables).to.have.been.calledOnce;
+    expect(api.getProcessInstanceElementInstances).to.have.been.calledOnce;
     expect(api.getProcessInstanceIncident).to.not.have.been.called;
 
     expect(finishedSpy).to.have.been.calledWithMatch({
       'incident': null,
       'success': true,
       'variables': {
-        'foo': 'bar',
-        'baz': 42
+        'foo': {
+          'value': 'bar',
+          'scope': 'PROCESS'
+        },
+        'baz': {
+          'value': 42,
+          'scope': 'PROCESS'
+        }
       }
     });
   });
@@ -93,6 +103,7 @@ describe('TaskExecution', function() {
     api.getProcessInstance.onFirstCall().resolves({ success: true, response: { items: [] } });
     api.getProcessInstance.onSecondCall().resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_RESPONSE });
     api.getProcessInstanceVariables.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_VARIABLES_RESPONSE });
+    api.getProcessInstanceElementInstances.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_ELEMENT_INSTANCES_RESPONSE });
 
     // when
     taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
@@ -106,13 +117,20 @@ describe('TaskExecution', function() {
     expect(api.startInstance).to.have.been.calledOnce;
     expect(api.getProcessInstance).to.have.been.calledTwice;
     expect(api.getProcessInstanceVariables).to.have.been.calledOnce;
+    expect(api.getProcessInstanceElementInstances).to.have.been.calledOnce;
     expect(api.getProcessInstanceIncident).to.not.have.been.called;
 
     expect(finishedSpy).to.have.been.calledWithMatch({
       'incident': null,
       'variables': {
-        'foo': 'bar',
-        'baz': 42
+        'foo': {
+          'value': 'bar',
+          'scope': 'PROCESS'
+        },
+        'baz': {
+          'value': 42,
+          'scope': 'PROCESS'
+        }
       }
     });
   });
@@ -294,6 +312,7 @@ describe('TaskExecution', function() {
       api.getProcessInstance.onFirstCall().resolves({ success: false, error: GET_PROCESS_INSTANCE_ERROR });
       api.getProcessInstance.onSecondCall().resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_RESPONSE });
       api.getProcessInstanceVariables.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_VARIABLES_RESPONSE });
+      api.getProcessInstanceElementInstances.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_ELEMENT_INSTANCES_RESPONSE });
 
       // when
       taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
@@ -307,6 +326,7 @@ describe('TaskExecution', function() {
       expect(api.startInstance).to.have.been.calledOnce;
       expect(api.getProcessInstance).to.have.been.calledTwice;
       expect(api.getProcessInstanceVariables).to.have.been.calledOnce;
+      expect(api.getProcessInstanceElementInstances).to.have.been.calledOnce;
       expect(api.getProcessInstanceIncident).to.not.have.been.called;
 
       expect(errorSpy).to.have.been.calledWithMatch({
@@ -356,6 +376,7 @@ describe('TaskExecution', function() {
         ]
       } });
       api.getProcessInstanceVariables.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_VARIABLES_RESPONSE });
+      api.getProcessInstanceElementInstances.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_ELEMENT_INSTANCES_RESPONSE });
 
       // when
       taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
@@ -369,13 +390,20 @@ describe('TaskExecution', function() {
       expect(api.startInstance).to.have.been.calledOnce;
       expect(api.getProcessInstance).to.have.been.calledOnce;
       expect(api.getProcessInstanceVariables).to.have.been.calledOnce;
+      expect(api.getProcessInstanceElementInstances).to.have.been.calledOnce;
       expect(api.getProcessInstanceIncident).to.have.been.calledOnce;
 
       expect(finishedSpy).to.have.been.calledWithMatch({
         'success': false,
         'variables': {
-          'foo': 'bar',
-          'baz': 42
+          'foo': {
+            'value': 'bar',
+            'scope': 'PROCESS'
+          },
+          'baz': {
+            'value': 42,
+            'scope': 'PROCESS'
+          }
         },
         'incident': {
           key: '2251799814592731',
@@ -492,6 +520,63 @@ describe('TaskExecution', function() {
 
   });
 
+
+  describe('#getVariables', function() {
+
+    it('should get variables with scope', function() {
+
+      // given
+      const getVariablesResponseItems = [
+        {
+          name: 'localFoo',
+          value: 'bar',
+          scopeKey: '1'
+        },
+        {
+          name: 'localBaz',
+          value: 42,
+          scopeKey: '1'
+        },
+        {
+          name: 'processFoo',
+          value: true,
+          scopeKey: '2'
+        },
+        {
+          name: 'otherLocalFoo',
+          value: 'baz',
+          scopeKey: '3'
+        }
+      ];
+
+      const getElementInstancesResponseItems = [
+        {
+          elementId: 'ServiceTask_1',
+          elementInstanceKey: '1'
+        }
+      ];
+
+      // when
+      const variables = getVariables(
+        getVariablesResponseItems,
+        getElementInstancesResponseItems,
+        {
+          processInstanceKey: '2'
+        },
+        'ServiceTask_1'
+      );
+
+      // then
+      expect(variables).to.eql({
+        localFoo: { value: 'bar', scope: SCOPES.LOCAL },
+        localBaz: { value: 42, scope: SCOPES.LOCAL },
+        processFoo: { value: true, scope: SCOPES.PROCESS },
+        otherLocalFoo: { value: 'baz', scope: null }
+      });
+    });
+
+  });
+
 });
 
 const DEFAULT_DEPLOY_RESPONSE = {
@@ -587,5 +672,30 @@ const DEFAULT_GET_PROCESS_INSTANCE_VARIABLES_RESPONSE = {
     'hasMoreTotalItems': false,
     'startCursor': 'WzIyNTE3OTk4MTM3NTU5MjNd',
     'endCursor': 'WzIyNTE3OTk4MTM3NTU5NDVd'
+  }
+};
+
+const DEFAULT_GET_PROCESS_INSTANCE_ELEMENT_INSTANCES_RESPONSE = {
+  'items': [
+    {
+      'processDefinitionId': 'Process_TaskTesting',
+      'startDate': '2025-10-16T13:08:56.455Z',
+      'endDate': '2025-10-16T13:08:56.455Z',
+      'elementId': 'ServiceTask_2',
+      'elementName': 'Inputs',
+      'type': 'SCRIPT_TASK',
+      'state': 'COMPLETED',
+      'hasIncident': false,
+      'tenantId': '<default>',
+      'elementInstanceKey': '2251799817092569',
+      'processInstanceKey': '2251799817092566',
+      'processDefinitionKey': '2251799817066246'
+    }
+  ],
+  'page': {
+    'totalItems': 1,
+    'hasMoreTotalItems': false,
+    'startCursor': 'WzIyNTE3OTk4MTcwOTI1Njld',
+    'endCursor': 'WzIyNTE3OTk4MTcwOTI1Njld'
   }
 };

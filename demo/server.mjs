@@ -143,6 +143,28 @@ app.get('/api/getProcessInstanceVariables/:processInstanceKey', async (req, res)
   }
 });
 
+app.get('/api/getProcessInstanceElementInstances/:processInstanceKey', async (req, res) => {
+  try {
+    if (!camunda) {
+      return res.json({ success: false, error: 'Camunda environment not configured' });
+    }
+
+    const { processInstanceKey } = req.params;
+
+    const client = camunda.getCamundaRestClient();
+
+    const response = await client.searchElementInstances({
+      filter: {
+        processInstanceKey
+      }
+    });
+
+    res.json({ success: true, response });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 app.get('/api/getProcessInstanceIncident/:processInstanceKey', async (req, res) => {
   try {
     if (!camunda) {

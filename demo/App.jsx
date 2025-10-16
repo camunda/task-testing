@@ -50,6 +50,10 @@ function App() {
             r: 18,
             s: 19,
             t: 20
+          }, null, 2),
+          'ServiceTask_2': JSON.stringify({
+            foo: 1,
+            bar: 'baz'
           }, null, 2)
         },
         output: {
@@ -213,6 +217,11 @@ function App() {
       .then(response => response.json());
   };
 
+  const getProcessInstanceElementInstances = async (processInstanceKey) => {
+    return fetch(`/api/getProcessInstanceElementInstances/${processInstanceKey}`)
+      .then(response => response.json());
+  };
+
   const getProcessInstanceIncident = async (processInstanceKey) => {
     return fetch(`/api/getProcessInstanceIncident/${processInstanceKey}`)
       .then(response => response.json());
@@ -246,6 +255,7 @@ function App() {
             startInstance,
             getProcessInstance,
             getProcessInstanceVariables,
+            getProcessInstanceElementInstances,
             getProcessInstanceIncident
           } }
           config={ config }
