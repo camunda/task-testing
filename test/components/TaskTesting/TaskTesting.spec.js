@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 
 import { CloudElementTemplatesPropertiesProviderModule } from 'bpmn-js-element-templates';
 
@@ -70,6 +70,38 @@ describe('TaskTesting', function() {
     // then
     await screen.findByText('REST Outbound Connector');
     await screen.findByText('REST');
+  }));
+
+
+  it('should show _View in Operate_ button during task execution', inject(async function(elementRegistry, selection) {
+
+    // given
+    const api = {
+      deploy: sinon.spy(() => Promise.resolve({ success: true, response: { processes: [ { processDefinitionId: '123' } ] } })),
+      startInstance: sinon.spy(() => Promise.resolve({ success: true, response: { processInstanceKey: '123' } })),
+      getInstance: sinon.spy(() => Promise.resolve({ success: true, response: {} })),
+    };
+
+    renderTaskTesting({
+      isConnectionConfigured: true,
+      operateBaseUrl : 'https://camunda.com',
+      api,
+    });
+
+    // when
+    selection.select(elementRegistry.get('ServiceTask_3'));
+
+    const button = await screen.findByTestId('test-task-btn');
+    button.click();
+
+    // then
+    await waitFor(() => {
+      expect(api.startInstance).to.have.been.called;
+    });
+
+    await screen.findByText('View in Operate');
+
+    expect(api.getInstance).to.have.not.been.called;
   }));
 
 

@@ -1,8 +1,9 @@
 import React from 'react';
 
 import { render } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
-import Output, { pickVariables } from '../../../lib/components/Output/Output';
+import Output, { pickVariables, NO_OPERATE_URL_TOOLTIP } from '../../../lib/components/Output/Output';
 
 import { SCOPES } from '../../../lib/TaskExecution';
 
@@ -79,6 +80,49 @@ describe('Output', function() {
       expect(processVariables).to.eql({});
 
       expect(localVariables).to.eql({});
+    });
+
+  });
+
+
+  describe('Operate URL', function() {
+
+    it('should show Operate URL when set in output', function() {
+
+      // given
+      const output = {
+        success: true,
+        operateUrl: 'https://camunda.com',
+        variables: {}
+      };
+
+      // when
+      const { queryByText } = renderWithProps({
+        output
+      });
+
+      // then
+      expect(queryByText(/View in Operate/i)).to.exist;
+    });
+
+
+    it('should show Operate URL tooltip when not set in output', function() {
+
+      // given
+      const output = {
+        success: true,
+        variables: {}
+      };
+
+      // when
+      const { queryByText } = renderWithProps({
+        output
+      });
+
+      userEvent.hover(queryByText(/View in Operate/i));
+
+      // then
+      expect(queryByText(NO_OPERATE_URL_TOOLTIP)).to.exist;
     });
 
   });

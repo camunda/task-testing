@@ -30,12 +30,15 @@ export const TASK_EXECUTION_STATUS_LABEL = {
   executing: 'Waiting for task to be completed...'
 };
 
+export const NO_OPERATE_URL_TOOLTIP = 'No Operate URL set for this connection';
+
 /**
  * @param {Object} props
  * @param {boolean} props.isConnectionConfigured
  * @param {string} props.configureConnectionBannerTitle
  * @param {string} props.configureConnectionBannerDescription
  * @param {string} props.configureConnectionLabel
+ * @param {string|undefined} props.currentOperateUrl
  * @param {Function} [props.onConfigureConnection]
  * @param {boolean} props.isTaskExecuting
  * @param {import('../../types').ElementOutput} props.output
@@ -50,6 +53,7 @@ export default function Output({
   onConfigureConnection,
   isTaskExecuting,
   output,
+  currentOperateUrl,
   onResetOutput,
   taskExecutionStatus
 }) {
@@ -70,8 +74,9 @@ export default function Output({
     return <InProgress className="output__status-icon--ready" />;
   }, [ output, isTaskExecuting, isConnectionConfigured ]);
 
-  const showResetButton = isConnectionConfigured && (output?.success || output?.error || output?.incident);
-  const showOperateUrl = isConnectionConfigured && output;
+  const showResetButton = isConnectionConfigured && output;
+  const showOperateUrl = isConnectionConfigured && (currentOperateUrl || output);
+  const operateUrl = currentOperateUrl || output?.operateUrl;
 
   const headerText = useMemo(() => {
     if (isTaskExecuting) {
@@ -107,13 +112,13 @@ export default function Output({
           <span>{headerText}</span>
         </div>
         {showOperateUrl && <Tooltip
-          className={ classNames({ 'show-tooltip': !output.operateUrl }) }
+          className={ classNames({ 'show-tooltip': !operateUrl }) }
           autoAlign
-          label="No Operate URL set for this connection"
+          label={ NO_OPERATE_URL_TOOLTIP }
         >
           <Link
-            className={ classNames({ 'link--disabled': !output.operateUrl }) }
-            href={ output?.operateUrl }
+            className={ classNames({ 'link--disabled': !operateUrl }) }
+            href={ operateUrl }
             target="_blank"
           >
             View in Operate
