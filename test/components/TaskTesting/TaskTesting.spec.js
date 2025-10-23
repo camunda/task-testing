@@ -85,7 +85,7 @@ describe('TaskTesting', function() {
     renderTaskTesting({
       isConnectionConfigured: true,
       operateBaseUrl : 'https://camunda.com',
-      api,
+      api
     });
 
     // when
@@ -153,12 +153,13 @@ describe('TaskTesting', function() {
   });
 });
 
-const noopApi = {
-  deploy: () => { },
-  startInstance: () => { },
-  getInstance: () => { },
-  getProcessInstanceVariables: () => { },
-  getProcessInstanceIncident: () => { },
+const DEFAULT_API = {
+  deploy: () => {},
+  startInstance: () => {},
+  getInstance: () => {},
+  getProcessInstanceVariables: () => {},
+  getProcessInstanceElementInstances: () => {},
+  getProcessInstanceIncident: () => {}
 };
 
 function renderTaskTesting(props = {}) {
@@ -166,7 +167,7 @@ function renderTaskTesting(props = {}) {
 
   const {
     injector = modeler.get('injector'),
-    api = noopApi,
+    api = DEFAULT_API,
     isConnectionConfigured,
     configureConnectionBannerTitle = 'Connection required',
     configureConnectionBannerDescription = 'Configure a connection to start testing.',
