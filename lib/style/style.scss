@@ -68,9 +68,6 @@
       width: 138px;
     }
 
-    .cds--popover-container:not(.has-error) .cds--popover {
-      display: none;
-    }
 
     .cds--tooltip-content {
       padding: 12px;
@@ -87,6 +84,7 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
+    margin-top: 6px;
 
     .input__header {
       display: flex;
@@ -100,7 +98,7 @@
       color: #525252;
     }
 
-    .cds--popover-container:has(.input__header--button-reset) {
+    .input__header--button-reset {
       margin-left: auto;
     }
   }
@@ -117,6 +115,17 @@
       justify-content: flex-end;
       height: 32px;
       width: 100%;
+      gap: 10px;
+
+      .cds--link {
+        cursor: pointer;
+      }
+
+      .link--disabled, .link--disabled:hover {
+        color: #8d8d8d;
+        text-decoration: none;
+        cursor: default;
+      }
     }
 
     .output__header--title {
@@ -209,6 +218,14 @@
     code {
       font-size: 14px;
     }
+  }
+
+  .cds--popover-container:not(.show-tooltip) .cds--popover {
+    display: none !important;
+  }
+
+  .cds--link[role="button"] {
+    cursor: pointer;
   }
 }
 

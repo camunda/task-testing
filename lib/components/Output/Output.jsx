@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 
 import {
-  Button,
   CodeSnippetSkeleton,
   Link,
   InlineLoading,
@@ -9,15 +8,17 @@ import {
   TabList,
   Tab,
   TabPanels,
-  TabPanel
+  TabPanel,
+  Tooltip
 } from '@carbon/react';
 
 import {
   ErrorFilled,
-  Reset,
   CheckmarkFilled,
   InProgress
 } from '@carbon/icons-react';
+
+import classNames from 'classnames';
 
 import OutputEditor from './OutputEditor';
 
@@ -70,7 +71,7 @@ export default function Output({
   }, [ output, isTaskExecuting, isConnectionConfigured ]);
 
   const showResetButton = isConnectionConfigured && (output?.success || output?.error || output?.incident);
-  const showOperateUrl = isConnectionConfigured && output?.operateUrl;
+  const showOperateUrl = isConnectionConfigured && output;
 
   const headerText = useMemo(() => {
     if (isTaskExecuting) {
@@ -105,16 +106,22 @@ export default function Output({
           { statusIcon }
           <span>{headerText}</span>
         </div>
-        {
-          showOperateUrl && <Link
-            href={ output.operateUrl }
+        {showOperateUrl && <Tooltip
+          className={ classNames({ 'show-tooltip': !output.operateUrl }) }
+          autoAlign
+          label="No Operate URL set for this connection"
+        >
+          <Link
+            className={ classNames({ 'link--disabled': !output.operateUrl }) }
+            href={ output?.operateUrl }
             target="_blank"
-            className="output__header--button-operate">
+          >
             View in Operate
           </Link>
+        </Tooltip>
         }
         { showResetButton && <Link
-            onClick={ () => onResetOutput() }
+          onClick={ () => onResetOutput() }
           role="button">
           Clear
         </Link>}
