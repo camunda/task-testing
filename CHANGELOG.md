@@ -6,6 +6,16 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+## 1.0.0
+
+* `FEAT`: always show __View in Operate__ button ([#43](https://github.com/camunda/task-testing/pull/43))
+* `FIX`: display process and local variables separately ([#41](https://github.com/camunda/task-testing/pull/41))
+* `FIX`: allow trailing slashes when providing Operate base URL ([#43](https://github.com/camunda/task-testing/pull/43))
+
+### Breaking Changes
+
+* `api` prop of the `TaskTesting` component now requires a `getProcessInstanceElementInstances` callback to separate process and local variables
+
 ## 0.2.8
 
 * `FIX`: do not cancel task execution on every diagram change ([#32](https://github.com/camunda/task-testing/issues/32))
