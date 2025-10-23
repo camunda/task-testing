@@ -281,11 +281,11 @@ function capitalize(string) {
  * @returns {Object}
  */
 function pickVariables(variables, scope) {
-  return Object.entries(variables).reduce((variables, [ name, variable ]) => {
-    if (scope === variable.scope) {
-      variables[name] = variable.value;
+  return Object.entries(variables).reduce((acc, [ name, variable ]) => {
+    if (scope === variable?.scope) {
+      acc[name] = variable.value;
     }
 
-    return variables;
+    return acc;
   }, {});
 }
