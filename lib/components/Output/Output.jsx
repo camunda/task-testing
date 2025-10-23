@@ -284,7 +284,7 @@ function capitalize(string) {
  *
  * @returns {Object}
  */
-function pickVariables(variables, scope) {
+export function pickVariables(variables, scope) {
   return Object.entries(variables).reduce((acc, [ name, variable ]) => {
     if (scope === variable?.scope) {
       acc[name] = variable.value;
