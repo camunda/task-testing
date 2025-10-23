@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { Button, Link } from '@carbon/react';
-import { Reset, Launch } from '@carbon/icons-react';
+import { Link } from '@carbon/react';
+import { Launch } from '@carbon/icons-react';
 
 import InputEditor from './InputEditor';
 
@@ -26,16 +26,10 @@ export default function Input({
         <Link href="https://docs.camunda.io/docs/components/concepts/variables/" target="_blank" title="Open documentation">
           <Launch />
         </Link>
-        <Button
+        <Link
           className="input__header--button-reset"
-          kind="ghost"
           onClick={ handleResetInput }
-          size="sm"
-          renderIcon={ Reset }
-          hasIconOnly
-          tooltipPosition="left"
-          iconDescription="Clear"
-        />
+          role="button">Clear</Link>
       </div>
       <InputEditor
         allOutputs={ allOutputs }

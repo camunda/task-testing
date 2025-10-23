@@ -113,17 +113,11 @@ export default function Output({
             View in Operate
           </Link>
         }
-        {
-          showResetButton && <Button
-            kind="ghost"
+        { showResetButton && <Link
             onClick={ () => onResetOutput() }
-            size="sm"
-            renderIcon={ Reset }
-            hasIconOnly
-            tooltipPosition="left"
-            iconDescription="Clear"
-          />
-        }
+          role="button">
+          Clear
+        </Link>}
       </div>
       <div className="output__body">
         {
