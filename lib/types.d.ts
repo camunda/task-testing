@@ -15,9 +15,14 @@ export type Output = {
   [elementId: string]: ElementOutput
 };
 
+export type VARIABLE_SCOPE = 'LOCAL' | 'PROCESS';
+
 export type ElementOutput = {
   success: boolean;
-  variables?: { [key: string]: string };
+  variables?: { [key: string]: {
+    value: any;
+    scope: VARIABLE_SCOPE;
+  } };
   error?: TaskExecutionEvents.Error;
   incident?: any;
   operateUrl?: string;
