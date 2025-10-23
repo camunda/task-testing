@@ -185,13 +185,17 @@ function OutputVariables({
         <TabList>
           <Tab>Incident</Tab>
           <Tab>Process variables</Tab>
+          <Tab>Local variables</Tab>
         </TabList>
         <TabPanels>
           <TabPanel>
             <OutputEditor value={ printIncident(output.incident) } />
           </TabPanel>
           <TabPanel>
-            <OutputEditor value={ JSON.stringify(output.variables, null, 2) } />
+            <OutputEditor value={ JSON.stringify(pickVariables(output.variables, SCOPES.PROCESS), null, 2) } />
+          </TabPanel>
+          <TabPanel>
+            <OutputEditor value={ JSON.stringify(pickVariables(output.variables, SCOPES.LOCAL), null, 2) } />
           </TabPanel>
         </TabPanels>
       </Tabs>
