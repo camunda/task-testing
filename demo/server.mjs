@@ -192,3 +192,30 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Camunda 8 API listening on port ${PORT}`);
 });
+
+const restClient = camunda?.getCamundaRestClient();
+
+if (restClient) {
+  restClient.createJobWorker({
+    type: 'foo',
+    jobHandler: async (job) => {
+      console.log('Processing job:', job);
+
+      // Simulate some work with a delay
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      console.log('Job completed:', job);
+
+      job.complete({
+        foo: 'jobWorkerWasHere'
+      });
+    },
+    pollInterval: 1000,
+    timeout: 5000,
+    maxJobsToActivate: 5
+  });
+
+  console.log('Job worker started.');
+} else {
+  console.warn('Camunda REST client not configured. Job worker not started.');
+}

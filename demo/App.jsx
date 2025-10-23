@@ -28,6 +28,7 @@ function App() {
       setConfig({
         input: {
           'ServiceTask_1': JSON.stringify({
+            foo: 1,
             a: 1,
             b: 2,
             c: {
@@ -60,38 +61,106 @@ function App() {
           'ServiceTask_1': {
             success: true,
             variables: {
-              'm': 13,
-              'g': 8,
-              'a': 1,
-              'c': {
-                'd': 3,
-                'e': 4,
-                'f': [
-                  5,
-                  6,
-                  7
-                ]
+              i: {
+                value: 10,
+                scope: 'PROCESS'
               },
-              'p': 16,
-              'j': {
-                'k': 11,
-                'l': 12
+              a: {
+                value: 1,
+                scope: 'PROCESS'
               },
-              'i': 10,
-              'h': 9,
-              's': 19,
-              'o': 15,
-              't': 20,
-              'n': 14,
-              'q': 17,
-              'r': 18,
-              'b': 2,
-              'fooPlusOne': null,
-              'output1': 1,
-              'output4': 'foo',
-              'output2': true,
-              'output3': {
-                'foo': 1
+              foo: {
+                value: 1,
+                scope: 'PROCESS'
+              },
+              c: {
+                value: {
+                  d: 3,
+                  e: 4,
+                  f: [
+                    5,
+                    6,
+                    7
+                  ]
+                },
+                scope: 'PROCESS'
+              },
+              s: {
+                value: 19,
+                scope: 'PROCESS'
+              },
+              m: {
+                value: 13,
+                scope: 'PROCESS'
+              },
+              h: {
+                value: 9,
+                scope: 'PROCESS'
+              },
+              n: {
+                value: 14,
+                scope: 'PROCESS'
+              },
+              r: {
+                value: 18,
+                scope: 'PROCESS'
+              },
+              p: {
+                value: 16,
+                scope: 'PROCESS'
+              },
+              g: {
+                value: 8,
+                scope: 'PROCESS'
+              },
+              b: {
+                value: 2,
+                scope: 'PROCESS'
+              },
+              t: {
+                value: 20,
+                scope: 'PROCESS'
+              },
+              q: {
+                value: 17,
+                scope: 'PROCESS'
+              },
+              j: {
+                value: {
+                  k: 11,
+                  l: 12
+                },
+                scope: 'PROCESS'
+              },
+              o: {
+                value: 15,
+                scope: 'PROCESS'
+              },
+              fooPlusOne: {
+                value: 2,
+                scope: 'LOCAL'
+              },
+              output3: {
+                value: {
+                  foo: 1
+                },
+                scope: 'PROCESS'
+              },
+              output1: {
+                value: 1,
+                scope: 'PROCESS'
+              },
+              fooPlusOneOutput: {
+                value: 2,
+                scope: 'PROCESS'
+              },
+              output4: {
+                value: 'foo',
+                scope: 'PROCESS'
+              },
+              output2: {
+                value: true,
+                scope: 'PROCESS'
               }
             },
             operateUrl: 'https://camunda.com'
