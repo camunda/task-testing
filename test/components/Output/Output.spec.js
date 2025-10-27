@@ -16,7 +16,8 @@ describe('Output', function() {
     const output = {
       success: true,
       variables: {
-        foo: {
+        1: {
+          name: 'foo',
           value: 'bar',
           scope: SCOPES.PROCESS
         }
@@ -41,9 +42,9 @@ describe('Output', function() {
 
       // given
       const variables = {
-        var1: { value: 'foo', scope: SCOPES.PROCESS },
-        var2: { value: 'bar', scope: SCOPES.LOCAL },
-        var3: { value: 'baz', scope: SCOPES.PROCESS }
+        1: { name: 'var1', value: 'foo', scope: SCOPES.PROCESS },
+        2: { name: 'var2', value: 'bar', scope: SCOPES.LOCAL },
+        3: { name: 'var3', value: 'baz', scope: SCOPES.PROCESS }
       };
 
       // when
@@ -63,13 +64,39 @@ describe('Output', function() {
 
 
     // see https://github.com/camunda/task-testing/issues/12 for legacy format
-    it('should not pick variables if legacy format', function() {
+    it('should not pick variables if legacy format (no scope)', function() {
 
       // given
       const variables = {
         var1: 'foo',
         var2: 'bar',
         var3: 'baz'
+      };
+
+      // when
+      const processVariables = pickVariables(variables, SCOPES.PROCESS);
+      const localVariables = pickVariables(variables, SCOPES.LOCAL);
+
+      // then
+      expect(processVariables).to.eql({});
+
+      expect(localVariables).to.eql({});
+    });
+
+    // see https://github.com/camunda/task-testing/issues/48 for legacy format
+    it('should not pick variables if legacy format (no name)', function() {
+
+      // given
+      const variables = {
+        var1: {
+          value: 'foo'
+        },
+        var2: {
+          value: 'bar'
+        },
+        var3: {
+          value: 'baz'
+        }
       };
 
       // when

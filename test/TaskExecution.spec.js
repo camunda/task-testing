@@ -82,11 +82,13 @@ describe('TaskExecution', function() {
       'incident': null,
       'success': true,
       'variables': {
-        'foo': {
+        '2251799813755923': {
+          'name': 'foo',
           'value': 'bar',
           'scope': 'PROCESS'
         },
-        'baz': {
+        '2251799813755924': {
+          'name': 'baz',
           'value': 42,
           'scope': 'PROCESS'
         }
@@ -123,11 +125,13 @@ describe('TaskExecution', function() {
     expect(finishedSpy).to.have.been.calledWithMatch({
       'incident': null,
       'variables': {
-        'foo': {
+        '2251799813755923': {
+          'name': 'foo',
           'value': 'bar',
           'scope': 'PROCESS'
         },
-        'baz': {
+        '2251799813755924': {
+          'name': 'baz',
           'value': 42,
           'scope': 'PROCESS'
         }
@@ -396,11 +400,13 @@ describe('TaskExecution', function() {
       expect(finishedSpy).to.have.been.calledWithMatch({
         'success': false,
         'variables': {
-          'foo': {
+          '2251799813755923': {
+            'name': 'foo',
             'value': 'bar',
             'scope': 'PROCESS'
           },
-          'baz': {
+          '2251799813755924': {
+            'name': 'baz',
             'value': 42,
             'scope': 'PROCESS'
           }
@@ -528,21 +534,31 @@ describe('TaskExecution', function() {
       // given
       const getVariablesResponseItems = [
         {
+          variableKey: 1,
           name: 'localFoo',
           value: 'bar',
           scopeKey: '1'
         },
         {
+          variableKey: 2,
           name: 'localBaz',
           value: 42,
           scopeKey: '1'
         },
         {
+          variableKey: 3,
+          name: 'processFoo',
+          value: true,
+          scopeKey: '1'
+        },
+        {
+          variableKey: 4,
           name: 'processFoo',
           value: true,
           scopeKey: '2'
         },
         {
+          variableKey: 5,
           name: 'otherLocalFoo',
           value: 'baz',
           scopeKey: '3'
@@ -568,10 +584,11 @@ describe('TaskExecution', function() {
 
       // then
       expect(variables).to.eql({
-        localFoo: { value: 'bar', scope: SCOPES.LOCAL },
-        localBaz: { value: 42, scope: SCOPES.LOCAL },
-        processFoo: { value: true, scope: SCOPES.PROCESS },
-        otherLocalFoo: { value: 'baz', scope: null }
+        1: { name: 'localFoo', value: 'bar', scope: SCOPES.LOCAL },
+        2: { name: 'localBaz', value: 42, scope: SCOPES.LOCAL },
+        3: { name: 'processFoo', value: true, scope: SCOPES.LOCAL },
+        4: { name: 'processFoo', value: true, scope: SCOPES.PROCESS },
+        5: { name: 'otherLocalFoo', value: 'baz', scope: null }
       });
     });
 
