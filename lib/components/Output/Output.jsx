@@ -283,17 +283,17 @@ function capitalize(string) {
 }
 
 /**
- * Pick variables for a given scope.
+ * Pick variables for a given scope. Variables in legacy format are ignored.
  *
- * @param {Object} variables
+ * @param {import('../../types').ElementOutputVariables} variables
  * @param {string} scope
  *
  * @returns {Object}
  */
 export function pickVariables(variables, scope) {
-  return Object.entries(variables).reduce((acc, [ name, variable ]) => {
-    if (scope === variable?.scope) {
-      acc[name] = variable.value;
+  return Object.values(variables).reduce((acc, variable) => {
+    if (variable?.name && scope === variable?.scope) {
+      acc[variable.name] = variable.value;
     }
 
     return acc;
