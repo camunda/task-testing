@@ -184,14 +184,15 @@ describe('TaskTesting', function() {
 
   describe('_Test task_ button', function() {
 
-    it('should start execution when connection configured',
+    it('should start execution when connection configured and onTestTask not provided',
       inject(async function(elementRegistry, selection) {
 
         // given
-        const spy = sinon.spy(() => Promise.resolve({ success: true, error: 'foo' }));
+        const spy = sinon.spy(() => new Promise(() => {}));
 
         renderTaskTesting({
           isConnectionConfigured: true,
+          onTestTask: null,
           api: {
             deploy: spy
           }
@@ -201,33 +202,168 @@ describe('TaskTesting', function() {
 
         // when
         const button = await screen.findByTestId('test-task-btn');
+
         button.click();
 
         // then
-        expect(spy).to.have.been.called;
+        await waitFor(() => {
+          expect(spy).to.have.been.called;
+        });
       }));
 
 
-    it('should call configure connection callback when connection not configured',
+    it('should start execution when connection configured and onTestTask provided (return true)',
       inject(async function(elementRegistry, selection) {
 
         // given
-        const spy = sinon.spy();
+        const spy = sinon.spy(() => new Promise(() => {}));
 
         renderTaskTesting({
-          isConnectionConfigured: false,
-          onConfigureConnection: spy
+          isConnectionConfigured: true,
+          onTestTask: async () => true,
+          api: {
+            deploy: spy
+          }
         });
 
         selection.select(elementRegistry.get('ServiceTask_1'));
 
+        // when
         const button = await screen.findByTestId('test-task-btn');
+
         button.click();
 
-        expect(spy).to.have.been.called;
+        // then
+        await waitFor(() => {
+          expect(spy).to.have.been.called;
+        });
+      }));
+
+
+    it('should not start execution when connection configured and onTestTask provided (return false)',
+      inject(async function(elementRegistry, selection) {
+
+        // given
+        const spy = sinon.spy(() => new Promise(() => {}));
+
+        renderTaskTesting({
+          isConnectionConfigured: true,
+          onTestTask: async () => false,
+          api: {
+            deploy: spy
+          }
+        });
+
+        selection.select(elementRegistry.get('ServiceTask_1'));
+
+        // when
+        const button = await screen.findByTestId('test-task-btn');
+
+        button.click();
+
+        // then
+        await waitFor(() => {
+          expect(spy).not.to.have.been.called;
+        });
+      }));
+
+
+    it('should cancel execution when task is executing',
+      inject(async function(elementRegistry, selection) {
+
+        // given
+        const spy = sinon.spy(() => new Promise(() => {}));
+
+        renderTaskTesting({
+          isConnectionConfigured: true,
+          onTestTask: null,
+          api: {
+            deploy: spy
+          }
+        });
+
+        selection.select(elementRegistry.get('ServiceTask_1'));
+
+        // when
+        let button = await screen.findByTestId('test-task-btn');
+
+        expect(button.textContent).to.equal('Test task');
+
+        button.click();
+
+        // then
+        await waitFor(() => {
+          expect(spy).to.have.been.called;
+        });
+
+        // when
+        button = await screen.findByTestId('test-task-btn');
+
+        await waitFor(() => {
+          expect(button.textContent).to.equal('Cancel');
+        });
+
+        button.click();
+
+        // then
+        await waitFor(() => {
+          expect(button.textContent).to.equal('Test task');
+        });
       }));
 
   });
+
+
+  describe('_Configure connection_ button', function() {
+
+    it('should render if onConfigureConnection provided', inject(async function(elementRegistry, selection) {
+
+      // given
+      const spy = sinon.spy();
+
+      renderTaskTesting({
+        isConnectionConfigured: false,
+        onConfigureConnection: spy
+      });
+
+      // when
+      selection.select(elementRegistry.get('ServiceTask_1'));
+
+      // then
+      await waitFor(() => {
+        expect(screen.findByTestId('configure-connection-btn')).to.exist;
+      });
+
+      // when
+      const button = await screen.findByTestId('configure-connection-btn');
+
+      button.click();
+
+      // then
+      await waitFor(() => {
+        expect(spy).to.have.been.called;
+      });
+    }));
+
+
+    it('should not render if onConfigureConnection not provided', inject(async function(elementRegistry, selection) {
+
+      // given
+      renderTaskTesting({
+        isConnectionConfigured: false,
+        onConfigureConnection: null
+      });
+
+      selection.select(elementRegistry.get('ServiceTask_1'));
+
+      // then
+      await waitFor(() => {
+        expect(screen.queryByTestId('configure-connection-btn')).not.to.exist;
+      });
+    }));
+
+  });
+
 });
 
 const DEFAULT_API = {
@@ -250,6 +386,7 @@ function renderTaskTesting(props = {}) {
     configureConnectionBannerDescription = 'Configure a connection to start testing.',
     configureConnectionLabel = 'Configure',
     onConfigureConnection,
+    onTestTask,
     config = DEFAULT_CONFIG,
     onConfigChanged = () => {},
     operateBaseUrl,
@@ -267,6 +404,7 @@ function renderTaskTesting(props = {}) {
     configureConnectionBannerDescription={ configureConnectionBannerDescription }
     configureConnectionLabel={ configureConnectionLabel }
     onConfigureConnection={ onConfigureConnection }
+    onTestTask={ onTestTask }
     config={ config }
     onConfigChanged={ onConfigChanged }
     operateBaseUrl={ operateBaseUrl }

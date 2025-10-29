@@ -122,13 +122,26 @@ function App() {
         <TestTab
           injector={ injector }
           isConnectionConfigured={ isConnectionConfigured }
-          configureConnectionBannerTitle="Not prompted yet"
-          configureConnectionBannerDescription="Click Configure, then Ok when prompted."
-          configureConnectionLabel="Get prompted"
+          configureConnectionBannerTitle="No cluster selected"
+          configureConnectionBannerDescription="Select a Camunda 8.8 cluster to enable task testing."
+          configureConnectionLabel="Select cluster"
           onConfigureConnection={ () => {
-            if (window.confirm('Can execute task?')) {
+            if (window.confirm('Cluster selected?')) {
               setIsConnectionConfigured(true);
             }
+          } }
+          onTestTask={ () => {
+            if (isConnectionConfigured) {
+              return true;
+            }
+
+            if (window.confirm('Cluster selected?')) {
+              setIsConnectionConfigured(true);
+
+              return true;
+            }
+
+            return false;
           } }
           api={ {
             deploy,
