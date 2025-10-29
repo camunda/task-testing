@@ -6,6 +6,10 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+## 1.0.2
+
+* `FIX`: mark tasks in ad-hoc sub-process as unsupported
+
 ## 1.0.1
 
 * `FIX`: allow no trailing slashes when providing Operate base URL ([#47](https://github.com/camunda/task-testing/pull/47))
