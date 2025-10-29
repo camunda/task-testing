@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0jc2nqw" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.37.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.8.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0jc2nqw" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.40.1" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.8.0">
   <bpmn:process id="Process_TaskTesting" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1">
       <bpmn:outgoing>Flow_0d202t1</bpmn:outgoing>
@@ -78,6 +78,14 @@
       <bpmn:incoming>Flow_0ggbd4s</bpmn:incoming>
       <bpmn:outgoing>Flow_0hwbr17</bpmn:outgoing>
     </bpmn:serviceTask>
+    <bpmn:adHocSubProcess id="Activity_1nylo45">
+      <bpmn:task id="AdHocSubProcessTask" name="In ad-hoc subprocess" />
+    </bpmn:adHocSubProcess>
+    <bpmn:adHocSubProcess id="CollapsedAdHocSubProcess">
+      <bpmn:subProcess id="CollapsedSubProcess">
+        <bpmn:task id="CollapsedAdHocSubProcessTask" name="In collapsed ad-hoc subprocess" />
+      </bpmn:subProcess>
+    </bpmn:adHocSubProcess>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_TaskTesting">
@@ -101,6 +109,16 @@
         <dc:Bounds x="650" y="80" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_01y95ns_di" bpmnElement="Activity_1nylo45" isExpanded="true">
+        <dc:Bounds x="300" y="260" width="350" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_00y75ls_di" bpmnElement="AdHocSubProcessTask">
+        <dc:Bounds x="410" y="310" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_103drul" bpmnElement="CollapsedAdHocSubProcess" isExpanded="false">
+        <dc:Bounds x="425" y="560" width="100" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_0d202t1_di" bpmnElement="Flow_0d202t1">
         <di:waypoint x="188" y="120" />
         <di:waypoint x="230" y="120" />
@@ -121,6 +139,21 @@
         <di:waypoint x="470" y="120" />
         <di:waypoint x="510" y="120" />
       </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1qqp3on">
+    <bpmndi:BPMNPlane id="CollapsedSubProcessPlane" bpmnElement="CollapsedAdHocSubProcess">
+      <bpmndi:BPMNShape id="Activity_04kecd0_di" bpmnElement="CollapsedSubProcess">
+        <dc:Bounds x="170" y="230" width="100" height="80" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_0uhphpp">
+    <bpmndi:BPMNPlane id="BPMNPlane_0zz64mu" bpmnElement="CollapsedSubProcess">
+      <bpmndi:BPMNShape id="BPMNShape_1ovk957" bpmnElement="CollapsedAdHocSubProcessTask">
+        <dc:Bounds x="170" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>

@@ -12,7 +12,10 @@ import { bootstrapModeler, inject, getModeler } from '../../util/Util';
 
 import TaskTesting from '../../../lib/components/TaskTesting/TaskTesting';
 
-import { SINGLE_TASK_SELECTION_REQUIRED_MESSAGE } from '../../../lib/hooks/useSelectedElement';
+import {
+  SINGLE_TASK_SELECTION_REQUIRED_MESSAGE,
+  AD_HOC_SUBPROCESS_TASK_UNSUPPORTED_MESSAGE
+} from '../../../lib/hooks/useSelectedElement';
 
 import { DEFAULT_CONFIG } from '../../../lib/ElementConfig';
 
@@ -71,6 +74,37 @@ describe('TaskTesting', function() {
     await screen.findByText('REST Outbound Connector');
     await screen.findByText('REST');
   }));
+
+
+  it('should display unsupported message for a task in ad-hoc subprocess', inject(
+    async function(elementRegistry, selection) {
+
+      // given
+      renderTaskTesting();
+
+      // when
+      selection.select(elementRegistry.get('AdHocSubProcessTask'));
+
+      // then
+      await screen.findByText(AD_HOC_SUBPROCESS_TASK_UNSUPPORTED_MESSAGE);
+    })
+  );
+
+
+  it('should display unsupported message for a task in a collapsed ad-hoc subprocess', inject(
+    async function(elementRegistry, selection, canvas) {
+
+      // given
+      renderTaskTesting();
+
+      // when
+      canvas.setRootElement(canvas.findRoot('CollapsedSubProcess_plane'));
+      selection.select(elementRegistry.get('CollapsedAdHocSubProcessTask'));
+
+      // then
+      await screen.findByText(AD_HOC_SUBPROCESS_TASK_UNSUPPORTED_MESSAGE);
+    })
+  );
 
 
   it('should show _View in Operate_ button during task execution', inject(async function(elementRegistry, selection) {
