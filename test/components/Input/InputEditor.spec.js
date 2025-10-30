@@ -77,13 +77,22 @@ describe('InputEditor', function() {
       const allOutputs = {
         'ServiceTask_1': {
           variables: {
-            foo: '1',
-            bar: '2'
+            1: {
+              name: 'foo',
+              value: '1'
+            },
+            2: {
+              name: 'bar',
+              value: '2'
+            },
           }
         },
         'ServiceTask_2': {
           variables: {
-            foo: '3'
+            3: {
+              name: 'foo',
+              value: '3'
+            },
           }
         }
       };
