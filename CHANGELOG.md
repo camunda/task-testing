@@ -8,7 +8,8 @@ ___Note:__ Yet to be released changes appear here._
 
 ## 1.0.2
 
-* `FIX`: mark tasks in ad-hoc sub-process as unsupported
+* `FIX`: mark tasks in ad-hoc sub-process as unsupported ([#50](https://github.com/camunda/task-testing/pull/50))
+* `FIX`: handle variables with the same name in process and local scope ([#48](https://github.com/camunda/task-testing/issues/48))
 
 ## 1.0.1
 
