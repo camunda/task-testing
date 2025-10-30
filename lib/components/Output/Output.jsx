@@ -285,7 +285,7 @@ function capitalize(string) {
 /**
  * Pick variables for a given scope. Variables in legacy format are ignored.
  *
- * @param {import('../../types').ElementOutputVariables} variables
+ * @param {import('../../types').Variables} variables
  * @param {string} scope
  *
  * @returns {Object}

@@ -1,5 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { autocompletion, closeBrackets } from '@codemirror/autocomplete';
 import { defaultKeymap } from '@codemirror/commands';
@@ -23,42 +22,21 @@ export const PLACEHOLDER_TEXT = 'Enter process variables in JSON format';
 
 export const INVALID_JSON_ERROR = 'JSON contains errors';
 
-const DEFAULT_ALL_OUTPUTS = {},
-      DEFAULT_VARIABLES_FOR_ELEMENT = [];
-
+/**
+ *
+ * @param {Object} props
+ * @param {string} props.value
+ * @param {import('../../types').Variables} props.variables
+ * @param {function(string): void} props.onChange
+ * @param {function(string?): void} props.onErrorChange
+ * @returns
+ */
 export default function InputEditor({
-  allOutputs = DEFAULT_ALL_OUTPUTS,
   value,
+  variables,
   onChange,
-  onErrorChange,
-  variablesForElement = DEFAULT_VARIABLES_FOR_ELEMENT
+  onErrorChange
 }) {
-  const autocompletions = useMemo(() => {
-    const variablesForElementAutocompletions = variablesForElement.map(({ name, detail, info }) => ({
-      label: name,
-      type: 'variable',
-      info: () => getAutocompletionInfo(info, 'Process variable'),
-      detail,
-      value: info ? info : undefined,
-    }));
-
-    const allOutputVariables = getAllOutputVariables(allOutputs);
-
-    const outputVariablesAutocompletions = allOutputVariables.map(({ name, value, origin }) => ({
-      label: name,
-      type: 'variable',
-      info: () => getAutocompletionInfo(value, `Output variable from ${origin}`),
-      detail: getDetail(value),
-      value
-    }));
-
-    /**
-     * @type {import('@codemirror/autocomplete').Completion[]}
-     */
-    const result = [ ...variablesForElementAutocompletions, ...outputVariablesAutocompletions ];
-
-    return result;
-  }, [ allOutputs, variablesForElement ]);
 
   const ref = useRef(null);
 
@@ -106,7 +84,7 @@ export default function InputEditor({
           'tabindex': '0'
         }),
         linter(source, { delay: 300 }),
-        autocompletionCompartment.of(getAutocompletionExtensions(autocompletions)),
+        autocompletionCompartment.of(getAutocompletionExtensions(variables)),
         placeholder(PLACEHOLDER_TEXT),
         theme,
         EditorView.lineWrapping,
@@ -141,10 +119,10 @@ export default function InputEditor({
 
     editorView.dispatch({
       effects: autocompletionCompartment.reconfigure(
-        getAutocompletionExtensions(autocompletions)
+        getAutocompletionExtensions(variables)
       )
     });
-  }, [ autocompletions, editorView ]);
+  }, [ variables ]);
 
   useEffect(() => {
     if (!editorView) return;
@@ -169,67 +147,4 @@ export default function InputEditor({
     </div>
     { error && <div className="code__editor-error">{ error }</div> }
   </div>;
-}
-
-function getAutocompletionInfo(value, description) {
-  const div = document.createElement('div');
-
-  const htmlString = renderToStaticMarkup(
-    <div className="info">
-      <span>{ description }</span>
-      {value && <pre>{typeof value === 'object' ? JSON.stringify(value, null, 2) : value}</pre>}
-    </div>
-  );
-
-  div.innerHTML = htmlString;
-
-  return div;
-}
-
-function getAllOutputVariables(allOutputs) {
-  const allOutputVariables = [];
-
-  for (const elementId in allOutputs) {
-    if (allOutputs[elementId]) {
-      const { variables = [] } = allOutputs[ elementId ];
-
-      for (const name in variables) {
-        allOutputVariables.push({ name, value: variables[name], origin: elementId });
-      }
-    }
-  }
-
-  return allOutputVariables;
-}
-
-/**
- * Get a string representation of the type of a value.
- *
- * @example
- *
- * getDetail('foo') // String
- * getDetail(1337) // Number
- * getDetail(true) // Boolean
- * getDetail({}) // Object
- *
- * @param {any} value
- *
- * @return {string}
- */
-function getDetail(value) {
-  const type = typeof value;
-
-  if (type === 'object') {
-    if (Array.isArray(value)) {
-      return 'Array';
-    }
-
-    if (value === null) {
-      return 'null';
-    }
-
-    return 'Object';
-  }
-
-  return type.charAt(0).toUpperCase() + type.slice(1);
 }

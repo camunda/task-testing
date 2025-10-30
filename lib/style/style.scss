@@ -273,18 +273,16 @@
       }
 
       .info {
-        padding: 5px;
         font-family: monospace;
         font-size: 12px;
-        max-width: 300px;
         word-wrap: break-word;
 
-        span {
-          font-style: italic;
+        .info-header span::after {
+          content: ' ';
         }
 
         pre {
-          margin-top: 5px;
+          margin-top: 10px;
         }
       }
     }

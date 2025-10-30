@@ -7,6 +7,13 @@ import type {
   SearchIncidentsResponse
 } from '@camunda8/sdk/dist/c8/lib/C8Dto';
 
+import type { Element as BpmnElement } from 'bpmn-js/lib/model/Types';
+
+export type Config = {
+  input: Input;
+  output: Output;
+};
+
 export type Input = {
   [elementId: string]: string;
 };
@@ -15,40 +22,31 @@ export type Output = {
   [elementId: string]: ElementOutput
 };
 
-export type VARIABLE_SCOPE = 'LOCAL' | 'PROCESS';
-
-export type ElementOutputVariables = {
-  [id: string]: {
-    name: string;
-    value: any;
-    scope: VARIABLE_SCOPE;
-  }
-};
-
 export type ElementOutput = {
+  [key: string]: any;
   success: boolean;
-  variables?: ElementOutputVariables;
+  variables: Variables;
   error?: TaskExecutionEvents.Error;
   incident?: any;
   operateUrl?: string;
-  [key: string]: any;
-} | undefined;
+};
 
-export type Config = {
-  input: Input;
-  output: Output;
+export type Variables = {
+  [id: string]: Variable
 };
 
 export type Variable = {
   name: string;
-  type?: string;
-  info?: string;
-  isList?: boolean;
-  entries?: Variable[];
-  scope?: ModdleElement;
+  value?: any;
+  scope: VARIABLE_SCOPE;
+  type: VARIABLE_TYPE;
+  source: VARIABLE_SOURCE;
+  sourceElementName?: string;
 };
 
-export type Variables = Variable[];
+export type VARIABLE_SCOPE = 'LOCAL' | 'PROCESS';
+export type VARIABLE_TYPE = 'String' | 'Number' | 'Boolean' | 'Object' | 'Array';
+export type VARIABLE_SOURCE = 'PROCESS' | 'OUTPUT';
 
 export type ApiResponse<T> =
   | {
@@ -83,7 +81,7 @@ export type TaskExecutionEvents =
 
 export type TaskExecutionResult = {
   success: boolean;
-  variables?: ElementOutputVariables;
+  variables?: Variables;
   error?: TaskExecutionError;
   incident?: any;
 }
@@ -93,4 +91,6 @@ export type TaskExecutionError = {
   response?: any;
 };
 
-export type { Element, ModdleElement } from 'bpmn-js/lib/model/Types';
+export type { BpmnElement };
+
+export type ReactHook<T> = ReturnType<typeof React.useState<T>>;

@@ -60,38 +60,41 @@ function App() {
           'ServiceTask_1': {
             success: true,
             variables: {
-              'm': 13,
-              'g': 8,
-              'a': 1,
-              'c': {
-                'd': 3,
-                'e': 4,
-                'f': [
-                  5,
-                  6,
-                  7
-                ]
+              '4503599632023835': {
+                'name': 'fooPlusOne',
+                'value': null,
+                'scope': 'LOCAL',
+                'type': 'Object'
               },
-              'p': 16,
-              'j': {
-                'k': 11,
-                'l': 12
+              '4503599632023836': {
+                'name': 'output1',
+                'value': 1,
+                'scope': 'PROCESS',
+                'source': 'OUTPUT',
+                'type': 'Object'
               },
-              'i': 10,
-              'h': 9,
-              's': 19,
-              'o': 15,
-              't': 20,
-              'n': 14,
-              'q': 17,
-              'r': 18,
-              'b': 2,
-              'fooPlusOne': null,
-              'output1': 1,
-              'output4': 'foo',
-              'output2': true,
-              'output3': {
-                'foo': 1
+              '4503599632023837': {
+                'name': 'output4',
+                'value': 'foo',
+                'scope': 'PROCESS',
+                'source': 'OUTPUT',
+                'type': 'Object'
+              },
+              '4503599632023838': {
+                'name': 'output2',
+                'value': true,
+                'scope': 'PROCESS',
+                'source': 'OUTPUT',
+                'type': 'Object'
+              },
+              '4503599632023839': {
+                'name': 'output3',
+                'value': {
+                  'foo': 1
+                },
+                'scope': 'PROCESS',
+                'source': 'OUTPUT',
+                'type': 'Object'
               }
             },
             operateUrl: 'https://camunda.com'
