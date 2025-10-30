@@ -11,7 +11,7 @@ import { json, jsonParseLinter } from '@codemirror/lang-json';
 
 import classNames from 'classnames';
 
-import { forEach, has } from 'min-dash';
+import { forEach, has, isObject } from 'min-dash';
 
 import theme from '../shared/CodeMirrorTheme';
 
@@ -198,11 +198,13 @@ function getAllOutputVariables(allOutputs) {
       forEach(variables, (variable) => {
 
         // Ignore variables in legacy format
-        if (typeof variable !== 'object' || !has(variable, 'name')) {
+        // see https://github.com/camunda/task-testing/issues/48 for legacy format
+        if (!isObject(variable) || !has(variable, 'name')) {
           return;
         }
 
-        const { name, value } = variable;
+        const { name, value } = /** @type {Object} */ (variable);
+
         allOutputVariables.push({ name, value, origin: elementId });
       });
     }
