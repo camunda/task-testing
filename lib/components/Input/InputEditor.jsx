@@ -11,6 +11,8 @@ import { json, jsonParseLinter } from '@codemirror/lang-json';
 
 import classNames from 'classnames';
 
+import { forEach, has } from 'min-dash';
+
 import theme from '../shared/CodeMirrorTheme';
 
 import { getAutocompletionExtensions } from '../../utils/autocompletion';
@@ -191,11 +193,18 @@ function getAllOutputVariables(allOutputs) {
 
   for (const elementId in allOutputs) {
     if (allOutputs[elementId]) {
-      const { variables = [] } = allOutputs[ elementId ];
+      const { variables = {} } = allOutputs[ elementId ];
 
-      for (const name in variables) {
-        allOutputVariables.push({ name, value: variables[name], origin: elementId });
-      }
+      forEach(variables, (variable) => {
+
+        // Ignore variables in legacy format
+        if (typeof variable !== 'object' || !has(variable, 'name')) {
+          return;
+        }
+
+        const { name, value } = variable;
+        allOutputVariables.push({ name, value, origin: elementId });
+      });
     }
   }
 
