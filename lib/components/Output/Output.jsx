@@ -20,6 +20,8 @@ import {
 
 import classNames from 'classnames';
 
+import { isObject, has } from 'min-dash';
+
 import OutputEditor from './OutputEditor';
 
 import { SCOPES } from '../../TaskExecution';
@@ -292,7 +294,10 @@ function capitalize(string) {
  */
 export function pickVariables(variables, scope) {
   return Object.values(variables).reduce((acc, variable) => {
-    if (variable?.name && scope === variable?.scope) {
+
+    // Ignore variables in legacy formats
+    // see https://github.com/camunda/task-testing/issues/12 and https://github.com/camunda/task-testing/issues/48 for legacy format
+    if (isObject(variable) && has(variable, 'name') && scope === variable.scope) {
       acc[variable.name] = variable.value;
     }
 
