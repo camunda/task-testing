@@ -107,36 +107,67 @@ describe('TaskTesting', function() {
   );
 
 
-  it('should show _View in Operate_ button during task execution', inject(async function(elementRegistry, selection) {
+  describe('_View in Operate_ button', function() {
 
-    // given
-    const api = {
-      deploy: sinon.spy(() => Promise.resolve({ success: true, response: { processes: [ { processDefinitionId: '123' } ] } })),
-      startInstance: sinon.spy(() => Promise.resolve({ success: true, response: { processInstanceKey: '123' } })),
-      getInstance: sinon.spy(() => Promise.resolve({ success: true, response: {} })),
-    };
+    it('should show during task execution', inject(async function(elementRegistry, selection) {
 
-    renderTaskTesting({
-      isConnectionConfigured: true,
-      operateBaseUrl : 'https://camunda.com',
-      api
-    });
+      // given
+      const api = {
+        deploy: sinon.spy(() => Promise.resolve({ success: true, response: { processes: [ { processDefinitionId: '123' } ] } })),
+        startInstance: sinon.spy(() => Promise.resolve({ success: true, response: { processInstanceKey: '123' } })),
+        getInstance: sinon.spy(() => Promise.resolve({ success: true, response: {} })),
+      };
 
-    // when
-    selection.select(elementRegistry.get('ServiceTask_3'));
+      renderTaskTesting({
+        isConnectionConfigured: true,
+        operateBaseUrl: 'https://camunda.com',
+        api
+      });
 
-    const button = await screen.findByTestId('test-task-btn');
-    button.click();
+      // when
+      selection.select(elementRegistry.get('ServiceTask_3'));
 
-    // then
-    await waitFor(() => {
-      expect(api.startInstance).to.have.been.called;
-    });
+      const button = await screen.findByTestId('test-task-btn');
+      button.click();
 
-    await screen.findByText('View in Operate');
+      // then
+      await waitFor(() => {
+        expect(api.startInstance).to.have.been.called;
+      });
 
-    expect(api.getInstance).to.have.not.been.called;
-  }));
+      await screen.findByText('View in Operate');
+
+      expect(api.getInstance).to.have.not.been.called;
+    }));
+
+
+    it('should not show if deployment failed', inject(async function(elementRegistry, selection) {
+
+      // given
+      const api = {
+        deploy: sinon.spy(() => Promise.resolve({ success: false, error: 'foo' })),
+      };
+
+      renderTaskTesting({
+        isConnectionConfigured: true,
+        operateBaseUrl: 'https://camunda.com',
+        api
+      });
+
+      // when
+      selection.select(elementRegistry.get('ServiceTask_3'));
+
+      const button = await screen.findByTestId('test-task-btn');
+      button.click();
+
+      // then
+      await waitFor(() => {
+        expect(api.deploy).to.have.been.called;
+      });
+
+      expect(screen.queryByText('View in Operate')).to.not.exist;
+    }));
+  });
 
 
   describe('_Test task_ button', function() {
