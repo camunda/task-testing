@@ -77,7 +77,7 @@ export default function Output({
   }, [ output, isTaskExecuting, isConnectionConfigured ]);
 
   const showResetButton = isConnectionConfigured && output;
-  const showOperateUrl = isConnectionConfigured && (currentOperateUrl || output);
+  const showOperateUrl = isConnectionConfigured && (currentOperateUrl || (output && !output.error));
   const operateUrl = currentOperateUrl || output?.operateUrl;
 
   const headerText = useMemo(() => {
