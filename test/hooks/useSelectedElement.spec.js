@@ -14,76 +14,84 @@ describe('useSelectedElement', function() {
 
   beforeEach(bootstrapModeler(diagramXML));
 
-  it('should return null and a message if no element is selected', inject(function(injector) {
-    const { result } = renderHook(() => useSelectedElement(injector));
-    const [ selectedElement, message ] = result.current;
+  it('should return null and a message if no element is selected', inject(
+    function(injector) {
+      const { result } = renderHook(() => useSelectedElement(injector));
+      const [ selectedElement, message ] = result.current;
 
-    // then
-    expect(selectedElement).to.be.null;
-    expect(message).to.equal(SINGLE_TASK_SELECTION_REQUIRED_MESSAGE);
-  }));
-
-
-  it('should return null and a message if multiple elements are selected', inject(function(elementRegistry, injector, selection) {
-
-    // given
-    const { result } = renderHook(() => useSelectedElement(injector));
-
-    const elements = [
-      elementRegistry.get('StartEvent_1'),
-      elementRegistry.get('ServiceTask_1')
-    ];
-
-    // when
-    act(() => {
-      selection.select(elements);
-    });
-
-    const [ selectedElement, message ] = result.current;
-
-    // then
-    expect(selectedElement).to.be.null;
-    expect(message).to.equal(SINGLE_TASK_SELECTION_REQUIRED_MESSAGE);
-  }));
+      // then
+      expect(selectedElement).to.be.null;
+      expect(message).to.equal(SINGLE_TASK_SELECTION_REQUIRED_MESSAGE);
+    }
+  ));
 
 
-  it('should return null and a message if unsupported element is selected', inject(function(elementRegistry, injector, selection) {
+  it('should return null and a message if multiple elements are selected', inject(
+    function(elementRegistry, injector, selection) {
 
-    // given
-    const { result } = renderHook(() => useSelectedElement(injector));
+      // given
+      const { result } = renderHook(() => useSelectedElement(injector));
 
-    const element = elementRegistry.get('StartEvent_1');
+      const elements = [
+        elementRegistry.get('StartEvent_1'),
+        elementRegistry.get('ServiceTask_1')
+      ];
 
-    // when
-    act(() => {
-      selection.select(element);
-    });
+      // when
+      act(() => {
+        selection.select(elements);
+      });
 
-    const [ selectedElement, message ] = result.current;
+      const [ selectedElement, message ] = result.current;
 
-    // then
-    expect(selectedElement).to.be.null;
-    expect(message).to.equal(TASK_SELECTION_REQUIRED_MESSAGE);
-  }));
+      // then
+      expect(selectedElement).to.be.null;
+      expect(message).to.equal(SINGLE_TASK_SELECTION_REQUIRED_MESSAGE);
+    }
+  ));
 
 
-  it('should return element if supported element is selected', inject(function(elementRegistry, injector, selection) {
+  it('should return null and a message if unsupported element is selected', inject(
+    function(elementRegistry, injector, selection) {
 
-    // given
-    const { result } = renderHook(() => useSelectedElement(injector));
+      // given
+      const { result } = renderHook(() => useSelectedElement(injector));
 
-    const element = elementRegistry.get('ServiceTask_1');
+      const element = elementRegistry.get('StartEvent_1');
 
-    // when
-    act(() => {
-      selection.select(element);
-    });
+      // when
+      act(() => {
+        selection.select(element);
+      });
 
-    const [ selectedElement, message ] = result.current;
+      const [ selectedElement, message ] = result.current;
 
-    // then
-    expect(selectedElement).to.exist;
-    expect(message).to.be.null;
-  }));
+      // then
+      expect(selectedElement).to.be.null;
+      expect(message).to.equal(TASK_SELECTION_REQUIRED_MESSAGE);
+    }
+  ));
+
+
+  it('should return element if supported element is selected', inject(
+    function(elementRegistry, injector, selection) {
+
+      // given
+      const { result } = renderHook(() => useSelectedElement(injector));
+
+      const element = elementRegistry.get('ServiceTask_1');
+
+      // when
+      act(() => {
+        selection.select(element);
+      });
+
+      const [ selectedElement, message ] = result.current;
+
+      // then
+      expect(selectedElement).to.exist;
+      expect(message).to.be.null;
+    }
+  ));
 
 });
