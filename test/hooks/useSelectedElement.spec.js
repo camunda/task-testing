@@ -94,4 +94,34 @@ describe('useSelectedElement', function() {
     }
   ));
 
+
+  it('should not change while an element is being moved', inject(
+    function(injector, selection, elementRegistry, move) {
+
+      // given
+      const { result } = renderHook(() => useSelectedElement(injector));
+
+      // when
+      act(() => {
+        const element = elementRegistry.get('ServiceTask_1');
+        selection.select(element);
+      });
+
+      // assume
+      let [ selectedElement, message ] = result.current;
+      expect(selectedElement).to.exist;
+      expect(message).to.be.null;
+
+      // when
+      act(() => {
+        move.start(elementRegistry.get('ServiceTask_1'), { x: 10, y: 10 });
+      });
+
+      // then
+      [ selectedElement, message ] = result.current;
+      expect(selectedElement).to.exist;
+      expect(message).to.be.null;
+    }
+  ));
+
 });
