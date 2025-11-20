@@ -6,6 +6,10 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+## 1.0.3
+
+* `FIX`: do not show Operate button on error state ([#52](https://github.com/camunda/task-testing/pull/52))
+
 ## 1.0.2
 
 * `FIX`: mark tasks in ad-hoc sub-process as unsupported ([#50](https://github.com/camunda/task-testing/pull/50))
