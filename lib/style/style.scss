@@ -215,6 +215,10 @@
       font-weight: bold;
     }
 
+    .output__variables--skeleton {
+      max-inline-size: unset;
+    }
+
     code {
       font-size: 14px;
     }
