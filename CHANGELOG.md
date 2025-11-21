@@ -6,6 +6,10 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+## 1.0.4
+
+* `FIX`: make output loading animation take full width ([#56](https://github.com/camunda/task-testing/pull/56))
+
 ## 1.0.3
 
 * `FIX`: do not show Operate button on error state ([#52](https://github.com/camunda/task-testing/pull/52))
