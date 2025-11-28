@@ -9,7 +9,7 @@ existing UI and UX patterns.
 
 ### Checklist
 
-Ensure you provided everything we need to review your contribution:
+Ensure you provide everything we need to review your contribution:
 
 * [ ] Your __contribution meets the [definition of done](https://github.com/bpmn-io/.github/blob/main/resources/DEFINITION_OF_DONE.md)__
 * [ ] Any new additions or modifications are __consistent with the existing UI and UX patterns__
