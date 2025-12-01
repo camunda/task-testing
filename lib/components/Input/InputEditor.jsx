@@ -17,6 +17,8 @@ import theme from '../shared/CodeMirrorTheme';
 
 import { getAutocompletionExtensions } from '../../utils/autocompletion';
 
+import { SCOPES } from '../../TaskExecution';
+
 const fromPropAnnotation = Annotation.define();
 
 const autocompletionCompartment = new Compartment();
@@ -203,7 +205,11 @@ function getAllOutputVariables(allOutputs) {
           return;
         }
 
-        const { name, value } = /** @type {Object} */ (variable);
+        const { name, value, scope } = /** @type {Object} */ (variable);
+
+        if (scope !== SCOPES.PROCESS) {
+          return;
+        }
 
         allOutputVariables.push({ name, value, origin: elementId });
       });
