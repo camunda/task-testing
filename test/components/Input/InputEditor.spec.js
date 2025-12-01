@@ -9,6 +9,8 @@ import InputEditor, { PLACEHOLDER_TEXT, INVALID_JSON_ERROR } from '../../../lib/
 
 import diagramXML from '../../fixtures/InputEditor.bpmn';
 
+import { SCOPES } from '../../../lib/TaskExecution';
+
 describe('InputEditor', function() {
 
   beforeEach(bootstrapModeler(diagramXML));
@@ -79,11 +81,13 @@ describe('InputEditor', function() {
           variables: {
             1: {
               name: 'foo',
-              value: '1'
+              value: '1',
+              scope: SCOPES.PROCESS
             },
             2: {
               name: 'bar',
-              value: '2'
+              value: '2',
+              scope: SCOPES.LOCAL
             },
           }
         },
@@ -91,7 +95,8 @@ describe('InputEditor', function() {
           variables: {
             3: {
               name: 'foo',
-              value: '3'
+              value: '3',
+              scope: SCOPES.PROCESS
             },
           }
         }
@@ -110,11 +115,10 @@ describe('InputEditor', function() {
       await waitFor(() => {
         const completionLabels = Array.from(container.querySelectorAll('.cm-completionLabel')).map(el => el.textContent);
 
-        expect(completionLabels.length).to.eql(3);
+        expect(completionLabels.length).to.eql(2);
 
-        expect(completionLabels[0]).to.eql('bar');
+        expect(completionLabels[0]).to.eql('foo');
         expect(completionLabels[1]).to.eql('foo');
-        expect(completionLabels[2]).to.eql('foo');
 
         const completionInfos = Array.from(container.querySelectorAll('.cm-completionInfo .info span')).map(el => el.textContent);
 
