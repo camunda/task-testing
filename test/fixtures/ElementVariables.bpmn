@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1e568oi" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.41.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.8.0">
+  <bpmn:process id="Process_13hw8pf" isExecutable="true">
+    <bpmn:extensionElements />
+    <bpmn:startEvent id="Event_0o7ifhs">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="=foo" target="StartEvent_Output" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>Flow_0qvs8px</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_0bpzpvc" sourceRef="ServiceTask_1" targetRef="Subprocess" />
+    <bpmn:sequenceFlow id="Flow_0qvs8px" sourceRef="Event_0o7ifhs" targetRef="ServiceTask_1" />
+    <bpmn:serviceTask id="ServiceTask_1">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:input source="=bar" target="ServiceTask1_Input" />
+          <zeebe:output source="=bazz" target="ServiceTask1_Output" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0qvs8px</bpmn:incoming>
+      <bpmn:outgoing>Flow_0bpzpvc</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:subProcess id="Subprocess">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:input source="=faal" target="Subprocess_Input" />
+          <zeebe:output source="=barz" target="Subprocess_Output" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0bpzpvc</bpmn:incoming>
+      <bpmn:startEvent id="Event_1ha5ngx">
+        <bpmn:extensionElements>
+          <zeebe:ioMapping>
+            <zeebe:output source="=ford" target="SubprocessEvent_Output" />
+          </zeebe:ioMapping>
+        </bpmn:extensionElements>
+        <bpmn:outgoing>Flow_0blgn9d</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:sequenceFlow id="Flow_0blgn9d" sourceRef="Event_1ha5ngx" targetRef="ServiceTask_2" />
+      <bpmn:serviceTask id="ServiceTask_2">
+        <bpmn:extensionElements>
+          <zeebe:ioMapping>
+            <zeebe:input source="=far" target="ServiceTask2_Input" />
+            <zeebe:output source="=faf" target="SubprocessEvent_Output" />
+          </zeebe:ioMapping>
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_0blgn9d</bpmn:incoming>
+      </bpmn:serviceTask>
+    </bpmn:subProcess>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_13hw8pf">
+      <bpmndi:BPMNShape id="Event_0o7ifhs_di" bpmnElement="Event_0o7ifhs">
+        <dc:Bounds x="162" y="172" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1q8ky5i_di" bpmnElement="ServiceTask_1">
+        <dc:Bounds x="250" y="150" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0esa4g1_di" bpmnElement="Subprocess" isExpanded="true">
+        <dc:Bounds x="410" y="90" width="350" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1ha5ngx_di" bpmnElement="Event_1ha5ngx">
+        <dc:Bounds x="450.3333333333333" y="172" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_195xs93_di" bpmnElement="ServiceTask_2">
+        <dc:Bounds x="540" y="150" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0blgn9d_di" bpmnElement="Flow_0blgn9d">
+        <di:waypoint x="486" y="190" />
+        <di:waypoint x="540" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0qvs8px_di" bpmnElement="Flow_0qvs8px">
+        <di:waypoint x="198" y="190" />
+        <di:waypoint x="250" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0bpzpvc_di" bpmnElement="Flow_0bpzpvc">
+        <di:waypoint x="350" y="190" />
+        <di:waypoint x="410" y="190" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
