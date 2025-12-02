@@ -199,6 +199,64 @@ describe('InputEditor', function() {
       expect(onChangeSpy.getCalls()[1]).to.have.been.calledWith('{\n  "foo": \n}');
     }));
 
+
+    it('should not show in nested property on new line', inject(async function(elementRegistry, injector) {
+
+      // given
+      const element = elementRegistry.get('ServiceTask_1');
+
+      const variablesForElement = await getVariablesForElement(injector, element);
+
+      const { getByRole, findByRole } = renderWithProps({
+        value: '{\n"bar": {}\n}',
+        variablesForElement
+      });
+
+      // when
+      await user.click(getByRole('textbox'));
+      await user.keyboard('{ArrowDown}{End}{ArrowLeft}{Enter}');
+
+      // then
+      let thrown = false;
+
+      try {
+        await findByRole('option');
+      } catch {
+        thrown = true;
+      }
+
+      expect(thrown).to.be.true;
+    }));
+
+
+    it('should not show in nested property on typing', inject(async function(elementRegistry, injector) {
+
+      // given
+      const element = elementRegistry.get('ServiceTask_1');
+
+      const variablesForElement = await getVariablesForElement(injector, element);
+
+      const { getByRole, findByRole } = renderWithProps({
+        value: '{\n"bar": {}\n}',
+        variablesForElement
+      });
+
+      // when
+      await user.click(getByRole('textbox'));
+      await user.keyboard('{ArrowDown}{End}{ArrowLeft}{Enter}f');
+
+      // then
+      let thrown = false;
+
+      try {
+        await findByRole('option');
+      } catch {
+        thrown = true;
+      }
+
+      expect(thrown).to.be.true;
+    }));
+
   });
 
 
