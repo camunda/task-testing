@@ -181,7 +181,7 @@ function getAutocompletionInfo(value, description) {
   const htmlString = renderToStaticMarkup(
     <div className="info">
       <span>{ description }</span>
-      {value && <pre>{typeof value === 'object' ? JSON.stringify(value, null, 2) : value}</pre>}
+      {value !== undefined && <pre>{typeof value === 'object' ? JSON.stringify(value, null, 2) : value}</pre>}
     </div>
   );
 
