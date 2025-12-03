@@ -6,6 +6,12 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+## 1.0.5
+
+* `FIX`: do not show autocompletion in nested properties ([#60](https://github.com/camunda/task-testing/pull/60))
+* `FIX`: show autocompletion value for boolean values ([#60](https://github.com/camunda/task-testing/pull/60))
+* `FIX`: do not show local task variables in the autocompletion ([#60](https://github.com/camunda/task-testing/pull/60))
+
 ## 1.0.4
 
 * `FIX`: make output loading animation take full width ([#56](https://github.com/camunda/task-testing/pull/56))
