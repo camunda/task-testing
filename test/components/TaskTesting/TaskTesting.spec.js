@@ -113,8 +113,20 @@ describe('TaskTesting', function() {
 
       // given
       const api = {
-        deploy: sinon.spy(() => Promise.resolve({ success: true, response: { processes: [ { processDefinitionId: '123' } ] } })),
-        startInstance: sinon.spy(() => Promise.resolve({ success: true, response: { processInstanceKey: '123' } })),
+        deploy: sinon.spy(() => Promise.resolve({
+          success: true,
+          response: {
+            deployments: [
+              {
+                processDefinition: {
+                  processDefinitionId: 'Process_TaskTesting',
+                  processDefinitionKey: 123
+                }
+              }
+            ]
+          }
+        })),
+        startInstance: sinon.spy(() => Promise.resolve({ success: true, response: { processInstanceKey: 123 } })),
         getInstance: sinon.spy(() => Promise.resolve({ success: true, response: {} })),
       };
 
