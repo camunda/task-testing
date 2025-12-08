@@ -110,7 +110,7 @@ function App() {
   const { current: onConfigChanged } = useRef(debounce(config => setConfig(config), 300));
 
   // eslint-disable-next-line no-undef
-  const operateURL = `https://${ process.env.CAMUNDA_CLUSTER_REGION }.operate.camunda.io/${ process.env.CAMUNDA_CLUSTER_ID }/operate`;
+  const operateURL = process.env.CAMUNDA_OPERATE_BASE_URL;
 
   return (
     <>

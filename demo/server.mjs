@@ -11,44 +11,62 @@ import express from 'express';
 
 import { Camunda8 } from '@camunda8/sdk';
 
-function removeProtocol(url) {
-  return url.replace(/^(https?:\/\/|grpcs?:\/\/)/, '');
-}
-
-function createCamunda8Client() {
-  if (!process.env.ZEEBE_GRPC_ADDRESS || !process.env.CAMUNDA_CLIENT_ID || !process.env.CAMUNDA_CLIENT_SECRET) {
-    console.warn('Camunda environment variables not configured. API requests will return success: false');
-
-    return null;
-  }
-
-  const config = {
-    ...process.env,
-    ZEEBE_GRPC_ADDRESS: removeProtocol(process.env.ZEEBE_GRPC_ADDRESS),
-    CAMUNDA_AUTH_STRATEGY: 'OAUTH',
-    CAMUNDA_TOKEN_DISK_CACHE_DISABLE: true
-  };
-
-  return new Camunda8(config);
-}
-
 const app = express();
 
 app.use(express.json());
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-const camunda = createCamunda8Client();
+/** @type {import('@camunda8/sdk').CamundaRestClient} */
+let camundaRestClient;
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`\n🚀 Camunda 8 API starting on port ${PORT}\n`);
+
+
+  const config = {
+    ...process.env,
+    CAMUNDA_TOKEN_DISK_CACHE_DISABLE: true
+  };
+
+  try {
+    const c8 = new Camunda8(config);
+    camundaRestClient = c8.getCamundaRestClient();
+  } catch (error) {
+    console.error('Failed to create Camunda 8 REST client:', error);
+    console.warn('API requests will return { success: false }');
+    return;
+  }
+
+  camundaRestClient.createJobWorker({
+    type: 'foo',
+    jobHandler: async (job) => {
+      console.log('🚀 Processing job worker...');
+
+      // Simulate some work with a delay
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      console.log('🚀 Job completed');
+
+      job.complete({
+        foo: 'jobWorkerWasHere'
+      });
+    },
+    pollInterval: 1000,
+    timeout: 5000,
+    maxJobsToActivate: 5
+  });
+});
 
 app.post('/api/deploy', async (req, res) => {
   try {
-    if (!camunda) {
+    if (!camundaRestClient) {
       return res.json({ success: false, error: 'Camunda environment not configured' });
     }
 
     const { xml } = req.body;
-
-    const client = camunda.getCamundaRestClient();
 
     const resources = [
       {
@@ -57,7 +75,7 @@ app.post('/api/deploy', async (req, res) => {
       }
     ];
 
-    const response = await client.deployResources(resources);
+    const response = await camundaRestClient.deployResources(resources);
 
     res.json({ success: true, response });
   } catch (err) {
@@ -69,15 +87,13 @@ app.post('/api/deploy', async (req, res) => {
 
 app.post('/api/startInstance', async (req, res) => {
   try {
-    if (!camunda) {
+    if (!camundaRestClient) {
       return res.json({ success: false, error: 'Camunda environment not configured' });
     }
 
     const { processId, elementId, variables } = req.body;
 
-    const client = camunda.getCamundaRestClient();
-
-    const response = await client.createProcessInstance({
+    const response = await camundaRestClient.createProcessInstance({
       processDefinitionId: processId,
       variables,
       startInstructions:[
@@ -101,15 +117,13 @@ app.post('/api/startInstance', async (req, res) => {
 
 app.get('/api/getProcessInstance/:processInstanceKey', async (req, res) => {
   try {
-    if (!camunda) {
+    if (!camundaRestClient) {
       return res.json({ success: false, error: 'Camunda environment not configured' });
     }
 
     const { processInstanceKey } = req.params;
 
-    const client = camunda.getCamundaRestClient();
-
-    const response = await client.searchProcessInstances({
+    const response = await camundaRestClient.searchProcessInstances({
       filter: {
         processInstanceKey
       }
@@ -123,15 +137,13 @@ app.get('/api/getProcessInstance/:processInstanceKey', async (req, res) => {
 
 app.get('/api/getProcessInstanceVariables/:processInstanceKey', async (req, res) => {
   try {
-    if (!camunda) {
+    if (!camundaRestClient) {
       return res.json({ success: false, error: 'Camunda environment not configured' });
     }
 
     const { processInstanceKey } = req.params;
 
-    const client = camunda.getCamundaRestClient();
-
-    const response = await client.searchVariables({
+    const response = await camundaRestClient.searchVariables({
       filter: {
         processInstanceKey
       }
@@ -145,15 +157,13 @@ app.get('/api/getProcessInstanceVariables/:processInstanceKey', async (req, res)
 
 app.get('/api/getProcessInstanceElementInstances/:processInstanceKey', async (req, res) => {
   try {
-    if (!camunda) {
+    if (!camundaRestClient) {
       return res.json({ success: false, error: 'Camunda environment not configured' });
     }
 
     const { processInstanceKey } = req.params;
 
-    const client = camunda.getCamundaRestClient();
-
-    const response = await client.searchElementInstances({
+    const response = await camundaRestClient.searchElementInstances({
       filter: {
         processInstanceKey
       }
@@ -167,15 +177,13 @@ app.get('/api/getProcessInstanceElementInstances/:processInstanceKey', async (re
 
 app.get('/api/getProcessInstanceIncident/:processInstanceKey', async (req, res) => {
   try {
-    if (!camunda) {
+    if (!camundaRestClient) {
       return res.json({ success: false, error: 'Camunda environment not configured' });
     }
 
     const { processInstanceKey } = req.params;
 
-    const client = camunda.getOperateApiClient();
-
-    const response = await client.searchIncidents({
+    const response = await camundaRestClient.searchIncidents({
       filter: {
         processInstanceKey
       }
@@ -186,36 +194,3 @@ app.get('/api/getProcessInstanceIncident/:processInstanceKey', async (req, res) 
     res.status(500).json({ success: false, error: err.message });
   }
 });
-
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log(`Camunda 8 API listening on port ${PORT}`);
-});
-
-const restClient = camunda?.getCamundaRestClient();
-
-if (restClient) {
-  restClient.createJobWorker({
-    type: 'foo',
-    jobHandler: async (job) => {
-      console.log('Processing job:', job);
-
-      // Simulate some work with a delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      console.log('Job completed:', job);
-
-      job.complete({
-        foo: 'jobWorkerWasHere'
-      });
-    },
-    pollInterval: 1000,
-    timeout: 5000,
-    maxJobsToActivate: 5
-  });
-
-  console.log('Job worker started.');
-} else {
-  console.warn('Camunda REST client not configured. Job worker not started.');
-}
