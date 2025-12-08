@@ -7,7 +7,7 @@
   "main": "dist/index.js",
   "scripts": {
     "all": "run-s lint types test build",
-    "open": "open http://localhost:3000",
+    "open": "open-cli http://localhost:3000",
     "start:server": "node demo/server.mjs",
     "start:client": "webpack --watch --config webpack.demo.js",
     "start": "run-p start:* open",
@@ -69,6 +69,7 @@
     "mocha": "^11.7.1",
     "npm-run-all2": "^8.0.4",
     "open": "^10.2.0",
+    "open-cli": "^8.0.0",
     "raw-loader": "^4.0.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
