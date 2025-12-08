@@ -197,7 +197,7 @@ function OutputVariables({
         </TabList>
         <TabPanels>
           <TabPanel>
-            <OutputEditor value={ printIncident(output.incident) } />
+            <IncidentDetails { ...output.incident } />
           </TabPanel>
           <TabPanel>
             <OutputEditor value={ JSON.stringify(pickVariables(output.variables, SCOPES.PROCESS), null, 2) } />
@@ -252,21 +252,38 @@ function ErrorBanner({
   );
 }
 
-/**
- * Print the details of an incident.
- *
- * @param {Object} incident
- *
- * @returns {string}
- */
-function printIncident(incident) {
-  let text = '';
+function IncidentDetails({
+  type,
+  errorType,
+  message,
+  errorMessage,
+  creationTime,
+  ...rest
+}) {
+  return (
+    <div className="output__incident--details">
+      <div>
+        <span className="bold">Type: </span>
+        {type || errorType}
+      </div>
+      <div>
+        <span className="bold">Creation Time: </span>
+        {new Date(creationTime).toLocaleString()}
+      </div>
+      <div>
+        <pre>
+          <span className="bold">Message: </span>
+          {message || errorMessage}
+        </pre>
+      </div>
 
-  Object.keys(incident).forEach((key) => {
-    text += `${capitalize(key)}: ${JSON.stringify(incident[key], null, 2)}\n`;
-  });
-
-  return text;
+      { Object.entries(rest).map(([ key, value ]) => (
+        <div key={ key }>
+          <span className="bold">{capitalize(key)}:</span> {value}
+        </div>
+      )) }
+    </div>
+  );
 }
 
 /**
