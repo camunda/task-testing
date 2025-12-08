@@ -4,6 +4,8 @@ import { bootstrapModeler, inject } from './util/Util';
 
 import TaskExecution, { getVariables, INTERVAL_MS, SCOPES } from '../lib/TaskExecution';
 
+import diagramXML from './fixtures/diagram.bpmn';
+
 describe('TaskExecution', function() {
 
   let clock;
@@ -16,7 +18,7 @@ describe('TaskExecution', function() {
     clock.restore();
   });
 
-  beforeEach(bootstrapModeler());
+  beforeEach(bootstrapModeler(diagramXML));
 
   let api, taskExecution;
 
@@ -180,6 +182,30 @@ describe('TaskExecution', function() {
 
   describe('errors', function() {
 
+    it('should handle element not found error', async function() {
+
+      // when
+      taskExecution.executeTask('ServiceTask_Foo', { foo: 'bar' });
+
+      await clock.tickAsync(500);
+
+      // then
+      expect(finishedSpy).to.not.have.been.called;
+      expect(errorSpy).to.have.been.calledOnce;
+      expect(statusChangeSpy).to.not.have.been.called;
+      expect(api.deploy).to.not.have.been.called;
+      expect(api.startInstance).to.not.have.been.called;
+      expect(api.getProcessInstance).to.not.have.been.called;
+      expect(api.getProcessInstanceVariables).to.not.have.been.called;
+      expect(api.getProcessInstanceIncident).to.not.have.been.called;
+
+      expect(errorSpy).to.have.been.calledWithMatch({
+        message: 'Element with ID <ServiceTask_Foo> not found',
+        response: null
+      });
+    });
+
+
     it('should handle deploy error', async function() {
 
       // given
@@ -203,42 +229,6 @@ describe('TaskExecution', function() {
       expect(errorSpy).to.have.been.calledWithMatch({
         message: 'Failed to deploy process definition',
         response: DEPLOY_ERROR
-      });
-    });
-
-
-    it('should handle no process ID error', async function() {
-
-      // given
-      api.deploy.resolves({ success: true, response: {
-        items: [
-          {
-            processDefinitionId: null,
-            processDefinitionVersion: 1,
-            resourceName: 'diagram.bpmn',
-            tenantId: '<default>',
-            processDefinitionKey: '2251799813686881'
-          }
-        ]
-      } });
-
-      // when
-      taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
-
-      await clock.tickAsync(500);
-
-      // then
-      expect(finishedSpy).to.not.have.been.called;
-      expect(errorSpy).to.have.been.calledOnce;
-      expect(statusChangeSpy).to.have.been.calledWith('deploying');
-      expect(api.deploy).to.have.been.calledOnce;
-      expect(api.startInstance).to.not.have.been.called;
-      expect(api.getProcessInstance).to.not.have.been.called;
-      expect(api.getProcessInstanceVariables).to.not.have.been.called;
-      expect(api.getProcessInstanceIncident).to.not.have.been.called;
-
-      expect(errorSpy).to.have.been.calledWithMatch({
-        message: 'Failed to retrieve process ID from deployment response'
       });
     });
 
