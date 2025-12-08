@@ -219,6 +219,27 @@
       max-inline-size: unset;
     }
 
+    .output__incident--details {
+      position: absolute;
+      width: 100%;
+      height: calc(100% - 30px);
+      background-color: var(--cds-layer, #f4f4f4);
+      padding: 12px;
+      line-height: 20px;
+      overflow: auto;
+
+      pre {
+        margin: 0;
+        font-size: 14px;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .bold {
+        font-weight: bold;
+      }
+    }
+
     code {
       font-size: 14px;
     }
