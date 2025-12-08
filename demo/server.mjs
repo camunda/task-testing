@@ -73,10 +73,10 @@ app.post('/api/startInstance', async (req, res) => {
       return res.json({ success: false, error: 'Camunda environment not configured' });
     }
 
-    const { processId, elementId, variables } = req.body;
+    const { processDefinitionKey, elementId, variables } = req.body;
 
     const response = await camundaRestClient.createProcessInstance({
-      processDefinitionId: processId,
+      processDefinitionKey,
       variables,
       startInstructions:[
         {

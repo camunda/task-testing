@@ -62,7 +62,7 @@ export type ApiResponse<T> =
 
 export type TaskExecutionApi = {
   deploy: () => Promise<ApiResponse<DeployResourceResponse>>;
-  startInstance: (processId: string, elementId: string, variables: { [key: string]: any }) => Promise<ApiResponse<CreateProcessInstanceResponse>>;
+  startInstance: (processDefinitionKey: string, elementId: string, variables: { [key: string]: any }) => Promise<ApiResponse<CreateProcessInstanceResponse>>;
   getProcessInstance: (processInstanceKey: string) => Promise<ApiResponse<SearchProcessInstanceResponse>>;
   getProcessInstanceVariables: (processInstanceKey: string) => Promise<ApiResponse<SearchVariablesResponse>>;
   getProcessInstanceElementInstances: (processInstanceKey: string) => Promise<ApiResponse<SearchElementInstancesResponse>>;

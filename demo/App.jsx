@@ -71,14 +71,14 @@ function App() {
     return await response.json();
   };
 
-  const startInstance = async (processId, elementId, variables) => {
+  const startInstance = async (processDefinitionKey, elementId, variables) => {
     const response = await fetch('/api/startInstance', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        processId,
+        processDefinitionKey,
         elementId,
         variables
       })
