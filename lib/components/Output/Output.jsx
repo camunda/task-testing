@@ -197,7 +197,7 @@ function OutputVariables({
         </TabList>
         <TabPanels>
           <TabPanel>
-            <IncidentDetails { ...output.incident } />
+            <IncidentDetails incident={ output.incident } />
           </TabPanel>
           <TabPanel>
             <OutputEditor value={ JSON.stringify(pickVariables(output.variables, SCOPES.PROCESS), null, 2) } />
@@ -252,12 +252,14 @@ function ErrorBanner({
   );
 }
 
-function IncidentDetails({
-  errorType,
-  errorMessage,
-  creationTime,
-  ...rest
-}) {
+function IncidentDetails({ incident }) {
+  const {
+    errorType,
+    errorMessage,
+    creationTime,
+    ...rest
+  } = incident;
+
   return (
     <div className="output__incident--details">
       <div>
