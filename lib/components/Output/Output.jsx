@@ -253,9 +253,7 @@ function ErrorBanner({
 }
 
 function IncidentDetails({
-  type,
   errorType,
-  message,
   errorMessage,
   creationTime,
   ...rest
@@ -264,7 +262,7 @@ function IncidentDetails({
     <div className="output__incident--details">
       <div>
         <span className="bold">Type: </span>
-        {type || errorType}
+        {errorType}
       </div>
       <div>
         <span className="bold">Creation Time: </span>
@@ -273,7 +271,7 @@ function IncidentDetails({
       <div>
         <pre>
           <span className="bold">Message: </span>
-          {message || errorMessage}
+          {errorMessage}
         </pre>
       </div>
 
