@@ -86,11 +86,13 @@ export type TaskExecutionResult = {
   variables?: ElementOutputVariables;
   error?: TaskExecutionError;
   incident?: any;
+  executionTime: number;
 }
 
 export type TaskExecutionError = {
   message: string;
   response?: any;
+  executionTime: number;
 };
 
 export type { Element, ModdleElement } from 'bpmn-js/lib/model/Types';

@@ -94,6 +94,8 @@ describe('TaskExecution', function() {
         }
       }
     });
+
+    expect(finishedSpy.firstCall.args[0]).to.have.property('executionTime').that.is.a('number');
   });
 
 
@@ -204,6 +206,8 @@ describe('TaskExecution', function() {
         message: 'Failed to deploy process definition',
         response: DEPLOY_ERROR
       });
+
+      expect(errorSpy.firstCall.args[0]).to.have.property('executionTime').that.is.a('number');
     });
 
 
@@ -590,6 +594,143 @@ describe('TaskExecution', function() {
         4: { name: 'processFoo', value: true, scope: SCOPES.PROCESS },
         5: { name: 'otherLocalFoo', value: 'baz', scope: null }
       });
+    });
+
+  });
+
+
+  describe('execution time tracking', function() {
+
+    it('should include execution time on successful task execution', async function() {
+
+      // given
+      api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
+      api.startInstance.resolves({ success: true, response: DEFAULT_START_INSTANCE_RESPONSE });
+      api.getProcessInstance.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_RESPONSE });
+      api.getProcessInstanceVariables.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_VARIABLES_RESPONSE });
+      api.getProcessInstanceElementInstances.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_ELEMENT_INSTANCES_RESPONSE });
+
+      // when
+      taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
+
+      await clock.tickAsync(1500);
+
+      // then
+      expect(finishedSpy).to.have.been.calledOnce;
+
+      const result = finishedSpy.firstCall.args[0];
+
+      expect(result).to.have.property('executionTime');
+      expect(result.executionTime).to.be.a('number');
+      expect(result.executionTime).to.be.at.least(0);
+    });
+
+
+    it('should include execution time on error', async function() {
+
+      // given
+      api.deploy.resolves({ success: false, error: DEPLOY_ERROR });
+
+      // when
+      taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
+
+      await clock.tickAsync(500);
+
+      // then
+      expect(errorSpy).to.have.been.calledOnce;
+
+      const error = errorSpy.firstCall.args[0];
+
+      expect(error).to.have.property('executionTime');
+      expect(error.executionTime).to.be.a('number');
+      expect(error.executionTime).to.be.at.least(0);
+    });
+
+
+    it('should include execution time on incident', async function() {
+
+      // given
+      api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
+      api.startInstance.resolves({ success: true, response: DEFAULT_START_INSTANCE_RESPONSE });
+      api.getProcessInstance.resolves({ success: true, response: {
+        items: [
+          {
+            'processDefinitionId': 'Process_TaskTesting',
+            'processDefinitionName': 'Process_TaskTesting',
+            'processDefinitionVersion': 1,
+            'startDate': '2025-09-04T12:43:52.704Z',
+            'endDate': null,
+            'state': 'ACTIVE',
+            'hasIncident': true,
+            'tenantId': '<default>',
+            'processInstanceKey': '2251799813755922',
+            'processDefinitionKey': '2251799813686881'
+          }
+        ]
+      } });
+      api.getProcessInstanceIncident.resolves({ success: true, response: {
+        items: [
+          {
+            key: '2251799814592731',
+            processDefinitionKey: '2251799814239639',
+            processInstanceKey: '2251799814592711',
+            type: 'JOB_NO_RETRIES',
+            message: 'Bad gateway',
+            creationTime: '2025-08-21T14:40:55.402+0000',
+            state: 'ACTIVE',
+            jobKey: '2251799814592726',
+            tenantId: '<default>'
+          }
+        ]
+      } });
+      api.getProcessInstanceVariables.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_VARIABLES_RESPONSE });
+      api.getProcessInstanceElementInstances.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_ELEMENT_INSTANCES_RESPONSE });
+
+      // when
+      taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
+
+      await clock.tickAsync(1500);
+
+      // then
+      expect(finishedSpy).to.have.been.calledOnce;
+
+      const result = finishedSpy.firstCall.args[0];
+
+      expect(result).to.have.property('executionTime');
+      expect(result.executionTime).to.be.a('number');
+      expect(result.executionTime).to.be.at.least(0);
+      expect(result.success).to.be.false;
+    });
+
+
+    it('should reset execution start time on cancel', async function() {
+
+      // given
+      api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
+      api.startInstance.resolves({ success: true, response: DEFAULT_START_INSTANCE_RESPONSE });
+
+      // when
+      taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
+
+      await clock.tickAsync(500);
+
+      taskExecution.cancelTaskExecution();
+
+      // then
+      expect(taskExecution._executionStartTime).to.be.null;
+    });
+
+
+    it('should set execution start time when task execution starts', async function() {
+
+      // given
+      api.deploy.callsFake(() => new Promise(() => {})); // Never resolves
+
+      // when
+      taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
+
+      // then
+      expect(taskExecution._executionStartTime).to.be.a('number');
     });
 
   });
