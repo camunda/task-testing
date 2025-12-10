@@ -120,13 +120,13 @@ describe('TaskTesting', function() {
               {
                 processDefinition: {
                   processDefinitionId: 'Process_TaskTesting',
-                  processDefinitionKey: 123
+                  processDefinitionKey: '123'
                 }
               }
             ]
           }
         })),
-        startInstance: sinon.spy(() => Promise.resolve({ success: true, response: { processInstanceKey: 123 } })),
+        startInstance: sinon.spy(() => Promise.resolve({ success: true, response: { processInstanceKey: '123' } })),
         getInstance: sinon.spy(() => Promise.resolve({ success: true, response: {} })),
       };
 
