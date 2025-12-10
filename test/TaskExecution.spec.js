@@ -52,7 +52,7 @@ describe('TaskExecution', function() {
   });
 
 
-  it('should execute a task', async function() {
+  it('should execute a task', inject(async function(elementRegistry) {
 
     // given
     api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
@@ -62,7 +62,7 @@ describe('TaskExecution', function() {
     api.getProcessInstanceElementInstances.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_ELEMENT_INSTANCES_RESPONSE });
 
     // when
-    taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
+    taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
 
     await clock.tickAsync(1500);
 
@@ -96,10 +96,10 @@ describe('TaskExecution', function() {
         }
       }
     });
-  });
+  }));
 
 
-  it('should execute a task and poll until process instance found', async function() {
+  it('should execute a task and poll until process instance found', inject(async function(elementRegistry) {
 
     // given
     api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
@@ -110,7 +110,7 @@ describe('TaskExecution', function() {
     api.getProcessInstanceElementInstances.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_ELEMENT_INSTANCES_RESPONSE });
 
     // when
-    taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
+    taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
 
     await clock.tickAsync(2500);
 
@@ -139,10 +139,10 @@ describe('TaskExecution', function() {
         }
       }
     });
-  });
+  }));
 
 
-  it('should execute a task and not finish if process instance is still active', async function() {
+  it('should execute a task and not finish if process instance is still active', inject(async function(elementRegistry) {
 
     // given
     api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
@@ -165,7 +165,7 @@ describe('TaskExecution', function() {
     } });
 
     // when
-    taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
+    taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
 
     await clock.tickAsync(2500);
 
@@ -177,42 +177,18 @@ describe('TaskExecution', function() {
     expect(api.getProcessInstance).to.have.been.calledTwice;
     expect(api.getProcessInstanceVariables).to.not.have.been.called;
     expect(api.getProcessInstanceIncident).to.not.have.been.called;
-  });
+  }));
 
 
   describe('errors', function() {
 
-    it('should handle element not found error', async function() {
-
-      // when
-      taskExecution.executeTask('ServiceTask_Foo', { foo: 'bar' });
-
-      await clock.tickAsync(500);
-
-      // then
-      expect(finishedSpy).to.not.have.been.called;
-      expect(errorSpy).to.have.been.calledOnce;
-      expect(statusChangeSpy).to.not.have.been.called;
-      expect(api.deploy).to.not.have.been.called;
-      expect(api.startInstance).to.not.have.been.called;
-      expect(api.getProcessInstance).to.not.have.been.called;
-      expect(api.getProcessInstanceVariables).to.not.have.been.called;
-      expect(api.getProcessInstanceIncident).to.not.have.been.called;
-
-      expect(errorSpy).to.have.been.calledWithMatch({
-        message: 'Element with ID <ServiceTask_Foo> not found',
-        response: null
-      });
-    });
-
-
-    it('should handle deploy error', async function() {
+    it('should handle deploy error', inject(async function(elementRegistry) {
 
       // given
       api.deploy.resolves({ success: false, error: DEPLOY_ERROR });
 
       // when
-      taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
+      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
 
       await clock.tickAsync(500);
 
@@ -230,17 +206,17 @@ describe('TaskExecution', function() {
         message: 'Failed to deploy process definition',
         response: DEPLOY_ERROR
       });
-    });
+    }));
 
 
-    it('should handle start instance error', async function() {
+    it('should handle start instance error', inject(async function(elementRegistry) {
 
       // given
       api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
       api.startInstance.resolves({ success: false, error: START_INSTANCE_ERROR });
 
       // when
-      taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
+      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
 
       await clock.tickAsync(500);
 
@@ -259,10 +235,10 @@ describe('TaskExecution', function() {
         message: 'Failed to start process instance',
         response: START_INSTANCE_ERROR
       });
-    });
+    }));
 
 
-    it('should handle no process instance key error', async function() {
+    it('should handle no process instance key error', inject(async function(elementRegistry) {
 
       // given
       api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
@@ -277,7 +253,7 @@ describe('TaskExecution', function() {
       } });
 
       // when
-      taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
+      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
 
       await clock.tickAsync(500);
 
@@ -295,10 +271,10 @@ describe('TaskExecution', function() {
       expect(errorSpy).to.have.been.calledWithMatch({
         message: 'Failed to retrieve process instance key from start instance response'
       });
-    });
+    }));
 
 
-    it('should handle get process instance error (retry)', async function() {
+    it('should handle get process instance error (retry)', inject(async function(elementRegistry) {
 
       // given
       api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
@@ -309,7 +285,7 @@ describe('TaskExecution', function() {
       api.getProcessInstanceElementInstances.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_ELEMENT_INSTANCES_RESPONSE });
 
       // when
-      taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
+      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
 
       await clock.tickAsync(INTERVAL_MS * 2);
 
@@ -327,13 +303,14 @@ describe('TaskExecution', function() {
         message: 'Failed to get process instance',
         response: GET_PROCESS_INSTANCE_ERROR
       });
-    });
+    }));
+
   });
 
 
   describe('incidents', function() {
 
-    it('should handle incident', async function() {
+    it('should handle incident', inject(async function(elementRegistry) {
 
       // given
       api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
@@ -373,7 +350,7 @@ describe('TaskExecution', function() {
       api.getProcessInstanceElementInstances.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_ELEMENT_INSTANCES_RESPONSE });
 
       // when
-      taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
+      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
 
       await clock.tickAsync(1500);
 
@@ -413,14 +390,14 @@ describe('TaskExecution', function() {
           tenantId: '<default>'
         }
       });
-    });
+    }));
 
   });
 
 
   describe('cancelling', function() {
 
-    it('should cancel running task execution', async function() {
+    it('should cancel running task execution', inject(async function(elementRegistry) {
 
       // given
       api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
@@ -428,7 +405,7 @@ describe('TaskExecution', function() {
       api.getProcessInstance.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_RESPONSE });
 
       // when
-      taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
+      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
 
       await clock.tickAsync(500);
 
@@ -444,7 +421,7 @@ describe('TaskExecution', function() {
       expect(api.getProcessInstance).to.not.have.been.called;
       expect(api.getProcessInstanceVariables).to.not.have.been.called;
       expect(api.getProcessInstanceIncident).to.not.have.been.called;
-    });
+    }));
 
 
     it('should cancel on <selection.changed>', inject(async function(elementRegistry, selection) {
@@ -454,7 +431,7 @@ describe('TaskExecution', function() {
       api.startInstance.resolves({ success: true, response: DEFAULT_START_INSTANCE_RESPONSE });
       api.getProcessInstance.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_RESPONSE });
 
-      taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
+      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
 
       await clock.tickAsync(500);
 
@@ -476,7 +453,7 @@ describe('TaskExecution', function() {
     }));
 
 
-    it('should handle canceling after starting instance', async function() {
+    it('should handle canceling after starting instance', inject(async function(elementRegistry) {
 
       // given
       api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
@@ -484,7 +461,7 @@ describe('TaskExecution', function() {
       api.getProcessInstance.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_RESPONSE });
 
       // when
-      taskExecution.executeTask('ServiceTask_1', { foo: 'bar' });
+      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
 
       await clock.tickAsync(500);
 
@@ -500,7 +477,7 @@ describe('TaskExecution', function() {
       expect(finishedSpy).to.not.have.been.called;
       expect(api.getProcessInstanceVariables).to.not.have.been.called;
       expect(api.getProcessInstanceIncident).to.not.have.been.called;
-    });
+    }));
 
 
     it('should noop when canceling without running task execution', async function() {
