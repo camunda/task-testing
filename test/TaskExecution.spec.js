@@ -182,6 +182,27 @@ describe('TaskExecution', function() {
 
   describe('errors', function() {
 
+    it('should handle no process ID error', inject(async function(elementFactory) {
+
+      // given
+      const task = elementFactory.create('shape', {
+        type: 'bpmn:ServiceTask'
+      });
+
+      // when
+      taskExecution.executeTask(task, { foo: 'bar' });
+
+      await clock.tickAsync(500);
+
+      // then
+      expect(finishedSpy).to.not.have.been.called;
+      expect(errorSpy).to.have.been.calledOnce;
+      expect(errorSpy).to.have.been.calledWithMatch({
+        message: `Process ID for element <${task.id}> not found`
+      });
+    }));
+
+
     it('should handle deploy error', inject(async function(elementRegistry) {
 
       // given
