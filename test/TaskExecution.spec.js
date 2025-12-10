@@ -2,7 +2,7 @@ import sinon from 'sinon';
 
 import { bootstrapModeler, inject } from './util/Util';
 
-import TaskExecution, { getVariables, INTERVAL_MS, SCOPES } from '../lib/TaskExecution';
+import TaskExecution, { getProcessDefinitionKey, getVariables, INTERVAL_MS, SCOPES } from '../lib/TaskExecution';
 
 import diagramXML from './fixtures/diagram.bpmn';
 
@@ -489,6 +489,102 @@ describe('TaskExecution', function() {
 
       // then
       expect(finishedSpy).to.not.have.been.called;
+    });
+
+  });
+
+
+  describe('getProcessDefinitionKey', function() {
+
+    it('should get process definition key from deploy response', function() {
+
+      // when
+      const processDefinitionKey = getProcessDefinitionKey(
+        DEFAULT_DEPLOY_RESPONSE,
+        'Process_TaskTesting'
+      );
+
+      // then
+      expect(processDefinitionKey).to.equal('2251799813686881');
+    });
+
+
+    it('should return null if process definition with ID not found', function() {
+
+      // when
+      const processDefinitionKey = getProcessDefinitionKey(
+        DEFAULT_DEPLOY_RESPONSE,
+        'Foo_Process'
+      );
+
+      // then
+      expect(processDefinitionKey).to.be.null;
+    });
+
+
+    it('should return null if no process definition found', function() {
+
+      // when
+      const processDefinitionKey = getProcessDefinitionKey(
+        {
+          ...DEFAULT_DEPLOY_RESPONSE,
+          deployments: [
+            {
+              'decisionDefinition': {
+                'decisionDefinitionId': 'Decision_1',
+                'version': 1,
+                'name': 'Decision 1',
+                'tenantId': '<default>',
+                'decisionRequirementsId': 'Definitions_1',
+                'decisionDefinitionKey': '2251799821491857',
+                'decisionRequirementsKey': '2251799821491856'
+              },
+              'decision': {
+                'decisionDefinitionId': 'Decision_1',
+                'version': 1,
+                'name': 'Decision 1',
+                'tenantId': '<default>',
+                'decisionRequirementsId': 'Definitions_1',
+                'decisionDefinitionKey': '2251799821491857',
+                'decisionRequirementsKey': '2251799821491856',
+                'decisionId': 'Decision_1',
+                'dmnDecisionId': 'Decision_1',
+                'dmnDecisionName': 'Decision 1',
+                'dmnDecisionRequirementsId': 'Definitions_1',
+                'decisionKey': '2251799821491857'
+              }
+            },
+            {
+              'decisionRequirements': {
+                'decisionRequirementsId': 'Definitions_1',
+                'version': 1,
+                'decisionRequirementsName': 'DRD',
+                'tenantId': '<default>',
+                'resourceName': 'decision.dmn',
+                'decisionRequirementsKey': '2251799821491856',
+                'dmnDecisionRequirementsId': 'Definitions_1',
+                'dmnDecisionRequirementsName': 'DRD'
+              }
+            }
+          ],
+          processes: [],
+          decisions: [
+            {
+              'decisionDefinitionId': 'Decision_1',
+              'version': 1,
+              'name': 'Decision 1',
+              'tenantId': '<default>',
+              'decisionRequirementsId': 'Definitions_1',
+              'decisionDefinitionKey': '2251799821491857',
+              'decisionRequirementsKey': '2251799821491856'
+            }
+          ]
+        },
+        'Process_TaskTesting'
+      );
+
+      // then
+      expect(processDefinitionKey).to.be.null;
     });
 
   });
