@@ -5,11 +5,30 @@ import dotenv from 'dotenv';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.join(__dirname, '.env') });
-
 import express from 'express';
 
 import { Camunda8 } from '@camunda8/sdk';
+
+
+/** @type {import('@camunda8/sdk').CamundaRestClient} */
+let camundaRestClient;
+
+try {
+
+  const config = dotenv.config({ path: path.join(__dirname, '.env') }).parsed;
+
+  if (!Object.keys(config)?.length) {
+    throw new Error('No configuration found in .env file');
+  }
+
+  const c8 = new Camunda8(config);
+  camundaRestClient = c8.getCamundaRestClient();
+
+  createJobWorker();
+} catch (error) {
+  console.error('Failed to create Camunda 8 REST client:', error);
+  console.warn('API requests will return { success: false }');
+}
 
 const app = express();
 
@@ -17,47 +36,10 @@ app.use(express.json());
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-/** @type {import('@camunda8/sdk').CamundaRestClient} */
-let camundaRestClient;
-
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`\n🚀 Camunda 8 API starting on port ${PORT}\n`);
-
-
-  const config = {
-    ...process.env,
-    CAMUNDA_TOKEN_DISK_CACHE_DISABLE: true
-  };
-
-  try {
-    const c8 = new Camunda8(config);
-    camundaRestClient = c8.getCamundaRestClient();
-  } catch (error) {
-    console.error('Failed to create Camunda 8 REST client:', error);
-    console.warn('API requests will return { success: false }');
-    return;
-  }
-
-  camundaRestClient.createJobWorker({
-    type: 'foo',
-    jobHandler: async (job) => {
-      console.log('🚀 Processing job worker...');
-
-      // Simulate some work with a delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      console.log('🚀 Job completed');
-
-      job.complete({
-        foo: 'jobWorkerWasHere'
-      });
-    },
-    pollInterval: 1000,
-    timeout: 5000,
-    maxJobsToActivate: 5
-  });
 });
 
 app.post('/api/deploy', async (req, res) => {
@@ -194,3 +176,29 @@ app.get('/api/getProcessInstanceIncident/:processInstanceKey', async (req, res) 
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
+function createJobWorker() {
+  if (!camundaRestClient) {
+    console.warn('Camunda environment not configured, job worker not started');
+    return;
+  }
+
+  camundaRestClient.createJobWorker({
+    type: 'foo',
+    jobHandler: async (job) => {
+      console.log('🚀 Processing job worker...');
+
+      // Simulate some work with a delay
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      console.log('🚀 Job completed');
+
+      job.complete({
+        foo: 'jobWorkerWasHere'
+      });
+    },
+    pollInterval: 1000,
+    timeout: 5000,
+    maxJobsToActivate: 5
+  });
+}
