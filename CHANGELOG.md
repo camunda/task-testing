@@ -6,6 +6,15 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+## 2.0.0
+
+* `FEAT`: improve readability of incident details ([#63](https://github.com/camunda/task-testing/pull/63))
+* `FIX`: create process instance by key instead of ID ([#61](https://github.com/camunda/task-testing/pull/61))
+
+### Breaking Changes
+
+* The `api.startInstance` function signature changed. The first argument is now the process definition key instead of the process definition ID. See https://github.com/camunda/task-testing/pull/61 for more information.
+
 ## 1.0.5
 
 * `FIX`: do not show autocompletion in nested properties ([#60](https://github.com/camunda/task-testing/pull/60))
