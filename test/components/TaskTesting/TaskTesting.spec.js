@@ -240,6 +240,61 @@ describe('TaskTesting', function() {
       }));
 
 
+    it('should disable _Test task_ button while awaiting onTestTask',
+      inject(async function(elementRegistry, selection) {
+
+        // given
+        const spy = sinon.spy(() => new Promise(() => {}));
+
+        let resolveOnTestTask;
+
+        const onTestTaskPromise = new Promise((resolve) => {
+          resolveOnTestTask = resolve;
+        });
+
+        const onTestTask = async () => {
+          await onTestTaskPromise;
+          return true;
+        };
+
+        renderTaskTesting({
+          isConnectionConfigured: true,
+          onTestTask,
+          api: {
+            deploy: spy
+          }
+        });
+
+        selection.select(elementRegistry.get('ServiceTask_1'));
+
+        // when
+        const button = await screen.findByTestId('test-task-btn');
+
+        await waitFor(() => {
+          expect(button.getAttribute('disabled')).not.to.exist;
+        });
+
+        button.click();
+
+        // then
+        await waitFor(() => {
+          expect(button.getAttribute('disabled')).to.exist;
+        });
+
+        // when
+        resolveOnTestTask(true);
+
+        // then
+        await waitFor(() => {
+          expect(spy).to.have.been.called;
+        });
+
+        await waitFor(() => {
+          expect(button.getAttribute('disabled')).not.to.exist;
+        });
+      }));
+
+
     it('should not start execution when connection configured and onTestTask provided (return false)',
       inject(async function(elementRegistry, selection) {
 
