@@ -9,6 +9,8 @@ ___Note:__ Yet to be released changes appear here._
 ## 2.0.0
 
 * `FEAT`: improve readability of incident details ([#63](https://github.com/camunda/task-testing/pull/63))
+* `FEAT`: add `onTestTask` prop for parent component to control flow when _Test task_ clicked ([#65](https://github.com/camunda/task-testing/pull/65))
+* `FEAT`: add optional _Configure_ button ([#65](https://github.com/camunda/task-testing/pull/65))
 * `FIX`: create process instance by key instead of ID ([#61](https://github.com/camunda/task-testing/pull/61))
 
 ### Breaking Changes
