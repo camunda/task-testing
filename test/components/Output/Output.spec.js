@@ -36,6 +36,45 @@ describe('Output', function() {
   });
 
 
+  describe('error banner', function() {
+
+    it('should render action link when onConfigureConnection is provided', async function() {
+
+      // when
+      const { queryByText } = renderWithProps({
+        isConnectionConfigured: false,
+        configureConnectionBannerTitle: 'Foo',
+        configureConnectionBannerDescription: 'Bar',
+        configureConnectionLabel: 'Baz',
+        onConfigureConnection: () => {}
+      });
+
+      // then
+      expect(queryByText(/Foo/i)).to.exist;
+      expect(queryByText(/Bar/i)).to.exist;
+      expect(queryByText(/Baz/i)).to.exist;
+    });
+
+
+    it('should not render action link when onConfigureConnection is not provided', async function() {
+
+      // when
+      const { queryByText } = renderWithProps({
+        isConnectionConfigured: false,
+        configureConnectionBannerTitle: 'Foo',
+        configureConnectionBannerDescription: 'Bar',
+        configureConnectionLabel: 'Baz'
+      });
+
+      // then
+      expect(queryByText(/Foo/i)).to.exist;
+      expect(queryByText(/Bar/i)).to.exist;
+      expect(queryByText(/Baz/i)).to.not.exist;
+    });
+
+  });
+
+
   describe('pickVariables', function() {
 
     it('should pick variables by scope', function() {
@@ -162,7 +201,7 @@ function renderWithProps(props) {
     configureConnectionBannerTitle = 'Configure Connection',
     configureConnectionBannerDescription = 'Please configure your connection settings.',
     configureConnectionLabel = 'Configure Connection',
-    onConfigureConnection = () => {},
+    onConfigureConnection,
     isTaskExecuting = false,
     output = {},
     onResetOutput = () => {},

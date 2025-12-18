@@ -231,14 +231,14 @@ function ErrorBanner({
   description,
   actionLabel,
   actionUrl = '#',
-  onActionClick = () => {}
+  onActionClick
 }) {
   return (
     <div className="output__error">
       <div className="output__error--title">
         <span>{title}</span>
         {
-          actionLabel && <div className="output__error--action">
+          actionLabel && onActionClick && <div className="output__error--action">
             <Link href={ actionUrl } onClick={ () => onActionClick() }>
               { actionLabel }
             </Link>
