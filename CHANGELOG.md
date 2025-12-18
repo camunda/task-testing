@@ -6,6 +6,10 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+## 2.0.1
+
+* `FIX`: do not show error banner action if `onConfigureConnection` not provided ([#66](https://github.com/camunda/task-testing/pull/66))
+
 ## 2.0.0
 
 * `FEAT`: improve readability of incident details ([#63](https://github.com/camunda/task-testing/pull/63))
