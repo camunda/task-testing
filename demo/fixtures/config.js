@@ -78,7 +78,8 @@ const output = {
         'name': 'output2',
         'value': true,
         'scope': 'PROCESS'
-      }
+      },
+      'RPA_Result': 'someURL'
     },
     operateUrl: 'https://camunda.com'
   },

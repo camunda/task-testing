@@ -6,6 +6,7 @@ import userEvent from '@testing-library/user-event';
 import Output, { pickVariables, NO_OPERATE_URL_TOOLTIP } from '../../../lib/components/Output/Output';
 
 import { SCOPES } from '../../../lib/TaskExecution';
+import { createFillsManager, FillsContext } from '../../../lib/components/shared/SlotFill';
 
 describe('Output', function() {
 
@@ -209,16 +210,18 @@ function renderWithProps(props) {
   } = props;
 
   return render(
-    <Output
-      isConnectionConfigured={ isConnectionConfigured }
-      configureConnectionBannerTitle={ configureConnectionBannerTitle }
-      configureConnectionBannerDescription={ configureConnectionBannerDescription }
-      configureConnectionLabel={ configureConnectionLabel }
-      onConfigureConnection={ onConfigureConnection }
-      isTaskExecuting={ isTaskExecuting }
-      output={ output }
-      onResetOutput={ onResetOutput }
-      taskExecutionStatus={ taskExecutionStatus }
-    />
+    <FillsContext.Provider value={ createFillsManager() }>
+      <Output
+        isConnectionConfigured={ isConnectionConfigured }
+        configureConnectionBannerTitle={ configureConnectionBannerTitle }
+        configureConnectionBannerDescription={ configureConnectionBannerDescription }
+        configureConnectionLabel={ configureConnectionLabel }
+        onConfigureConnection={ onConfigureConnection }
+        isTaskExecuting={ isTaskExecuting }
+        output={ output }
+        onResetOutput={ onResetOutput }
+        taskExecutionStatus={ taskExecutionStatus }
+      />
+    </FillsContext.Provider>
   );
 }

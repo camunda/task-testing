@@ -13,6 +13,7 @@ import defaultConfig from './fixtures/config';
 
 import '@carbon/styles/css/styles.min.css';
 import './style.css';
+import { rpaPlugins } from './plugins/RPA';
 
 function App() {
   const modelerRef = useRef(null);
@@ -155,6 +156,7 @@ function App() {
           onConfigChanged={ onConfigChanged }
           operateBaseUrl={ operateURL }
           documentationUrl="https://docs.camunda.io/"
+          plugins={ rpaPlugins }
         />
       </div>
     </>

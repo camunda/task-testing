@@ -36,7 +36,7 @@ module.exports = {
         ]
       },
       {
-        test: /\.bpmn$/i,
+        test: /\.(bpmn|html)$/i,
         use: 'raw-loader'
       }
     ]
