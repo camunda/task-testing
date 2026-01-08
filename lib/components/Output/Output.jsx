@@ -25,6 +25,7 @@ import { isObject, has } from 'min-dash';
 import OutputEditor from './OutputEditor';
 
 import { SCOPES } from '../../TaskExecution';
+import { Fill, Slot } from '../shared/SlotFill';
 
 export const TASK_EXECUTION_STATUS_LABEL = {
   deploying: 'Deploying...',
@@ -36,6 +37,7 @@ export const NO_OPERATE_URL_TOOLTIP = 'No Operate URL set for this connection';
 
 /**
  * @param {Object} props
+ * @param {import('bpmn-js/lib/model/Types').Element} props.element
  * @param {boolean} props.isConnectionConfigured
  * @param {string} props.configureConnectionBannerTitle
  * @param {string} props.configureConnectionBannerDescription
@@ -48,6 +50,7 @@ export const NO_OPERATE_URL_TOOLTIP = 'No Operate URL set for this connection';
  * @param {import('../../types').TaskExecutionStatus} props.taskExecutionStatus
  */
 export default function Output({
+  element,
   isConnectionConfigured,
   configureConnectionBannerTitle,
   configureConnectionBannerDescription,
@@ -75,10 +78,6 @@ export default function Output({
 
     return <InProgress className="output__status-icon--ready" />;
   }, [ output, isTaskExecuting, isConnectionConfigured ]);
-
-  const showResetButton = isConnectionConfigured && output;
-  const showOperateUrl = isConnectionConfigured && (currentOperateUrl || (output && !output.error));
-  const operateUrl = currentOperateUrl || output?.operateUrl;
 
   const headerText = useMemo(() => {
     if (isTaskExecuting) {
@@ -113,25 +112,16 @@ export default function Output({
           { statusIcon }
           <span>{headerText}</span>
         </div>
-        {showOperateUrl && <Tooltip
-          className={ classNames({ 'show-tooltip': !operateUrl }) }
-          autoAlign
-          label={ NO_OPERATE_URL_TOOLTIP }
-        >
-          <Link
-            className={ classNames({ 'link--disabled': !operateUrl }) }
-            href={ operateUrl }
-            target="_blank"
-          >
-            View in Operate
-          </Link>
-        </Tooltip>
-        }
-        { showResetButton && <Link
-          onClick={ () => onResetOutput() }
-          role="button">
-          Clear
-        </Link>}
+        <Slot name="output_header_actions"
+          onResetOutput={ onResetOutput }
+          isConnectionConfigured={ isConnectionConfigured }
+          currentOperateUrl={ currentOperateUrl }
+          element={ element }
+          output={ output }
+          isTaskExecuting={ isTaskExecuting }
+        />
+        <OperateLink />
+        <ResetButton />
       </div>
       <div className="output__body">
         {
@@ -139,6 +129,7 @@ export default function Output({
             <OutputVariables
               isTaskExecuting={ isTaskExecuting }
               output={ output }
+              element={ element }
             />
             :
             <ErrorBanner
@@ -153,32 +144,63 @@ export default function Output({
   );
 }
 
+const OperateLink = () => {
+  return <Fill priority={ 200 } slot="output_header_actions" getFill={ ({ output, isConnectionConfigured, currentOperateUrl }) => {
+    const showOperateUrl = isConnectionConfigured && (currentOperateUrl || (output && !output.error));
+
+    if (!showOperateUrl) {
+      return null;
+    }
+
+    const operateUrl = currentOperateUrl || output?.operateUrl;
+
+    return (
+      <Tooltip
+        className={ classNames({ 'show-tooltip': !operateUrl }) }
+        autoAlign
+        label={ NO_OPERATE_URL_TOOLTIP }
+      >
+        <Link
+          className={ classNames({ 'link--disabled': !operateUrl }) }
+          href={ operateUrl }
+          target="_blank"
+        >
+          View in Operate
+        </Link>
+      </Tooltip>
+    );
+  } } />;
+};
+
+
+function ResetButton() {
+  return <Fill priority={ 100 } slot="output_header_actions" getFill={ ({ onResetOutput, isConnectionConfigured, output }) => {
+    const showResetButton = isConnectionConfigured && output;
+
+    return showResetButton && <Link
+      onClick={ () => onResetOutput() }
+      role="button">
+      Clear
+    </Link>;}
+  } />;
+}
+
 function OutputVariables({
   isTaskExecuting,
-  output
+  output,
+  element
 }) {
 
   if (isTaskExecuting) {
     return <CodeSnippetSkeleton className="output__variables--skeleton" type="multi" />;
   }
 
-  if (output?.success) {
-    return (
-      <Tabs>
-        <TabList>
-          <Tab>Process variables</Tab>
-          <Tab>Local variables</Tab>
-        </TabList>
-        <TabPanels>
-          <TabPanel>
-            <OutputEditor value={ JSON.stringify(pickVariables(output.variables, SCOPES.PROCESS), null, 2) } />
-          </TabPanel>
-          <TabPanel>
-            <OutputEditor value={ JSON.stringify(pickVariables(output.variables, SCOPES.LOCAL), null, 2) } />
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
-    );
+  if (!output) {
+    return <div className="output__variables--empty">
+      <div>
+        Enter process variables, then click <span className="output__variables--empty-action">Test task</span> to see how they change once the task has executed.
+      </div>
+    </div>;
   }
 
   if (output?.error) {
@@ -187,35 +209,85 @@ function OutputVariables({
     />;
   }
 
-  if (output?.incident) {
-    return (
-      <Tabs>
-        <TabList>
-          <Tab>Incident</Tab>
-          <Tab>Process variables</Tab>
-          <Tab>Local variables</Tab>
-        </TabList>
-        <TabPanels>
-          <TabPanel>
-            <IncidentDetails incident={ output.incident } />
-          </TabPanel>
-          <TabPanel>
-            <OutputEditor value={ JSON.stringify(pickVariables(output.variables, SCOPES.PROCESS), null, 2) } />
-          </TabPanel>
-          <TabPanel>
-            <OutputEditor value={ JSON.stringify(pickVariables(output.variables, SCOPES.LOCAL), null, 2) } />
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
-    );
-  }
 
-  return <div className="output__variables--empty">
-    <div>
-      Enter process variables, then click <span className="output__variables--empty-action">Test task</span> to see how they change once the task has executed.
-    </div>
-  </div>;
+  return (<>
+    <ProcessVariablesTab />
+    <LocalVariablesTab />
+    <IncidentTab />
+    <Slot name="output" element={ element } output={ output } isTaskExecuting={ isTaskExecuting } RenderIn={ OutputTabs } />
+  </>
+  );
 }
+
+const OutputTabs = ({ fills }) => {
+  return (
+    <Tabs>
+      <TabList>
+        { fills.map((fill, index) => (
+          <Tab key={ index }>{ fill.label }</Tab>
+        )) }
+      </TabList>
+      <TabPanels>
+        { fills.map((fill, index) => (
+          <TabPanel key={ index }>
+            { fill.content }
+          </TabPanel>
+        )) }
+      </TabPanels>
+    </Tabs>
+  );
+};
+
+const IncidentTab = () => (
+  <Fill
+    priority={ 300 }
+    slot="output"
+    getFill={ ({ output }) => {
+      if (!output?.incident) {
+        return;
+      }
+
+      return {
+        label: 'Incident',
+        content: <IncidentDetails incident={ output.incident } />
+      };
+    } }
+  />
+);
+
+const ProcessVariablesTab = () => (
+  <Fill
+    priority={ 200 }
+    slot="output"
+    getFill={ ({ output }) => {
+      if (!output || (!output.success && !output.incident)) {
+        return;
+      }
+
+      return {
+        label: 'Process Variables',
+        content: <OutputEditor value={ JSON.stringify(pickVariables(output.variables, SCOPES.PROCESS), null, 2) } />
+      };
+    } }
+  />
+);
+
+const LocalVariablesTab = () => (
+  <Fill
+    priority={ 100 }
+    slot="output"
+    getFill={ ({ output }) => {
+      if (!output || (!output.success && !output.incident)) {
+        return;
+      }
+
+      return {
+        label: 'Local Variables',
+        content: <OutputEditor value={ JSON.stringify(pickVariables(output.variables, SCOPES.LOCAL), null, 2) } />
+      };
+    } }
+  />
+);
 
 /**
  *
