@@ -3,10 +3,11 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import Output, { pickVariables, NO_OPERATE_URL_TOOLTIP } from '../../../lib/components/Output/Output';
+import Output, { NO_OPERATE_URL_TOOLTIP } from '../../../lib/components/Output/Output';
 
 import { SCOPES } from '../../../lib/TaskExecution';
 import { createFillsManager, FillsContext } from '../../../lib/components/shared/SlotFill';
+import { pickVariables } from '../../../lib/components/Output/OutputVariables';
 
 describe('Output', function() {
 
