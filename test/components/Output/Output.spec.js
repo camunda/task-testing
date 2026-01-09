@@ -6,7 +6,7 @@ import userEvent from '@testing-library/user-event';
 import Output, { NO_OPERATE_URL_TOOLTIP } from '../../../lib/components/Output/Output';
 
 import { SCOPES } from '../../../lib/TaskExecution';
-import { createFillsManager, FillsContext } from '../../../lib/components/shared/SlotFill';
+import { PluginContext, usePluginsProviderValue } from '../../../lib/components/shared/plugins';
 import { pickVariables } from '../../../lib/components/Output/OutputVariables';
 
 describe('Output', function() {
@@ -210,8 +210,9 @@ function renderWithProps(props) {
     taskExecutionStatus = 'FOO'
   } = props;
 
+
   return render(
-    <FillsContext.Provider value={ createFillsManager() }>
+    <Wrapper>
       <Output
         isConnectionConfigured={ isConnectionConfigured }
         configureConnectionBannerTitle={ configureConnectionBannerTitle }
@@ -223,6 +224,16 @@ function renderWithProps(props) {
         onResetOutput={ onResetOutput }
         taskExecutionStatus={ taskExecutionStatus }
       />
-    </FillsContext.Provider>
+    </Wrapper>
   );
 }
+
+const Wrapper = (props) => {
+  const pluginsProviderValue = usePluginsProviderValue();
+
+  return (
+    <PluginContext.Provider value={ pluginsProviderValue }>
+      { props.children }
+    </PluginContext.Provider>
+  );
+};
