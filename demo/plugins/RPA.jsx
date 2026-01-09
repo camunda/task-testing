@@ -14,7 +14,7 @@ export const RPATab = () => {
   }, []);
 
   return <TaskTesting.Tab
-    priority={ 10 }
+    priority={ 0 }
     key={ 'RPA_Log' }
     label={ 'RPA Log' }
     render={ render }
@@ -22,7 +22,6 @@ export const RPATab = () => {
 };
 
 export const RPALink = () => {
-
   const render = useCallback(({ output }) => {
     if (!output.variables?.RPA_Result) {
       return null;
@@ -30,9 +29,9 @@ export const RPALink = () => {
 
     return (
       <a
-        className="link--external"
         href="https://camunda.com"
-        target="_blank" rel="noreferrer"
+        target="_blank"
+        rel="noreferrer"
       >
         View Script
       </a>
@@ -40,7 +39,7 @@ export const RPALink = () => {
   });
 
   return <TaskTesting.Link
-    priority={ 10 }
+    priority={ 10000 }
     key={ 'RPA_ScriptLink' }
     render={ render }
   />;

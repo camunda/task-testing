@@ -94,3 +94,17 @@ export type TaskExecutionError = {
 };
 
 export type { Element, ModdleElement } from 'bpmn-js/lib/model/Types';
+
+export type Plugin = {
+  priority?: number;
+  render: Function;
+  slot: string;
+  [key: string]: any;
+};
+
+export type PluginContextValue = {
+  plugins: Plugin[];
+  registerPlugin: (plugin: Plugin) => void;
+  unregisterPlugin: (plugin: Plugin) => void;
+  getPlugins: (pluginPoint: string) => Plugin[];
+};
