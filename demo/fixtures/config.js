@@ -78,8 +78,7 @@ const output = {
         'name': 'output2',
         'value': true,
         'scope': 'PROCESS'
-      },
-      'RPA_Result': 'someURL'
+      }
     },
     operateUrl: 'https://camunda.com'
   },
@@ -133,6 +132,13 @@ const output = {
       }
     },
     operateUrl: 'https://camunda.com'
+  },
+  'ServiceTask_6': {
+    'success': true,
+    'variables': {
+      'RPA_Result': 'https://foobar.com'
+    },
+    'operateUrl': 'https://camunda.com'
   }
 };
 
