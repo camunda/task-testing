@@ -98,7 +98,7 @@ export type { Element, ModdleElement } from 'bpmn-js/lib/model/Types';
 export type Plugin = {
   priority?: number;
   render: Function;
-  slot: string;
+  type: string;
   [key: string]: any;
 };
 
