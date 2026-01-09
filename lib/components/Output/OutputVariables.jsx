@@ -54,7 +54,7 @@ export const OutputTab = ({ children = null, render = () => null, label, priorit
   const { registerPlugin, unregisterPlugin } = useContext(PluginContext);
 
   useEffect(() => {
-    const tab = { label, render, children, priority, slot: 'output_tab' };
+    const tab = { label, render, children, priority, type: 'output.body.tab' };
     registerPlugin(tab);
 
     return () => {
@@ -68,7 +68,7 @@ export const OutputTab = ({ children = null, render = () => null, label, priorit
 const OutputTabs = (props) => {
   const { getPlugins } = useContext(PluginContext);
 
-  const tabPlugins = getPlugins('output_tab');
+  const tabPlugins = getPlugins('output.body.tab');
 
   const tabsToRender = tabPlugins
     .map(tab => ({

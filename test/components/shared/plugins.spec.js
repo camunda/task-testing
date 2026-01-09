@@ -37,7 +37,7 @@ describe('plugins', function() {
 
       // given
       const defaultPlugins = [
-        { slot: 'test-slot', render: () => null, priority: 1 }
+        { type: 'foo', render: () => null, priority: 1 }
       ];
 
       // when
@@ -45,7 +45,7 @@ describe('plugins', function() {
 
       // then
       expect(result.current.plugins).to.have.length(1);
-      expect(result.current.plugins[0].slot).to.equal('test-slot');
+      expect(result.current.plugins[0].type).to.equal('foo');
     });
 
 
@@ -56,7 +56,7 @@ describe('plugins', function() {
         // given
         const { result } = renderHook(() => usePluginsProviderValue());
 
-        const plugin = { slot: 'test-slot', render: () => null };
+        const plugin = { type: 'foo', render: () => null };
 
         // when
         act(() => {
@@ -74,8 +74,8 @@ describe('plugins', function() {
         // given
         const { result } = renderHook(() => usePluginsProviderValue());
 
-        const plugin1 = { slot: 'slot-1', render: () => null };
-        const plugin2 = { slot: 'slot-2', render: () => null };
+        const plugin1 = { type: 'foo', render: () => null };
+        const plugin2 = { type: 'bar', render: () => null };
 
         // when
         act(() => {
@@ -95,7 +95,7 @@ describe('plugins', function() {
       it('should unregister a plugin', function() {
 
         // given
-        const plugin = { slot: 'test-slot', render: () => null };
+        const plugin = { type: 'foo', render: () => null };
         const { result } = renderHook(() => usePluginsProviderValue([ plugin ]));
 
         // when
@@ -111,8 +111,8 @@ describe('plugins', function() {
       it('should only unregister matching plugin', function() {
 
         // given
-        const plugin1 = { slot: 'slot-1', render: () => null };
-        const plugin2 = { slot: 'slot-2', render: () => null };
+        const plugin1 = { type: 'foo', render: () => null };
+        const plugin2 = { type: 'bar', render: () => null };
         const { result } = renderHook(() => usePluginsProviderValue([ plugin1, plugin2 ]));
 
         // when
@@ -130,15 +130,15 @@ describe('plugins', function() {
 
     describe('#getPlugins', function() {
 
-      it('should return plugins for a slot', function() {
+      it('should return plugins for a type', function() {
 
         // given
-        const plugin1 = { slot: 'slot-1', render: () => null };
-        const plugin2 = { slot: 'slot-2', render: () => null };
+        const plugin1 = { type: 'foo', render: () => null };
+        const plugin2 = { type: 'bar', render: () => null };
         const { result } = renderHook(() => usePluginsProviderValue([ plugin1, plugin2 ]));
 
         // when
-        const plugins = result.current.getPlugins('slot-1');
+        const plugins = result.current.getPlugins('foo');
 
         // then
         expect(plugins).to.have.length(1);
@@ -146,13 +146,13 @@ describe('plugins', function() {
       });
 
 
-      it('should return empty array for unknown slot', function() {
+      it('should return empty array for unknown type', function() {
 
         // given
         const { result } = renderHook(() => usePluginsProviderValue());
 
         // when
-        const plugins = result.current.getPlugins('unknown-slot');
+        const plugins = result.current.getPlugins('foo');
 
         // then
         expect(plugins).to.be.an('array');
@@ -163,13 +163,13 @@ describe('plugins', function() {
       it('should sort plugins by priority (higher first)', function() {
 
         // given
-        const plugin1 = { slot: 'test-slot', render: () => null, priority: 1 };
-        const plugin2 = { slot: 'test-slot', render: () => null, priority: 10 };
-        const plugin3 = { slot: 'test-slot', render: () => null, priority: 5 };
+        const plugin1 = { type: 'foo', render: () => null, priority: 1 };
+        const plugin2 = { type: 'foo', render: () => null, priority: 10 };
+        const plugin3 = { type: 'foo', render: () => null, priority: 5 };
         const { result } = renderHook(() => usePluginsProviderValue([ plugin1, plugin2, plugin3 ]));
 
         // when
-        const plugins = result.current.getPlugins('test-slot');
+        const plugins = result.current.getPlugins('foo');
 
         // then
         expect(plugins).to.have.length(3);
@@ -182,12 +182,12 @@ describe('plugins', function() {
       it('should handle plugins without priority', function() {
 
         // given
-        const plugin1 = { slot: 'test-slot', render: () => null };
-        const plugin2 = { slot: 'test-slot', render: () => null, priority: 5 };
+        const plugin1 = { type: 'foo', render: () => null };
+        const plugin2 = { type: 'foo', render: () => null, priority: 5 };
         const { result } = renderHook(() => usePluginsProviderValue([ plugin1, plugin2 ]));
 
         // when
-        const plugins = result.current.getPlugins('test-slot');
+        const plugins = result.current.getPlugins('foo');
 
         // then
         expect(plugins).to.have.length(2);
