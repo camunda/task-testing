@@ -1,8 +1,9 @@
 import { CodeSnippetSkeleton, Tab, TabList, TabPanel, TabPanels, Tabs } from '@carbon/react';
-import { Fill, Slot } from '../shared/SlotFill';
+import { PluginContext } from '../shared/plugins';
 import OutputEditor from './OutputEditor';
 import { has, isObject } from 'min-dash';
 import { SCOPES } from '../../TaskExecution';
+import { useCallback, useContext, useEffect } from 'react';
 
 export function OutputVariables({
   isTaskExecuting,
@@ -33,80 +34,107 @@ export function OutputVariables({
     <ProcessVariablesTab />
     <LocalVariablesTab />
     <IncidentTab />
-    <Slot name="output" element={ element } output={ output } isTaskExecuting={ isTaskExecuting } RenderIn={ OutputTabs } />
+    <OutputTabs element={ element } output={ output } isTaskExecuting={ isTaskExecuting } />
   </>
   );
 }
 
-const OutputTabs = ({ fills }) => {
+export const OutputTab = ({ children = null, render, label, priority = 100 }) => {
+  const { registerPlugin, unregisterPlugin } = useContext(PluginContext);
+
+  useEffect(() => {
+    const tab = { label, render, children, priority, slot: 'output_tab' };
+    registerPlugin(tab);
+
+    return () => {
+      unregisterPlugin(tab);
+    };
+  }, [ children, render, label, priority, registerPlugin, unregisterPlugin ]);
+
+  return null;
+};
+
+const OutputTabs = (props) => {
+  const { getPlugins } = useContext(PluginContext);
+
+  const tabPlugins = getPlugins('output_tab');
+
+  const tabsToRender = tabPlugins
+    .map(tab => ({
+      label: tab.label,
+      content: tab.render(props)
+    }))
+    .filter(tab => tab.content);
+
   return (
     <Tabs>
       <TabList>
-        { fills.map((fill, index) => (
-          <Tab key={ index }>{ fill.label }</Tab>
+        { tabsToRender.map((tab, index) => (
+          <Tab key={ index }>{ tab.label }</Tab>
         )) }
       </TabList>
       <TabPanels>
-        { fills.map((fill, index) => (
-          <TabPanel key={ index }>
-            { fill.content }
-          </TabPanel>
-        )) }
+        { tabsToRender.map((tab, index) => {
+          return (
+            <TabPanel key={ index }>
+              { tab.content }
+            </TabPanel>
+          );
+        }) }
       </TabPanels>
     </Tabs>
   );
 };
 
-const IncidentTab = () => (
-  <Fill
+const IncidentTab = () => {
+
+  const render = useCallback(({ output }) => {
+    if (!output?.incident) {
+      return;
+    }
+
+    return <IncidentDetails incident={ output.incident } />;
+  }, []);
+
+  return <OutputTab
     priority={ 300 }
-    slot="output"
-    getFill={ ({ output }) => {
-      if (!output?.incident) {
-        return;
-      }
+    label="Incident"
+    render={ render }
+  />;
+};
 
-      return {
-        label: 'Incident',
-        content: <IncidentDetails incident={ output.incident } />
-      };
-    } }
-  />
-);
+const ProcessVariablesTab = () => {
+  const render = useCallback(({ output }) => {
+    if (!output || (!output.success && !output.incident)) {
+      return;
+    }
 
-const ProcessVariablesTab = () => (
-  <Fill
+    return <OutputEditor value={ JSON.stringify(pickVariables(output.variables, SCOPES.PROCESS), null, 2) } />;
+  }, []);
+
+  return <OutputTab
     priority={ 200 }
-    slot="output"
-    getFill={ ({ output }) => {
-      if (!output || (!output.success && !output.incident)) {
-        return;
-      }
+    label="Process Variables"
+    render={ render }
+  />;
+};
 
-      return {
-        label: 'Process Variables',
-        content: <OutputEditor value={ JSON.stringify(pickVariables(output.variables, SCOPES.PROCESS), null, 2) } />
-      };
-    } }
-  />
-);
+const LocalVariablesTab = () =>
+{
+  const render = useCallback(({ output }) => {
+    if (!output || (!output.success && !output.incident)) {
+      return;
+    }
 
-const LocalVariablesTab = () => (
-  <Fill
+    return <OutputEditor value={ JSON.stringify(pickVariables(output.variables, SCOPES.LOCAL), null, 2) } />;
+  }, []);
+
+  return <OutputTab
     priority={ 100 }
-    slot="output"
-    getFill={ ({ output }) => {
-      if (!output || (!output.success && !output.incident)) {
-        return;
-      }
-
-      return {
-        label: 'Local Variables',
-        content: <OutputEditor value={ JSON.stringify(pickVariables(output.variables, SCOPES.LOCAL), null, 2) } />
-      };
-    } }
-  />
-);
+    label="Local Variables"
+    render={ render }
+  />;
+};
 
 
 function IncidentDetails({ incident }) {

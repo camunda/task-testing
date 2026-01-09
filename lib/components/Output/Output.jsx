@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo } from 'react';
 
 import {
   Link,
@@ -14,8 +14,8 @@ import {
 
 import classNames from 'classnames';
 
-import { Fill, Slot } from '../shared/SlotFill';
 import { OutputVariables } from './OutputVariables';
+import { PluginContext } from '../shared/plugins';
 
 export const TASK_EXECUTION_STATUS_LABEL = {
   deploying: 'Deploying...',
@@ -102,7 +102,7 @@ export default function Output({
           { statusIcon }
           <span>{headerText}</span>
         </div>
-        <Slot name="output_header_actions"
+        <HeaderLinks
           onResetOutput={ onResetOutput }
           isConnectionConfigured={ isConnectionConfigured }
           currentOperateUrl={ currentOperateUrl }
@@ -134,8 +134,40 @@ export default function Output({
   );
 }
 
+const HeaderLinks = (props) => {
+  const { getPlugins } = useContext(PluginContext);
+
+  const headerLinkPlugins = getPlugins('header_link');
+
+  return (
+    <>
+      { headerLinkPlugins.map((link, index) => (
+        <React.Fragment key={ index }>
+          { link.render(props) }
+        </React.Fragment>
+      )) }
+    </>
+  );
+};
+
+
+export const HeaderLink = ({ children = null, render, priority = 100 }) => {
+  const { registerPlugin, unregisterPlugin } = useContext(PluginContext);
+
+  useEffect(() => {
+    const link = { render, children, priority, slot: 'header_link' };
+    registerPlugin(link);
+
+    return () => {
+      unregisterPlugin(link);
+    };
+  }, [ children, render, priority, registerPlugin, unregisterPlugin ]);
+
+  return null;
+};
+
 const OperateLink = () => {
-  return <Fill priority={ 200 } slot="output_header_actions" getFill={ ({ output, isConnectionConfigured, currentOperateUrl }) => {
+  const render = useCallback(({ output, isConnectionConfigured, currentOperateUrl }) => {
     const showOperateUrl = isConnectionConfigured && (currentOperateUrl || (output && !output.error));
 
     if (!showOperateUrl) {
@@ -159,20 +191,25 @@ const OperateLink = () => {
         </Link>
       </Tooltip>
     );
-  } } />;
+  }, []);
+
+  return <HeaderLink priority={ 200 } render={ render } />;
 };
 
 
 function ResetButton() {
-  return <Fill priority={ 100 } slot="output_header_actions" getFill={ ({ onResetOutput, isConnectionConfigured, output }) => {
+
+  const render = useCallback(({ onResetOutput, isConnectionConfigured, output }) => {
     const showResetButton = isConnectionConfigured && output;
 
     return showResetButton && <Link
       onClick={ () => onResetOutput() }
       role="button">
       Clear
-    </Link>;}
-  } />;
+    </Link>;
+  }, []);
+
+  return <HeaderLink priority={ 100 } render={ render } />;
 }
 
 
