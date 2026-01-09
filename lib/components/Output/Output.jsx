@@ -137,7 +137,7 @@ export default function Output({
 const HeaderLinks = (props) => {
   const { getPlugins } = useContext(PluginContext);
 
-  const headerLinkPlugins = getPlugins('header_link');
+  const headerLinkPlugins = getPlugins('output.header.link');
 
   return (
     <>
@@ -155,7 +155,7 @@ export const HeaderLink = ({ children = null, render, priority = 100 }) => {
   const { registerPlugin, unregisterPlugin } = useContext(PluginContext);
 
   useEffect(() => {
-    const link = { render, children, priority, slot: 'header_link' };
+    const link = { render, children, priority, type: 'output.header.link' };
     registerPlugin(link);
 
     return () => {
