@@ -39,7 +39,18 @@ export function OutputVariables({
   );
 }
 
-export const OutputTab = ({ children = null, render, label, priority = 100 }) => {
+/**
+ * @param {Object} props
+ * @param {string} props.label - The tab label to display
+ * @param {Function} [props.render=() => null] - Function that renders the
+ * component
+ * @param {React.ReactNode} [props.children] - Static content to render
+ * @param {number} [props.priority=1000] - Priority for sorting, higher
+ * priority means the tab is rendered left of the lower priority tabs
+ *
+ * @returns {null}
+ */
+export const OutputTab = ({ children = null, render = () => null, label, priority = 1000 }) => {
   const { registerPlugin, unregisterPlugin } = useContext(PluginContext);
 
   useEffect(() => {
@@ -97,7 +108,7 @@ const IncidentTab = () => {
   }, []);
 
   return <OutputTab
-    priority={ 300 }
+    priority={ 3000 }
     label="Incident"
     render={ render }
   />;
@@ -113,7 +124,7 @@ const ProcessVariablesTab = () => {
   }, []);
 
   return <OutputTab
-    priority={ 200 }
+    priority={ 2000 }
     label="Process Variables"
     render={ render }
   />;
@@ -130,7 +141,7 @@ const LocalVariablesTab = () =>
   }, []);
 
   return <OutputTab
-    priority={ 100 }
+    priority={ 1000 }
     label="Local Variables"
     render={ render }
   />;
