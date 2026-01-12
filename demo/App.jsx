@@ -13,7 +13,13 @@ import defaultConfig from './fixtures/config';
 
 import '@carbon/styles/css/styles.min.css';
 import './style.css';
-import { RPALink, rpaPlugins, RPATab } from './plugins/RPA';
+import { RPALink, RPATab } from './plugins/RPA';
+import {
+  FooLinkDynamic,
+  FooLinkStatic,
+  FooTabDynamic,
+  FooTabStatic
+} from './plugins/Foo';
 
 function App() {
   const modelerRef = useRef(null);
@@ -156,7 +162,6 @@ function App() {
           onConfigChanged={ onConfigChanged }
           operateBaseUrl={ operateURL }
           documentationUrl="https://docs.camunda.io/"
-          plugins={ rpaPlugins }
         />
       </div>
     </>
@@ -173,6 +178,10 @@ function TestTab(props) {
   return <TaskTesting { ...props }>
     <RPATab />
     <RPALink />
+    <FooTabDynamic />
+    <FooTabStatic />
+    <FooLinkDynamic />
+    <FooLinkStatic />
   </TaskTesting>;
 }
 
