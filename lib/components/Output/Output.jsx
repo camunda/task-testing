@@ -12,7 +12,7 @@ import {
   InProgress
 } from '@carbon/icons-react';
 
-import classNames from 'classnames';
+import { isFunction } from 'min-dash';
 
 import { OutputVariables } from './OutputVariables';
 import { PluginContext } from '../shared/plugins';
@@ -137,79 +137,142 @@ export default function Output({
 const HeaderLinks = (props) => {
   const { getPlugins } = useContext(PluginContext);
 
-  const headerLinkPlugins = getPlugins('output.header.link');
+  const plugins = getPlugins('output.header.link');
+
+  const headerLinks = plugins.reduce((accHeaderLinks, plugin) => {
+    const getProp = (value) => isFunction(value) ? value(props) : value;
+
+    const visible = getProp(plugin.visible) ?? true;
+
+    if (!visible) {
+      return accHeaderLinks;
+    }
+
+    const content = plugin.render?.(props) || plugin.children;
+
+    accHeaderLinks.push({
+      content,
+      href: getProp(plugin.href),
+      target: getProp(plugin.target),
+      className: getProp(plugin.className),
+      onClick: getProp(plugin.onClick),
+      role: getProp(plugin.role),
+      tooltip: getProp(plugin.tooltip)
+    });
+
+    return accHeaderLinks;
+  }, /** @type {Array<{content: any, href: any, target: any, className: any, onClick: any, role: any, tooltip: any}>} */ ([]));
 
   return (
     <>
-      { headerLinkPlugins.map((link, index) => (
-        <React.Fragment key={ index }>
-          { link.render(props) }
-        </React.Fragment>
-      )) }
+      { headerLinks.map(({ content, href, target, className, onClick, role, tooltip }, index) => {
+        const headerLink = (
+          <Link
+            key={ index }
+            href={ href }
+            target={ target }
+            className={ className }
+            onClick={ onClick }
+            role={ role }
+          >
+            { content }
+          </Link>
+        );
+
+        if (tooltip) {
+          return (
+            <Tooltip key={ index } autoAlign label={ tooltip }>
+              { headerLink }
+            </Tooltip>
+          );
+        }
+
+        return headerLink;
+      }) }
     </>
   );
 };
 
-
-export const HeaderLink = ({ children = null, render, priority = 100 }) => {
+/**
+ * @param {Object} props
+ * @param {(props: Object) => React.ReactNode} [props.render] - Function that returns link content
+ * @param {React.ReactNode} [props.children] - Static content to render
+ * @param {boolean | ((props: Object) => boolean)} [props.visible] - Whether to show the link (default: true)
+ * @param {string | ((props: Object) => string)} [props.href] - Link URL (static or dynamic)
+ * @param {string | ((props: Object) => string)} [props.target] - Link target (static or dynamic)
+ * @param {string | ((props: Object) => string | undefined)} [props.className] - Link class name (static or dynamic)
+ * @param {Function | ((props: Object) => Function)} [props.onClick] - Click handler (static or dynamic)
+ * @param {string | ((props: Object) => string)} [props.role] - ARIA role (static or dynamic)
+ * @param {string | ((props: Object) => string | undefined)} [props.tooltip] - Tooltip text (static or dynamic)
+ * @param {number} [props.priority] - Priority for sorting (higher values first)
+ * @returns {null}
+ */
+export const HeaderLink = ({ children = null, render = () => null, visible, href, target, className, onClick, role, tooltip, priority = 100 }) => {
   const { registerPlugin, unregisterPlugin } = useContext(PluginContext);
 
   useEffect(() => {
-    const link = { render, children, priority, type: 'output.header.link' };
+    const link = { children, render, visible, href, target, className, onClick, role, tooltip, priority, type: 'output.header.link' };
     registerPlugin(link);
 
     return () => {
       unregisterPlugin(link);
     };
-  }, [ children, render, priority, registerPlugin, unregisterPlugin ]);
+  }, [ children, render, visible, href, target, className, onClick, role, tooltip, priority, registerPlugin, unregisterPlugin ]);
 
   return null;
 };
 
 const OperateLink = () => {
-  const render = useCallback(({ output, isConnectionConfigured, currentOperateUrl }) => {
-    const showOperateUrl = isConnectionConfigured && (currentOperateUrl || (output && !output.error));
+  const render = useCallback(() => 'View in Operate', []);
 
-    if (!showOperateUrl) {
-      return null;
-    }
-
-    const operateUrl = currentOperateUrl || output?.operateUrl;
-
-    return (
-      <Tooltip
-        className={ classNames({ 'show-tooltip': !operateUrl }) }
-        autoAlign
-        label={ NO_OPERATE_URL_TOOLTIP }
-      >
-        <Link
-          className={ classNames({ 'link--disabled': !operateUrl }) }
-          href={ operateUrl }
-          target="_blank"
-        >
-          View in Operate
-        </Link>
-      </Tooltip>
-    );
+  const getVisible = useCallback(({ output, isConnectionConfigured, currentOperateUrl }) => {
+    return isConnectionConfigured && (currentOperateUrl || (output && !output.error));
   }, []);
 
-  return <HeaderLink priority={ 200 } render={ render } />;
+  const getHref = useCallback(({ output, currentOperateUrl }) => {
+    return currentOperateUrl || output?.operateUrl;
+  }, []);
+
+  const getClassName = useCallback(({ output, currentOperateUrl }) => {
+    const operateUrl = currentOperateUrl || output?.operateUrl;
+    return !operateUrl ? 'link--disabled' : undefined;
+  }, []);
+
+  const getTooltip = useCallback(({ output, currentOperateUrl }) => {
+    const operateUrl = currentOperateUrl || output?.operateUrl;
+    return !operateUrl ? NO_OPERATE_URL_TOOLTIP : undefined;
+  }, []);
+
+  return <HeaderLink
+    priority={ 200 }
+    render={ render }
+    visible={ getVisible }
+    href={ getHref }
+    target="_blank"
+    className={ getClassName }
+    tooltip={ getTooltip }
+  />;
 };
 
 
 function ResetButton() {
+  const render = useCallback(() => 'Clear', []);
 
-  const render = useCallback(({ onResetOutput, isConnectionConfigured, output }) => {
-    const showResetButton = isConnectionConfigured && output;
-
-    return showResetButton && <Link
-      onClick={ () => onResetOutput() }
-      role="button">
-      Clear
-    </Link>;
+  const getVisible = useCallback(({ isConnectionConfigured, output }) => {
+    return isConnectionConfigured && output;
   }, []);
 
-  return <HeaderLink priority={ 100 } render={ render } />;
+  const getOnClick = useCallback(({ onResetOutput }) => {
+    return () => onResetOutput();
+  }, []);
+
+  return <HeaderLink
+    priority={ 100 }
+    render={ render }
+    visible={ getVisible }
+    onClick={ getOnClick }
+    role="button"
+  />;
 }
 
 
