@@ -68,12 +68,12 @@ export const OutputTab = ({ children = null, render = () => null, label, priorit
 const OutputTabs = (props) => {
   const { getPlugins } = useContext(PluginContext);
 
-  const tabPlugins = getPlugins('output.body.tab');
+  const plugins = getPlugins('output.body.tab');
 
-  const tabsToRender = tabPlugins
-    .map(tab => ({
-      label: tab.label,
-      content: tab.render(props)
+  const tabsToRender = plugins
+    .map(plugin => ({
+      label: plugin.label,
+      content: plugin.render?.(props) || plugin.children
     }))
     .filter(tab => tab.content);
 
