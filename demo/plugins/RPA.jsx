@@ -15,7 +15,6 @@ export const RPATab = () => {
 
   return <TaskTesting.Tab
     priority={ 0 }
-    key={ 'RPA_Log' }
     label={ 'RPA Log' }
     render={ render }
   />;
