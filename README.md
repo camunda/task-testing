@@ -4,19 +4,22 @@
 
 Run and test a single building block of your BPMN diagram.
 
-## Try it
-
-[Demo](https://scaling-chainsaw-lro45v3.pages.github.io/)
-
 ## Usage
-
-The library exposes a single React component:
 
 ```js
 import TaskTesting from '@camunda/task-testing';
+
+function App() {
+  ...
+
+  <TaskTesting api={ ... }>
+    <TaskTesting.Tab label={ 'Foo' }>...</TaskTesting.Tab>;
+    <TaskTesting.Link href="https://camunda.com">Foo</TaskTesting.Link>;
+  </TaskTesting>
+}
 ```
 
-The configuration is passed via the [props of the TaskTesting component](https://github.com/camunda/task-testing/blob/fa1d39874f532e669adec7d7a76aaf0fd99e0e5a/lib/components/TaskTesting/TaskTesting.js#L50).
+[See demo](https://github.com/camunda/task-testing/tree/main/demo)
 
 ## Development
 
