@@ -7,6 +7,7 @@ import InputEditor from './InputEditor';
 
 export default function Input({
   allOutputs,
+  element,
   input = '',
   onErrorChange,
   onResetInput,
@@ -33,6 +34,7 @@ export default function Input({
       </div>
       <InputEditor
         allOutputs={ allOutputs }
+        element={ element }
         value={ input }
         onChange={ onSetInput }
         onErrorChange={ onErrorChange }
