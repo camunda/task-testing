@@ -1,39 +1,40 @@
 .task-testing__container {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   height: 100%;
   width: 100%;
   padding: 10px;
   font-size: 14px;
 
+  > .cds--tabs {
+    margin-top: 10px;
+  }
+
+  > .cds--tab-content {
+    padding: 0;
+  }
+
   &.task-testing__container--empty {
+    background-color: #f1f2f3;
+    color: hsl(225, 10%, 35%);
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
     .task-testing__container-no-config,
     .task-testing__container-no-element {
       display: flex;
+      flex-direction: column;
       align-items: center;
       gap: 5px;
-      height: 32px;
 
       .cds--inline-loading {
         inline-size: initial;
         min-block-size: initial;
       }
     }
-  }
-
-  .task-testing__container--left {
-    width: 50%;
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid #E0E0E0;
-    padding-right: 6px;
-  }
-
-  .task-testing__container--right {
-    width: 50%;
-    display: flex;
-    flex-direction: column;
-    padding-left: 6px;
   }
 
   .task-testing__container--header {
@@ -43,6 +44,20 @@
     justify-content: space-between;
     gap: 12px;
     width: 100%;
+
+    .cds--tooltip:first-child {
+      flex-grow: 1;
+
+      .cds--tooltip-trigger__wrapper {
+        width: 100%;
+        max-width: initial;
+
+        .cds--btn {
+          width: 100%;
+          max-inline-size: initial;
+        }
+      }
+    }
 
     .task-header {
       display: flex;
@@ -64,10 +79,6 @@
       }
     }
 
-    .btn-execute {
-      width: 138px;
-    }
-
     .cds--tooltip-content {
       padding: 12px;
     }
@@ -83,14 +94,13 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
-    margin-top: 6px;
+    margin-top: 10px;
 
     .input__header {
       display: flex;
       align-items: center;
       gap: 5px;
       width: 100%;
-      padding-top: 5px;
     }
 
     .input__header--title {
@@ -107,6 +117,7 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
+    margin-top: 10px;
 
     .output__header {
       display: flex;
@@ -157,6 +168,7 @@
       flex-direction: column;
       flex-grow: 1;
       position: relative;
+      margin-top: 10px;
 
       .cds--tabs {
         --cds-layout-size-height-local: 32px;
@@ -256,6 +268,7 @@
 .code__editor {
   position: relative;
   flex-grow: 1;
+  min-height: 200px;
   display: flex;
   flex-direction: column;
 
