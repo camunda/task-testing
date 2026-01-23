@@ -4,7 +4,7 @@ import TaskTesting from '../../lib';
 
 export const FooTabDynamic = () => {
   const render = useCallback(({ output }) => {
-    return <div>Dynamic tab: { JSON.stringify(output.variables).substring(0, 10) }...</div>;
+    return <div>Dynamic tab: { output?.variables ? `${ JSON.stringify(output.variables).substring(0, 10) }...` : '-' }</div>;
   }, []);
 
   return <TaskTesting.Tab
@@ -23,7 +23,7 @@ export const FooTabStatic = () => {
 
 export const FooLinkDynamic = () => {
   const render = useCallback(({ output }) => {
-    return <div>Dynamic link: { JSON.stringify(output.variables).substring(0, 10) }...</div>;
+    return <div>Dynamic link: { output?.variables ? `${ JSON.stringify(output.variables).substring(0, 10) }...` : '-' }</div>;
   }, []);
 
   return <TaskTesting.Link
