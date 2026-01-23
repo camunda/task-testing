@@ -124,45 +124,45 @@ function App() {
       <div className="modeler" ref={ modelerRef }>
         <div id="canvas" className="canvas"></div>
         <div id="properties" className="properties-panel"></div>
-      </div>
-      <div className="task-testing">
-        <TestTab
-          injector={ injector }
-          isConnectionConfigured={ isConnectionConfigured }
-          configureConnectionBannerTitle="No cluster selected"
-          configureConnectionBannerDescription="Select a Camunda 8.8 cluster to enable task testing."
-          configureConnectionLabel="Select cluster"
-          onConfigureConnection={ () => {
-            if (window.confirm('Cluster selected?')) {
-              setIsConnectionConfigured(true);
-            }
-          } }
-          onTestTask={ () => {
-            if (isConnectionConfigured) {
-              return true;
-            }
+        <div className="task-testing">
+          <TestTab
+            injector={ injector }
+            isConnectionConfigured={ isConnectionConfigured }
+            configureConnectionBannerTitle="No cluster selected"
+            configureConnectionBannerDescription="Select a Camunda 8.8 cluster to enable task testing."
+            configureConnectionLabel="Select cluster"
+            onConfigureConnection={ () => {
+              if (window.confirm('Cluster selected?')) {
+                setIsConnectionConfigured(true);
+              }
+            } }
+            onTestTask={ () => {
+              if (isConnectionConfigured) {
+                return true;
+              }
 
-            if (window.confirm('Cluster selected?')) {
-              setIsConnectionConfigured(true);
+              if (window.confirm('Cluster selected?')) {
+                setIsConnectionConfigured(true);
 
-              return true;
-            }
+                return true;
+              }
 
-            return false;
-          } }
-          api={ {
-            deploy,
-            startInstance,
-            getProcessInstance,
-            getProcessInstanceVariables,
-            getProcessInstanceElementInstances,
-            getProcessInstanceIncident
-          } }
-          config={ config }
-          onConfigChanged={ onConfigChanged }
-          operateBaseUrl={ operateURL }
-          documentationUrl="https://docs.camunda.io/"
-        />
+              return false;
+            } }
+            api={ {
+              deploy,
+              startInstance,
+              getProcessInstance,
+              getProcessInstanceVariables,
+              getProcessInstanceElementInstances,
+              getProcessInstanceIncident
+            } }
+            config={ config }
+            onConfigChanged={ onConfigChanged }
+            operateBaseUrl={ operateURL }
+            documentationUrl="https://docs.camunda.io/"
+          />
+        </div>
       </div>
     </>
   );

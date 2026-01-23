@@ -11,13 +11,12 @@ body {
 }
 
 .modeler {
-  overflow: auto;
   display: flex;
-  height: calc(100% - 300px);
+  height: 100%;
 }
 
 .canvas {
-  width: calc(100% - 300px);
+  flex: 1;
 }
 
 .properties-panel {
@@ -26,8 +25,8 @@ body {
 }
 
 .task-testing {
-  height: 300px;
-  border-top: 1px solid hsl(225, 10%, 75%);
+  width: 300px;
+  border-left: 1px solid hsl(225, 10%, 75%);
 }
 
 .djs-minimap {
