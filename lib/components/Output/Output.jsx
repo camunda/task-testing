@@ -115,19 +115,13 @@ export default function Output({
       </div>
       <div className="output__body">
         {
-          isConnectionConfigured ?
+          isConnectionConfigured && (
             <OutputVariables
               isTaskExecuting={ isTaskExecuting }
               output={ output }
               element={ element }
             />
-            :
-            <ErrorBanner
-              title={ configureConnectionBannerTitle }
-              description={ configureConnectionBannerDescription }
-              actionLabel={ configureConnectionLabel }
-              onActionClick={ onConfigureConnection }
-            />
+          )
         }
       </div>
     </div>
@@ -273,40 +267,4 @@ function ResetButton() {
     onClick={ getOnClick }
     role="button"
   />;
-}
-
-
-/**
- *
- * @param {Object} props
- * @param {string} props.title
- * @param {string} props.description
- * @param {string} [props.actionLabel]
- * @param {string} [props.actionUrl]
- * @param {Function} [props.onActionClick]
- */
-function ErrorBanner({
-  title,
-  description,
-  actionLabel,
-  actionUrl = '#',
-  onActionClick
-}) {
-  return (
-    <div className="output__error">
-      <div className="output__error--title">
-        <span>{title}</span>
-        {
-          actionLabel && onActionClick && <div className="output__error--action">
-            <Link href={ actionUrl } onClick={ () => onActionClick() }>
-              { actionLabel }
-            </Link>
-          </div>
-        }
-      </div>
-      <div className="output__error--content">
-        <span>{ description }</span>
-      </div>
-    </div>
-  );
 }
