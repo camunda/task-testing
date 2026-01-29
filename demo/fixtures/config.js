@@ -139,6 +139,11 @@ const output = {
       'RPA_Result': 'https://foobar.com'
     },
     'operateUrl': 'https://camunda.com'
+  },
+  'AI_Agent': {
+    'variables': {
+      'prompt': 'Is there a user called Philipp Fromme?'
+    }
   }
 };
 

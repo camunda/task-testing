@@ -7,7 +7,8 @@ import 'camunda-bpmn-js/dist/assets/camunda-cloud-modeler.css';
 
 import TaskTesting from '../lib';
 
-import diagram from './fixtures/diagram.bpmn';
+// import diagram from './fixtures/diagram.bpmn';
+import diagram from './fixtures/diagram-2.bpmn';
 import connectorTemplates from './fixtures/connectorTemplates.json';
 import defaultConfig from './fixtures/config';
 
@@ -26,7 +27,7 @@ function App() {
 
   const [ modeler, setModeler ] = useState(null);
 
-  const [ isConnectionConfigured, setIsConnectionConfigured ] = useState(false);
+  const [ isConnectionConfigured, setIsConnectionConfigured ] = useState(true);
 
   const [ config, setConfig ] = useState(undefined);
 
@@ -114,6 +115,11 @@ function App() {
       .then(response => response.json());
   };
 
+  const getProcessInstanceSequenceFlows = async (processInstanceKey) => {
+    return fetch(`/api/getProcessInstanceSequenceFlows/${processInstanceKey}`)
+      .then(response => response.json());
+  };
+
   const { current: onConfigChanged } = useRef(debounce(config => setConfig(config), 300));
 
   // eslint-disable-next-line no-undef
@@ -150,6 +156,9 @@ function App() {
 
             return false;
           } }
+          onTaskExecutionUpdated={ (event) => {
+            console.log('Task testing updated', event);
+          } }
           api={ {
             deploy,
             startInstance,
@@ -176,12 +185,12 @@ function TestTab(props) {
   }
 
   return <TaskTesting { ...props }>
-    <RPATab />
+    {/* <RPATab />
     <RPALink />
     <FooTabDynamic />
     <FooTabStatic />
     <FooLinkDynamic />
-    <FooLinkStatic />
+    <FooLinkStatic /> */}
   </TaskTesting>;
 }
 

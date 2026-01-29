@@ -147,7 +147,8 @@ app.get('/api/getProcessInstanceElementInstances/:processInstanceKey', async (re
 
     const response = await camundaRestClient.searchElementInstances({
       filter: {
-        processInstanceKey
+        processInstanceKey,
+        type: 'SEQUENCE_FLOW'
       }
     });
 
