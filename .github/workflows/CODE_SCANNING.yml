@@ -1,0 +1,37 @@
+name: CODE_SCANNING
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - '**/*.md'
+
+jobs:
+  codeql_build:
+    name: Scan with CodeQL
+
+    # CodeQL runs on ubuntu-latest, windows-latest, and macos-latest
+    runs-on: ubuntu-latest
+
+    permissions:
+      # required for all workflows
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      # Initializes the CodeQL tools for scanning.
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: javascript
+          config: |
+            paths-ignore:
+              - '**/__tests__'
+              - '**/test'
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
