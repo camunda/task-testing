@@ -7,6 +7,8 @@ import type {
   SearchIncidentsResponse
 } from '@camunda8/sdk/dist/c8/lib/C8Dto';
 
+import { TASK_EXECUTION_REASON } from './constants';
+
 export type Input = {
   [elementId: string]: string;
 };
@@ -88,21 +90,21 @@ export type TaskExecutionResult =
   // Failure cases - always have reason
   | {
       success: false;
-      reason: 'incident';
+      reason: typeof TASK_EXECUTION_REASON.INCIDENT;
       incident: any;
       variables?: ElementOutputVariables;
     }
   | {
       success: false;
-      reason: 'user.cancel';
+      reason: typeof TASK_EXECUTION_REASON.USER_CANCEL;
     }
   | {
       success: false;
-      reason: 'user.selectionChanged';
+      reason: typeof TASK_EXECUTION_REASON.USER_SELECTION_CHANGED;
     }
   | {
       success: false;
-      reason: 'error';
+      reason: typeof TASK_EXECUTION_REASON.ERROR;
       error: TaskExecutionError;
     };
 

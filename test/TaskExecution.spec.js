@@ -3,6 +3,7 @@ import sinon from 'sinon';
 import { bootstrapModeler, inject } from './util/Util';
 
 import TaskExecution, { getProcessDefinitionKey, getVariables, INTERVAL_MS, SCOPES } from '../lib/TaskExecution';
+import { TASK_EXECUTION_REASON } from '../lib/constants';
 
 import diagramXML from './fixtures/diagram.bpmn';
 
@@ -212,7 +213,7 @@ describe('TaskExecution', function() {
 
       expect(finishedSpy).to.have.been.calledWithMatch({
         success: false,
-        reason: 'error',
+        reason: TASK_EXECUTION_REASON.ERROR,
         error: {
           message: 'Failed to deploy process definition',
           response: DEPLOY_ERROR
@@ -244,7 +245,7 @@ describe('TaskExecution', function() {
 
       expect(finishedSpy).to.have.been.calledWithMatch({
         success: false,
-        reason: 'error',
+        reason: TASK_EXECUTION_REASON.ERROR,
         error: {
           message: 'Failed to start process instance',
           response: START_INSTANCE_ERROR
@@ -284,7 +285,7 @@ describe('TaskExecution', function() {
 
       expect(finishedSpy).to.have.been.calledWithMatch({
         success: false,
-        reason: 'error',
+        reason: TASK_EXECUTION_REASON.ERROR,
         error: {
           message: 'Failed to retrieve process instance key from start instance response'
         }
@@ -318,7 +319,7 @@ describe('TaskExecution', function() {
 
       expect(finishedSpy).to.have.been.calledWithMatch({
         success: false,
-        reason: 'error',
+        reason: TASK_EXECUTION_REASON.ERROR,
         error: {
           message: 'Failed to get process instance',
           response: GET_PROCESS_INSTANCE_ERROR
@@ -386,7 +387,7 @@ describe('TaskExecution', function() {
 
       expect(finishedSpy).to.have.been.calledWithMatch({
         'success': false,
-        'reason': 'incident',
+        'reason': TASK_EXECUTION_REASON.INCIDENT,
         'variables': {
           '2251799813755923': {
             'name': 'foo',
@@ -466,7 +467,7 @@ describe('TaskExecution', function() {
       expect(finishedSpy).to.have.been.calledOnce;
       expect(finishedSpy).to.have.been.calledWithMatch({
         success: false,
-        reason: 'user.selectionChanged'
+        reason: TASK_EXECUTION_REASON.USER_SELECTION_CHANGED
       });
       expect(api.deploy).to.have.been.calledOnce;
       expect(api.startInstance).to.have.been.calledOnce;

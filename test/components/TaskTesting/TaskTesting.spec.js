@@ -18,6 +18,7 @@ import {
 } from '../../../lib/hooks/useSelectedElement';
 
 import { DEFAULT_CONFIG } from '../../../lib/ElementConfig';
+import { TASK_EXECUTION_REASON } from '../../../lib/constants';
 
 import diagramXML from '../../fixtures/diagram.bpmn';
 import templates from '../../fixtures/elementTemplates.json';
@@ -215,7 +216,7 @@ describe('TaskTesting', function() {
       });
       expect(onTaskExecutionFinished).to.have.been.calledWithMatch(elementRegistry.get('ServiceTask_3'), {
         success: false,
-        reason: 'error',
+        reason: TASK_EXECUTION_REASON.ERROR,
         error: {
           message: 'Failed to deploy process definition',
           response: 'Deployment failed'
@@ -268,7 +269,7 @@ describe('TaskTesting', function() {
       });
       expect(onTaskExecutionFinished).to.have.been.calledWithMatch(elementRegistry.get('ServiceTask_3'), {
         success: false,
-        reason: 'error',
+        reason: TASK_EXECUTION_REASON.ERROR,
         error: {
           message: 'Failed to start process instance',
           response: 'Start instance failed'
@@ -452,7 +453,7 @@ describe('TaskTesting', function() {
 
       expect(onTaskExecutionFinished).to.have.been.calledWithMatch(elementRegistry.get('ServiceTask_3'), {
         success: false,
-        reason: 'incident',
+        reason: TASK_EXECUTION_REASON.INCIDENT,
         incident: {
           errorMessage: 'Something went wrong',
           errorType: 'JOB_NO_RETRIES'
@@ -493,7 +494,7 @@ describe('TaskTesting', function() {
       });
       expect(onTaskExecutionFinished).to.have.been.calledWithMatch(elementRegistry.get('ServiceTask_3'), {
         success: false,
-        reason: 'user.selectionChanged'
+        reason: TASK_EXECUTION_REASON.USER_SELECTION_CHANGED
       });
     }));
 
@@ -534,7 +535,7 @@ describe('TaskTesting', function() {
       });
       expect(onTaskExecutionFinished).to.have.been.calledWithMatch(elementRegistry.get('ServiceTask_3'), {
         success: false,
-        reason: 'user.cancel'
+        reason: TASK_EXECUTION_REASON.USER_CANCEL
       });
     }));
 
