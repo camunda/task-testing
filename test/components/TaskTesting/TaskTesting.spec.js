@@ -182,6 +182,365 @@ describe('TaskTesting', function() {
   });
 
 
+  describe('callback events', function() {
+
+    it('should call onTaskExecutionFinished with error when deployment fails', inject(async function(elementRegistry, selection) {
+
+      // given
+      const onTaskExecutionFinished = sinon.spy();
+      const api = {
+        deploy: sinon.spy(() => Promise.resolve({ success: false, error: 'Deployment failed' })),
+      };
+
+      renderTaskTesting({
+        isConnectionConfigured: true,
+        onTaskExecutionFinished,
+        api
+      });
+
+      // when
+      selection.select(elementRegistry.get('ServiceTask_3'));
+
+      const button = await screen.findByTestId('test-task-btn');
+      button.click();
+
+      // then
+      await waitFor(() => {
+        expect(api.deploy).to.have.been.called;
+      });
+
+      // Should fire finished event with 'error' reason
+      await waitFor(() => {
+        expect(onTaskExecutionFinished).to.have.been.calledOnce;
+      });
+      expect(onTaskExecutionFinished).to.have.been.calledWithMatch(elementRegistry.get('ServiceTask_3'), {
+        success: false,
+        reason: 'error',
+        error: {
+          message: 'Failed to deploy process definition',
+          response: 'Deployment failed'
+        }
+      });
+    }));
+
+
+    it('should call onTaskExecutionFinished with error when start instance fails', inject(async function(elementRegistry, selection) {
+
+      // given
+      const onTaskExecutionFinished = sinon.spy();
+      const api = {
+        deploy: sinon.spy(() => Promise.resolve({
+          success: true,
+          response: {
+            deployments: [
+              {
+                processDefinition: {
+                  processDefinitionId: 'Process_TaskTesting',
+                  processDefinitionKey: '123'
+                }
+              }
+            ]
+          }
+        })),
+        startInstance: sinon.spy(() => Promise.resolve({ success: false, error: 'Start instance failed' })),
+      };
+
+      renderTaskTesting({
+        isConnectionConfigured: true,
+        onTaskExecutionFinished,
+        api
+      });
+
+      // when
+      selection.select(elementRegistry.get('ServiceTask_3'));
+
+      const button = await screen.findByTestId('test-task-btn');
+      button.click();
+
+      // then
+      await waitFor(() => {
+        expect(api.startInstance).to.have.been.called;
+      });
+
+      // Should fire finished event with 'error' reason
+      await waitFor(() => {
+        expect(onTaskExecutionFinished).to.have.been.calledOnce;
+      });
+      expect(onTaskExecutionFinished).to.have.been.calledWithMatch(elementRegistry.get('ServiceTask_3'), {
+        success: false,
+        reason: 'error',
+        error: {
+          message: 'Failed to start process instance',
+          response: 'Start instance failed'
+        }
+      });
+    }));
+
+
+    it('should call onTaskExecutionStarted when task execution starts', inject(async function(elementRegistry, selection) {
+
+      // given
+      const onTaskExecutionStarted = sinon.spy();
+      const api = {
+        deploy: sinon.spy(() => new Promise(() => {})),
+      };
+
+      renderTaskTesting({
+        isConnectionConfigured: true,
+        onTaskExecutionStarted,
+        api
+      });
+
+      // when
+      selection.select(elementRegistry.get('ServiceTask_3'));
+
+      const button = await screen.findByTestId('test-task-btn');
+      button.click();
+
+      // then
+      await waitFor(() => {
+        expect(onTaskExecutionStarted).to.have.been.calledOnce;
+      });
+
+      expect(onTaskExecutionStarted).to.have.been.calledOnce;
+      expect(onTaskExecutionStarted).to.have.been.calledWithMatch(elementRegistry.get('ServiceTask_3'));
+    }));
+
+
+    it('should call onTaskExecutionFinished when task execution finishes with success', inject(async function(elementRegistry, selection) {
+
+      // given
+      const onTaskExecutionFinished = sinon.spy();
+      const api = {
+        deploy: sinon.spy(() => Promise.resolve({
+          success: true,
+          response: {
+            deployments: [
+              {
+                processDefinition: {
+                  processDefinitionId: 'Process_TaskTesting',
+                  processDefinitionKey: '123'
+                }
+              }
+            ]
+          }
+        })),
+        startInstance: sinon.spy(() => Promise.resolve({
+          success: true,
+          response: { processInstanceKey: '456' }
+        })),
+        getProcessInstance: sinon.spy(() => Promise.resolve({
+          success: true,
+          response: {
+            items: [
+              {
+                processDefinitionId: 'Process_TaskTesting',
+                processInstanceKey: '456',
+                state: 'COMPLETED'
+              }
+            ]
+          }
+        })),
+        getProcessInstanceVariables: sinon.spy(() => Promise.resolve({
+          success: true,
+          response: { items: [] }
+        })),
+        getProcessInstanceElementInstances: sinon.spy(() => Promise.resolve({
+          success: true,
+          response: { items: [] }
+        }))
+      };
+
+      renderTaskTesting({
+        isConnectionConfigured: true,
+        operateBaseUrl: 'https://camunda.com',
+        onTaskExecutionFinished,
+        api
+      });
+
+      // when
+      selection.select(elementRegistry.get('ServiceTask_3'));
+
+      const button = await screen.findByTestId('test-task-btn');
+      button.click();
+
+      // then
+      await waitFor(() => {
+        expect(onTaskExecutionFinished).to.have.been.calledOnce;
+      }, { timeout: 5000 });
+
+      expect(onTaskExecutionFinished).to.have.been.calledOnce;
+      expect(onTaskExecutionFinished).to.have.been.calledWithMatch(elementRegistry.get('ServiceTask_3'), {
+        success: true
+      });
+    }));
+
+
+    it('should call onTaskExecutionFinished when task execution finishes with incident', inject(async function(elementRegistry, selection) {
+
+      // given
+      const onTaskExecutionFinished = sinon.spy();
+      const api = {
+        deploy: sinon.spy(() => Promise.resolve({
+          success: true,
+          response: {
+            deployments: [
+              {
+                processDefinition: {
+                  processDefinitionId: 'Process_TaskTesting',
+                  processDefinitionKey: '123'
+                }
+              }
+            ]
+          }
+        })),
+        startInstance: sinon.spy(() => Promise.resolve({
+          success: true,
+          response: { processInstanceKey: '456' }
+        })),
+        getProcessInstance: sinon.spy(() => Promise.resolve({
+          success: true,
+          response: {
+            items: [
+              {
+                processDefinitionId: 'Process_TaskTesting',
+                processInstanceKey: '456',
+                state: 'COMPLETED',
+                hasIncident: true
+              }
+            ]
+          }
+        })),
+        getProcessInstanceVariables: sinon.spy(() => Promise.resolve({
+          success: true,
+          response: { items: [] }
+        })),
+        getProcessInstanceElementInstances: sinon.spy(() => Promise.resolve({
+          success: true,
+          response: { items: [] }
+        })),
+        getProcessInstanceIncident: sinon.spy(() => Promise.resolve({
+          success: true,
+          response: {
+            items: [
+              {
+                errorMessage: 'Something went wrong',
+                errorType: 'JOB_NO_RETRIES'
+              }
+            ]
+          }
+        }))
+      };
+
+      renderTaskTesting({
+        isConnectionConfigured: true,
+        operateBaseUrl: 'https://camunda.com',
+        onTaskExecutionFinished,
+        api
+      });
+
+      // when
+      selection.select(elementRegistry.get('ServiceTask_3'));
+
+      const button = await screen.findByTestId('test-task-btn');
+      button.click();
+
+      // then
+      await waitFor(() => {
+        expect(onTaskExecutionFinished).to.have.been.calledOnce;
+      }, { timeout: 5000 });
+
+      expect(onTaskExecutionFinished).to.have.been.calledWithMatch(elementRegistry.get('ServiceTask_3'), {
+        success: false,
+        reason: 'incident',
+        incident: {
+          errorMessage: 'Something went wrong',
+          errorType: 'JOB_NO_RETRIES'
+        }
+      });
+    }));
+
+
+    it('should call onTaskExecutionFinished with reason "user.selectionChanged" when selection changes during task execution', inject(async function(elementRegistry, selection) {
+
+      // given
+      const onTaskExecutionFinished = sinon.spy();
+      const api = {
+        deploy: sinon.spy(() => new Promise(() => {})),
+      };
+
+      renderTaskTesting({
+        isConnectionConfigured: true,
+        onTaskExecutionFinished,
+        api
+      });
+
+      selection.select(elementRegistry.get('ServiceTask_3'));
+
+      const button = await screen.findByTestId('test-task-btn');
+      button.click();
+
+      await waitFor(() => {
+        expect(api.deploy).to.have.been.called;
+      });
+
+      // when
+      selection.select(elementRegistry.get('ServiceTask_1'));
+
+      // then
+      await waitFor(() => {
+        expect(onTaskExecutionFinished).to.have.been.calledOnce;
+      });
+      expect(onTaskExecutionFinished).to.have.been.calledWithMatch(elementRegistry.get('ServiceTask_3'), {
+        success: false,
+        reason: 'user.selectionChanged'
+      });
+    }));
+
+
+    it('should call onTaskExecutionFinished with reason "user.cancel" when task execution is manually canceled by the user', inject(async function(elementRegistry, selection) {
+
+      // given
+      const onTaskExecutionFinished = sinon.spy();
+      const api = {
+        deploy: sinon.spy(() => new Promise(() => {})),
+      };
+
+      renderTaskTesting({
+        isConnectionConfigured: true,
+        onTaskExecutionFinished,
+        api
+      });
+
+      selection.select(elementRegistry.get('ServiceTask_3'));
+
+      const button = await screen.findByTestId('test-task-btn');
+      button.click();
+
+      await waitFor(() => {
+        expect(api.deploy).to.have.been.called;
+      });
+
+      await waitFor(() => {
+        expect(button.textContent).to.equal('Cancel');
+      });
+
+      // when
+      button.click();
+
+      // then
+      await waitFor(() => {
+        expect(onTaskExecutionFinished).to.have.been.calledOnce;
+      });
+      expect(onTaskExecutionFinished).to.have.been.calledWithMatch(elementRegistry.get('ServiceTask_3'), {
+        success: false,
+        reason: 'user.cancel'
+      });
+    }));
+
+  });
+
+
   describe('_Test task_ button', function() {
 
     it('should start execution when connection configured and onTestTask not provided',
@@ -447,8 +806,7 @@ function renderTaskTesting(props = {}) {
     operateBaseUrl,
     documentationUrl,
     onTaskExecutionStarted = () => {},
-    onTaskExecutionFinished = () => {},
-    onTaskExecutionInterrupted = () => {}
+    onTaskExecutionFinished = () => {}
   } = props;
 
   return render(<TaskTesting
@@ -466,6 +824,5 @@ function renderTaskTesting(props = {}) {
     documentationUrl={ documentationUrl }
     onTaskExecutionStarted={ onTaskExecutionStarted }
     onTaskExecutionFinished={ onTaskExecutionFinished }
-    onTaskExecutionInterrupted={ onTaskExecutionInterrupted }
   />);
 }

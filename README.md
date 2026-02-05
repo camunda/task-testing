@@ -12,12 +12,35 @@ import TaskTesting from '@camunda/task-testing';
 function App() {
   ...
 
-  <TaskTesting api={ ... }>
+  <TaskTesting 
+    api={ ... }
+    onTaskExecutionStarted={ (element) => { ... } }
+    onTaskExecutionFinished={ (element, result) => { ... } }
+  >
     <TaskTesting.Tab label={ 'Foo' }>...</TaskTesting.Tab>;
     <TaskTesting.Link href="https://camunda.com">Foo</TaskTesting.Link>;
   </TaskTesting>
 }
 ```
+
+### Props
+
+#### Lifecycle Callbacks
+
+The TaskTesting component provides callbacks to track task execution lifecycle events:
+
+- **`onTaskExecutionStarted(element)`** - Called when a task execution begins
+  - `element` - The BPMN element being tested
+
+- **`onTaskExecutionFinished(element, result)`** - Called when task execution ends (success, incident, or cancellation)
+  - `element` - The BPMN element that was tested
+  - `result` - Execution result object:
+    - When `success: true`: Contains `variables` with execution output
+    - When `success: false`: Contains `reason` explaining why:
+      - `'incident'` - Task completed with an incident (includes `incident` and optional `variables`)
+      - `'user.cancel'` - User clicked cancel button
+      - `'user.selectionChanged'` - User selected a different element
+      - `'error'` - Deployment or start instance failed (includes `error` object)
 
 [See demo](https://github.com/camunda/task-testing/tree/main/demo)
 

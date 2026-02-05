@@ -24,7 +24,6 @@ describe('TaskExecution', function() {
 
   const statusChangeSpy = sinon.spy();
   const finishedSpy = sinon.spy();
-  const errorSpy = sinon.spy();
 
   beforeEach(inject(function(injector) {
     api = {
@@ -40,7 +39,6 @@ describe('TaskExecution', function() {
 
     taskExecution.on('taskExecution.status.changed', statusChangeSpy);
     taskExecution.on('taskExecution.finished', finishedSpy);
-    taskExecution.on('taskExecution.error', errorSpy);
   }));
 
   afterEach(function() {
@@ -48,7 +46,6 @@ describe('TaskExecution', function() {
 
     statusChangeSpy.resetHistory();
     finishedSpy.resetHistory();
-    errorSpy.resetHistory();
   });
 
 
@@ -71,8 +68,6 @@ describe('TaskExecution', function() {
     expect(statusChangeSpy).to.have.been.calledWith('starting-instance');
     expect(statusChangeSpy).to.have.been.calledWith('executing');
 
-    expect(errorSpy).to.not.have.been.called;
-
     expect(api.deploy).to.have.been.calledOnce;
     expect(api.startInstance).to.have.been.calledOnce;
     expect(api.getProcessInstance).to.have.been.calledOnce;
@@ -81,7 +76,6 @@ describe('TaskExecution', function() {
     expect(api.getProcessInstanceIncident).to.not.have.been.called;
 
     expect(finishedSpy).to.have.been.calledWithMatch({
-      'incident': null,
       'success': true,
       'variables': {
         '2251799813755923': {
@@ -116,7 +110,6 @@ describe('TaskExecution', function() {
 
     // then
     expect(finishedSpy).to.have.been.calledOnce;
-    expect(errorSpy).to.not.have.been.called;
     expect(api.deploy).to.have.been.calledOnce;
     expect(api.startInstance).to.have.been.calledOnce;
     expect(api.getProcessInstance).to.have.been.calledTwice;
@@ -125,7 +118,7 @@ describe('TaskExecution', function() {
     expect(api.getProcessInstanceIncident).to.not.have.been.called;
 
     expect(finishedSpy).to.have.been.calledWithMatch({
-      'incident': null,
+      'success': true,
       'variables': {
         '2251799813755923': {
           'name': 'foo',
@@ -171,7 +164,6 @@ describe('TaskExecution', function() {
 
     // then
     expect(finishedSpy).to.not.have.been.called;
-    expect(errorSpy).to.not.have.been.called;
     expect(api.deploy).to.have.been.calledOnce;
     expect(api.startInstance).to.have.been.calledOnce;
     expect(api.getProcessInstance).to.have.been.calledTwice;
@@ -196,10 +188,6 @@ describe('TaskExecution', function() {
 
       // then
       expect(finishedSpy).to.not.have.been.called;
-      expect(errorSpy).to.have.been.calledOnce;
-      expect(errorSpy).to.have.been.calledWithMatch({
-        message: `Process ID for element <${task.id}> not found`
-      });
     }));
 
 
@@ -214,8 +202,7 @@ describe('TaskExecution', function() {
       await clock.tickAsync(500);
 
       // then
-      expect(finishedSpy).to.not.have.been.called;
-      expect(errorSpy).to.have.been.calledOnce;
+      expect(finishedSpy).to.have.been.calledOnce;
       expect(statusChangeSpy).to.have.been.calledWith('deploying');
       expect(api.deploy).to.have.been.calledOnce;
       expect(api.startInstance).to.not.have.been.called;
@@ -223,9 +210,13 @@ describe('TaskExecution', function() {
       expect(api.getProcessInstanceVariables).to.not.have.been.called;
       expect(api.getProcessInstanceIncident).to.not.have.been.called;
 
-      expect(errorSpy).to.have.been.calledWithMatch({
-        message: 'Failed to deploy process definition',
-        response: DEPLOY_ERROR
+      expect(finishedSpy).to.have.been.calledWithMatch({
+        success: false,
+        reason: 'error',
+        error: {
+          message: 'Failed to deploy process definition',
+          response: DEPLOY_ERROR
+        }
       });
     }));
 
@@ -242,8 +233,7 @@ describe('TaskExecution', function() {
       await clock.tickAsync(500);
 
       // then
-      expect(finishedSpy).to.not.have.been.called;
-      expect(errorSpy).to.have.been.calledOnce;
+      expect(finishedSpy).to.have.been.calledOnce;
       expect(statusChangeSpy).to.have.been.calledWith('deploying');
       expect(api.deploy).to.have.been.calledOnce;
       expect(statusChangeSpy).to.have.been.calledWith('starting-instance');
@@ -252,9 +242,13 @@ describe('TaskExecution', function() {
       expect(api.getProcessInstanceVariables).to.not.have.been.called;
       expect(api.getProcessInstanceIncident).to.not.have.been.called;
 
-      expect(errorSpy).to.have.been.calledWithMatch({
-        message: 'Failed to start process instance',
-        response: START_INSTANCE_ERROR
+      expect(finishedSpy).to.have.been.calledWithMatch({
+        success: false,
+        reason: 'error',
+        error: {
+          message: 'Failed to start process instance',
+          response: START_INSTANCE_ERROR
+        }
       });
     }));
 
@@ -279,8 +273,7 @@ describe('TaskExecution', function() {
       await clock.tickAsync(500);
 
       // then
-      expect(finishedSpy).to.not.have.been.called;
-      expect(errorSpy).to.have.been.calledOnce;
+      expect(finishedSpy).to.have.been.calledOnce;
       expect(statusChangeSpy).to.have.been.calledWith('starting-instance');
       expect(api.deploy).to.have.been.calledOnce;
       expect(statusChangeSpy).to.have.been.calledWith('deploying');
@@ -289,8 +282,12 @@ describe('TaskExecution', function() {
       expect(api.getProcessInstanceVariables).to.not.have.been.called;
       expect(api.getProcessInstanceIncident).to.not.have.been.called;
 
-      expect(errorSpy).to.have.been.calledWithMatch({
-        message: 'Failed to retrieve process instance key from start instance response'
+      expect(finishedSpy).to.have.been.calledWithMatch({
+        success: false,
+        reason: 'error',
+        error: {
+          message: 'Failed to retrieve process instance key from start instance response'
+        }
       });
     }));
 
@@ -312,17 +309,20 @@ describe('TaskExecution', function() {
 
       // then
       expect(finishedSpy).to.have.been.calledOnce;
-      expect(errorSpy).to.have.been.calledOnce;
       expect(api.deploy).to.have.been.calledOnce;
       expect(api.startInstance).to.have.been.calledOnce;
-      expect(api.getProcessInstance).to.have.been.calledTwice;
-      expect(api.getProcessInstanceVariables).to.have.been.calledOnce;
-      expect(api.getProcessInstanceElementInstances).to.have.been.calledOnce;
+      expect(api.getProcessInstance).to.have.been.calledOnce;
+      expect(api.getProcessInstanceVariables).to.not.have.been.called;
+      expect(api.getProcessInstanceElementInstances).to.not.have.been.called;
       expect(api.getProcessInstanceIncident).to.not.have.been.called;
 
-      expect(errorSpy).to.have.been.calledWithMatch({
-        message: 'Failed to get process instance',
-        response: GET_PROCESS_INSTANCE_ERROR
+      expect(finishedSpy).to.have.been.calledWithMatch({
+        success: false,
+        reason: 'error',
+        error: {
+          message: 'Failed to get process instance',
+          response: GET_PROCESS_INSTANCE_ERROR
+        }
       });
     }));
 
@@ -377,7 +377,6 @@ describe('TaskExecution', function() {
 
       // then
       expect(finishedSpy).to.have.been.calledOnce;
-      expect(errorSpy).to.not.have.been.called;
       expect(api.deploy).to.have.been.calledOnce;
       expect(api.startInstance).to.have.been.calledOnce;
       expect(api.getProcessInstance).to.have.been.calledOnce;
@@ -387,6 +386,7 @@ describe('TaskExecution', function() {
 
       expect(finishedSpy).to.have.been.calledWithMatch({
         'success': false,
+        'reason': 'incident',
         'variables': {
           '2251799813755923': {
             'name': 'foo',
@@ -436,7 +436,6 @@ describe('TaskExecution', function() {
 
       // then
       expect(finishedSpy).to.not.have.been.called;
-      expect(errorSpy).to.not.have.been.called;
       expect(api.deploy).to.have.been.calledOnce;
       expect(api.startInstance).to.have.been.calledOnce;
       expect(api.getProcessInstance).to.not.have.been.called;
@@ -464,8 +463,11 @@ describe('TaskExecution', function() {
       await clock.tickAsync(500);
 
       // then
-      expect(finishedSpy).to.not.have.been.called;
-      expect(errorSpy).to.not.have.been.called;
+      expect(finishedSpy).to.have.been.calledOnce;
+      expect(finishedSpy).to.have.been.calledWithMatch({
+        success: false,
+        reason: 'user.selectionChanged'
+      });
       expect(api.deploy).to.have.been.calledOnce;
       expect(api.startInstance).to.have.been.calledOnce;
       expect(api.getProcessInstance).to.not.have.been.called;

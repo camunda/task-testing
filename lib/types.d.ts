@@ -77,16 +77,34 @@ export type TaskExecutionStatus =
 
 export type TaskExecutionEvents = 
   'taskExecution.status.changed' |
-  'taskExecution.finished' |
-  'taskExecution.error' |
-  'taskExecution.interrupted';
+  'taskExecution.finished';
 
-export type TaskExecutionResult = {
-  success: boolean;
-  variables?: ElementOutputVariables;
-  error?: TaskExecutionError;
-  incident?: any;
-}
+export type TaskExecutionResult = 
+  // Success case - no reason needed
+  | {
+      success: true;
+      variables: ElementOutputVariables;
+    }
+  // Failure cases - always have reason
+  | {
+      success: false;
+      reason: 'incident';
+      incident: any;
+      variables?: ElementOutputVariables;
+    }
+  | {
+      success: false;
+      reason: 'user.cancel';
+    }
+  | {
+      success: false;
+      reason: 'user.selectionChanged';
+    }
+  | {
+      success: false;
+      reason: 'error';
+      error: TaskExecutionError;
+    };
 
 export type TaskExecutionError = {
   message: string;

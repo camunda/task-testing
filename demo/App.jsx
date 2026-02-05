@@ -162,6 +162,12 @@ function App() {
           onConfigChanged={ onConfigChanged }
           operateBaseUrl={ operateURL }
           documentationUrl="https://docs.camunda.io/"
+          onTaskExecutionStarted={ (element) => {
+            console.log('Task execution started:', element.id);
+          } }
+          onTaskExecutionFinished={ (element, result) => {
+            console.log('Task execution finished:', element.id, result.success ? 'success' : result.reason, result);
+          } }
         />
       </div>
     </>
