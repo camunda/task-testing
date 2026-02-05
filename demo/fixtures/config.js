@@ -12,6 +12,9 @@ const input = {
   'ServiceTask_2': JSON.stringify({
     foo: 1,
     bar: 'baz'
+  }, null, 2),
+  'ServiceTask_5': JSON.stringify({
+    jobWorkerDelay: 5
   }, null, 2)
 };
 

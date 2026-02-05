@@ -186,19 +186,27 @@ function createJobWorker() {
   camundaRestClient.createJobWorker({
     type: 'foo',
     jobHandler: async (job) => {
-      console.log('🚀 Processing job worker...');
+      console.log(`🚀 Handling job ${job.jobKey}...`);
+
+      const { delay = 5 } = job.variables;
+
+      console.log(
+        `Job will take ${delay} seconds to complete...`
+      );
 
       // Simulate some work with a delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, delay * 1000));
 
-      console.log('🚀 Job completed');
+      try {
+        await job.complete({ foo: 'jobWorkerWasHere' });
 
-      job.complete({
-        foo: 'jobWorkerWasHere'
-      });
+        console.log('🚀 Job completed...');
+      } catch (e) {
+        console.warn(`Could not complete job ${job.jobKey}: ${e.detail || e.message}`);
+      }
     },
     pollInterval: 1000,
-    timeout: 5000,
+    timeout: 50000,
     maxJobsToActivate: 5
   });
 }
