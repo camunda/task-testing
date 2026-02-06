@@ -81,32 +81,40 @@ export type TaskExecutionEvents =
   'taskExecution.status.changed' |
   'taskExecution.finished';
 
-export type TaskExecutionResult = 
-  // Success case - no reason needed
-  | {
-      success: true;
-      variables: ElementOutputVariables;
-    }
-  // Failure cases - always have reason
-  | {
-      success: false;
-      reason: typeof TASK_EXECUTION_REASON.INCIDENT;
-      incident: any;
-      variables?: ElementOutputVariables;
-    }
-  | {
-      success: false;
-      reason: typeof TASK_EXECUTION_REASON.USER_CANCEL;
-    }
-  | {
-      success: false;
-      reason: typeof TASK_EXECUTION_REASON.USER_SELECTION_CHANGED;
-    }
-  | {
-      success: false;
-      reason: typeof TASK_EXECUTION_REASON.ERROR;
-      error: TaskExecutionError;
-    };
+export type TaskExecutionSuccessResult = {
+  success: true;
+  variables: ElementOutputVariables;
+};
+
+export type TaskExecutionIncidentResult = {
+  success: false;
+  reason: typeof TASK_EXECUTION_REASON.INCIDENT;
+  incident: any;
+  variables?: ElementOutputVariables;
+};
+
+export type TaskExecutionUserCancelResult = {
+  success: false;
+  reason: typeof TASK_EXECUTION_REASON.USER_CANCEL;
+};
+
+export type TaskExecutionUserSelectionChangedResult = {
+  success: false;
+  reason: typeof TASK_EXECUTION_REASON.USER_SELECTION_CHANGED;
+};
+
+export type TaskExecutionErrorResult = {
+  success: false;
+  reason: typeof TASK_EXECUTION_REASON.ERROR;
+  error: TaskExecutionError;
+};
+
+export type TaskExecutionResult =
+  | TaskExecutionSuccessResult
+  | TaskExecutionIncidentResult
+  | TaskExecutionUserCancelResult
+  | TaskExecutionUserSelectionChangedResult
+  | TaskExecutionErrorResult;
 
 export type TaskExecutionError = {
   message: string;
