@@ -7,6 +7,10 @@ import type {
   SearchIncidentsResponse
 } from '@camunda8/sdk/dist/c8/lib/C8Dto';
 
+import type {
+  ModdleElement
+} from "bpmn-js/lib/model/Types";
+
 export type Input = {
   [elementId: string]: string;
 };
@@ -28,7 +32,7 @@ export type ElementOutputVariables = {
 export type ElementOutput = {
   success: boolean;
   variables?: ElementOutputVariables;
-  error?: TaskExecutionEvents.Error;
+  error?: TaskExecutionError;
   incident?: any;
   operateUrl?: string;
   [key: string]: any;
@@ -75,7 +79,7 @@ export type TaskExecutionStatus =
   'starting-instance' |
   'executing';
 
-export type TaskExecutionEvents = 
+export type TaskExecutionEvents =
   'taskExecution.status.changed' |
   'taskExecution.finished' |
   'taskExecution.error' |

@@ -5,6 +5,7 @@
     "dist"
   ],
   "main": "dist/index.js",
+  "types": "dist/types/index.d.ts",
   "scripts": {
     "all": "run-s lint types test build",
     "open": "open-cli http://localhost:3000",
@@ -12,9 +13,11 @@
     "start:client": "webpack --watch --config webpack.demo.js",
     "start": "run-p start:* open",
     "dev": "npm test -- --auto-watch --no-single-run",
-    "build": "webpack",
+    "build": "run-s build:webpack build:types",
+    "build:webpack": "webpack",
     "build:watch": "webpack --watch",
     "build:demo": "webpack --config webpack.demo.js",
+    "build:types": "tsc",
     "test": "karma start karma.config.js",
     "lint": "eslint .",
     "types": "tsc --noEmit",
