@@ -9,8 +9,10 @@
     "target": "esnext",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "noEmit": true,
-    "skipLibCheck": true,
+    "declarationDir": "dist/types",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "skipLibCheck": true
   },
   "include": [ "lib/**/*" ]
 }
