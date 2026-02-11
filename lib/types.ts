@@ -13,7 +13,7 @@ import type {
 } from '@camunda8/orchestration-cluster-api';
 import type {ModdleElement} from "bpmn-js/lib/model/Types";
 
-declare type ExtendedDeploymentResult = Awaited<ReturnType<CamundaClient['createDeployment']>>
+type ExtendedDeploymentResult = Awaited<ReturnType<CamundaClient['createDeployment']>>;
 
 export type {
     CreateProcessInstanceResult,
