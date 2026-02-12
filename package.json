@@ -22,6 +22,8 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@bpmn-io/feel-analyzer": "github:bpmn-io/feel-analyzer#input-analysis",
+    "@camunda/feel-builtins": "^1.0.0",
     "@codemirror/autocomplete": "^6.19.1",
     "@codemirror/lang-json": "^6.0.2",
     "@codemirror/language": "^6.11.3",
