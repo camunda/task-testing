@@ -2,7 +2,7 @@ import React from 'react';
 
 import { render } from '@testing-library/react';
 
-import { bootstrapModeler, getModeler } from '../../util/Util';
+import { bootstrapModeler } from '../../util/Util';
 
 import Input from '../../../lib/components/Input/Input';
 
@@ -31,29 +31,23 @@ describe('Input', function() {
 });
 
 function renderWithProps(props) {
-  const modeler = getModeler();
-
-  const elementRegistry = modeler.get('elementRegistry');
-
   const {
-    element = elementRegistry.get('ServiceTask_1'),
+    allOutputs = {},
     input = '{}',
-    setInput = () => {},
-    reset = () => {},
-    variablesForElement,
-    output,
-    onRunTask = () => {}
+    onErrorChange = () => {},
+    onResetInput = () => {},
+    onSetInput = () => {},
+    variablesForElement
   } = props;
 
   return render(
     <Input
-      element={ element }
+      allOutputs={ allOutputs }
       input={ input }
-      setInput={ setInput }
-      reset={ reset }
+      onErrorChange={ onErrorChange }
+      onResetInput={ onResetInput }
+      onSetInput={ onSetInput }
       variablesForElement={ variablesForElement }
-      output={ output }
-      onRunTask={ onRunTask }
     />
   );
 }

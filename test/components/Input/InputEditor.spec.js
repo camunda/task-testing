@@ -3,7 +3,7 @@ import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { bootstrapModeler, getModeler, inject } from '../../util/Util';
+import { bootstrapModeler, inject } from '../../util/Util';
 
 import InputEditor, { PLACEHOLDER_TEXT, INVALID_JSON_ERROR } from '../../../lib/components/Input/InputEditor';
 
@@ -315,13 +315,8 @@ describe('InputEditor', function() {
 });
 
 function renderWithProps(props = {}) {
-  const modeler = getModeler();
-
-  const elementRegistry = modeler.get('elementRegistry');
-
   const {
     allOutputs = {},
-    element = elementRegistry.get('ServiceTask_1'),
     value,
     onChange = () => {},
     onErrorChange = () => {},
@@ -331,7 +326,6 @@ function renderWithProps(props = {}) {
   return render(
     <InputEditor
       allOutputs={ allOutputs }
-      element={ element }
       value={ value }
       onChange={ onChange }
       onErrorChange={ onErrorChange }
