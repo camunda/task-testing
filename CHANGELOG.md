@@ -6,6 +6,10 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+## 2.2.0
+
+* `FEAT`: bundle and export types ([#74](https://github.com/camunda/task-testing/pull/74))
+
 ## 2.1.0
 
 * `FEAT`: add plugin functionality to allow custom tabs and links ([#40](https://github.com/camunda/task-testing/pull/40))
