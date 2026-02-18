@@ -1,0 +1,83 @@
+[
+  {
+    "name": "d",
+    "origin": [
+      {
+        "$type": "bpmn:ScriptTask",
+        "id": "secondTask",
+        "extensionElements": {
+          "$type": "bpmn:ExtensionElements",
+          "values": [
+            {
+              "$type": "zeebe:Script",
+              "expression": "=d+f.e",
+              "resultVariable": "secondResult"
+            }
+          ]
+        },
+        "documentation": []
+      }
+    ],
+    "scope": {
+      "$type": "bpmn:ScriptTask",
+      "id": "secondTask",
+      "extensionElements": {
+        "$type": "bpmn:ExtensionElements",
+        "values": [
+          {
+            "$type": "zeebe:Script",
+            "expression": "=d+f.e",
+            "resultVariable": "secondResult"
+          }
+        ]
+      },
+      "documentation": []
+    },
+    "entries": [],
+    "usedBy": ["secondResult"],
+    "provider": []
+  },
+  {
+    "name": "f",
+    "origin": [
+      {
+        "$type": "bpmn:ScriptTask",
+        "id": "secondTask",
+        "extensionElements": {
+          "$type": "bpmn:ExtensionElements",
+          "values": [
+            {
+              "$type": "zeebe:Script",
+              "expression": "=d+f.e",
+              "resultVariable": "secondResult"
+            }
+          ]
+        },
+        "documentation": []
+      }
+    ],
+    "scope": {
+      "$type": "bpmn:ScriptTask",
+      "id": "secondTask",
+      "extensionElements": {
+        "$type": "bpmn:ExtensionElements",
+        "values": [
+          {
+            "$type": "zeebe:Script",
+            "expression": "=d+f.e",
+            "resultVariable": "secondResult"
+          }
+        ]
+      },
+      "documentation": []
+    },
+    "entries": [
+      {
+        "name": "e",
+        "entries": []
+      }
+    ],
+    "usedBy": ["secondResult"],
+    "provider": []
+  }
+]

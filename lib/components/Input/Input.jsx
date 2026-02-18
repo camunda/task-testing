@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
 import { Link } from '@carbon/react';
 import { Launch } from '@carbon/icons-react';
@@ -13,8 +13,11 @@ export default function Input({
   onSetInput,
   variablesForElement
 }) {
-  const handleResetInput = () => {
-    onResetInput();
+  const editorRef = useRef(null);
+
+  const handleResetInput = async () => {
+    const prefilledValue = await onResetInput();
+    editorRef.current?.replaceContent(prefilledValue);
   };
 
   return (
@@ -29,9 +32,10 @@ export default function Input({
         <Link
           className="input__header--button-reset"
           onClick={ handleResetInput }
-          role="button">Clear</Link>
+          role="button">Reset</Link>
       </div>
       <InputEditor
+        ref={ editorRef }
         allOutputs={ allOutputs }
         value={ input }
         onChange={ onSetInput }

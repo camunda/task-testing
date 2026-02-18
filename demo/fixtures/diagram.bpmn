@@ -1,211 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0jc2nqw" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.44.0-rc.3" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.8.0">
-  <bpmn:process id="Process_TaskTesting" isExecutable="true">
-    <bpmn:startEvent id="StartEvent_1">
-      <bpmn:outgoing>Flow_0d202t1</bpmn:outgoing>
-    </bpmn:startEvent>
-    <bpmn:sequenceFlow id="Flow_0d202t1" sourceRef="StartEvent_1" targetRef="ServiceTask_1" />
-    <bpmn:sequenceFlow id="Flow_0ggbd4s" sourceRef="ServiceTask_3" targetRef="ServiceTask_4" />
-    <bpmn:sequenceFlow id="Flow_0szzvbm" sourceRef="ServiceTask_1" targetRef="ServiceTask_2" />
-    <bpmn:sequenceFlow id="Flow_1cskg4b" sourceRef="ServiceTask_2" targetRef="ServiceTask_3" />
-    <bpmn:scriptTask id="ServiceTask_2" name="Inputs">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0p0khnb" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.42.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.8.0">
+  <bpmn:process id="Process_0l767e0" isExecutable="true">
+    <bpmn:extensionElements>
+      <zeebe:properties>
+        <zeebe:property name="camundaModeler:exampleOutputJson" value="{&#34;a&#34;:42}" />
+      </zeebe:properties>
+    </bpmn:extensionElements>
+    <bpmn:scriptTask id="firstTask">
       <bpmn:extensionElements>
-        <zeebe:ioMapping>
-          <zeebe:input source="=foo" target="fooInput" />
-          <zeebe:input source="=false" target="booleanFalseInput" />
-          <zeebe:input source="=true" target="booleanTrueInput" />
-          <zeebe:input source="={ foo: 1 }" target="contextInput" />
-          <zeebe:input source="=foo + bar + baz" target="complexInput" />
-          <zeebe:output source="=fooOutput" target="foo" />
-          <zeebe:output source="=true" target="baz" />
-        </zeebe:ioMapping>
-        <zeebe:script expression="=fooInput + 2" resultVariable="fooOutput" />
+        <zeebe:script expression="=a+b" resultVariable="firstResult" />
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0szzvbm</bpmn:incoming>
-      <bpmn:outgoing>Flow_1cskg4b</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0mmccfx</bpmn:outgoing>
     </bpmn:scriptTask>
-    <bpmn:scriptTask id="ServiceTask_1" name="No inputs">
+    <bpmn:sequenceFlow id="Flow_0mmccfx" sourceRef="firstTask" targetRef="secondTask" />
+    <bpmn:scriptTask id="secondTask">
       <bpmn:extensionElements>
-        <zeebe:script expression="=foo + 1" resultVariable="fooPlusOne" />
-        <zeebe:ioMapping>
-          <zeebe:output source="=1" target="output1" />
-          <zeebe:output source="=true" target="output2" />
-          <zeebe:output source="={ &#34;foo&#34;: 1 }" target="output3" />
-          <zeebe:output source="=&#34;foo&#34;" target="output4" />
-          <zeebe:output source="=fooPlusOne" target="fooPlusOneOutput" />
-        </zeebe:ioMapping>
+        <zeebe:script expression="=d+f" resultVariable="secondResult" />
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0d202t1</bpmn:incoming>
-      <bpmn:outgoing>Flow_0szzvbm</bpmn:outgoing>
+      <bpmn:incoming>Flow_0mmccfx</bpmn:incoming>
     </bpmn:scriptTask>
-    <bpmn:serviceTask id="ServiceTask_3" name="REST" zeebe:modelerTemplate="io.camunda.connectors.HttpJson.v2" zeebe:modelerTemplateVersion="11" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE3LjAzMzUgOC45OTk5N0MxNy4wMzM1IDEzLjQ0NzUgMTMuNDI4MSAxNy4wNTI5IDguOTgwNjUgMTcuMDUyOUM0LjUzMzE2IDE3LjA1MjkgMC45Mjc3NjUgMTMuNDQ3NSAwLjkyNzc2NSA4Ljk5OTk3QzAuOTI3NzY1IDQuNTUyNDggNC41MzMxNiAwLjk0NzA4MyA4Ljk4MDY1IDAuOTQ3MDgzQzEzLjQyODEgMC45NDcwODMgMTcuMDMzNSA0LjU1MjQ4IDE3LjAzMzUgOC45OTk5N1oiIGZpbGw9IiM1MDU1NjIiLz4KPHBhdGggZD0iTTQuOTMxMjYgMTQuMTU3MUw2Ljc4MTA2IDMuNzE0NzFIMTAuMTM3NUMxMS4xOTE3IDMuNzE0NzEgMTEuOTgyNCAzLjk4MzIzIDEyLjUwOTUgNC41MjAyN0MxMy4wNDY1IDUuMDQ3MzYgMTMuMzE1IDUuNzMzNTggMTMuMzE1IDYuNTc4OTJDMTMuMzE1IDcuNDQ0MTQgMTMuMDcxNCA4LjE1NTIyIDEyLjU4NDEgOC43MTIxNUMxMi4xMDY3IDkuMjU5MTMgMTEuNDU1MyA5LjYzNzA1IDEwLjYyOTggOS44NDU5TDEyLjA2MTkgMTQuMTU3MUgxMC4zMzE1TDkuMDMzNjQgMTAuMDI0OUg3LjI0MzUxTDYuNTEyNTQgMTQuMTU3MUg0LjkzMTI2Wk03LjQ5NzExIDguNTkyODFIOS4yNDI0OEM5Ljk5ODMyIDguNTkyODEgMTAuNTkwMSA4LjQyMzc0IDExLjAxNzcgOC4wODU2MUMxMS40NTUzIDcuNzM3NTMgMTEuNjc0MSA3LjI2NTEzIDExLjY3NDEgNi42Njg0MkMxMS42NzQxIDYuMTkxMDYgMTEuNTI0OSA1LjgxODExIDExLjIyNjUgNS41NDk1OUMxMC45MjgyIDUuMjcxMTMgMTAuNDU1OCA1LjEzMTkgOS44MDkzNiA1LjEzMTlIOC4xMDg3NEw3LjQ5NzExIDguNTkyODFaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K">
-      <bpmn:extensionElements>
-        <zeebe:taskDefinition type="io.camunda:http-json:1" retries="3" />
-        <zeebe:ioMapping>
-          <zeebe:input source="noAuth" target="authentication.type" />
-          <zeebe:input source="GET" target="method" />
-          <zeebe:input source="https://camunda.com" target="url" />
-          <zeebe:input source="=false" target="storeResponse" />
-          <zeebe:input source="=20" target="connectionTimeoutInSeconds" />
-          <zeebe:input source="=20" target="readTimeoutInSeconds" />
-          <zeebe:input source="=false" target="ignoreNullValues" />
-        </zeebe:ioMapping>
-        <zeebe:taskHeaders>
-          <zeebe:header key="elementTemplateVersion" value="11" />
-          <zeebe:header key="elementTemplateId" value="io.camunda.connectors.HttpJson.v2" />
-          <zeebe:header key="resultVariable" />
-          <zeebe:header key="resultExpression" />
-          <zeebe:header key="errorExpression" />
-          <zeebe:header key="retryBackoff" value="PT0S" />
-        </zeebe:taskHeaders>
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_1cskg4b</bpmn:incoming>
-      <bpmn:outgoing>Flow_0ggbd4s</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:serviceTask id="ServiceTask_4" name="REST Incident" zeebe:modelerTemplate="io.camunda.connectors.HttpJson.v2" zeebe:modelerTemplateVersion="11" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE3LjAzMzUgOC45OTk5N0MxNy4wMzM1IDEzLjQ0NzUgMTMuNDI4MSAxNy4wNTI5IDguOTgwNjUgMTcuMDUyOUM0LjUzMzE2IDE3LjA1MjkgMC45Mjc3NjUgMTMuNDQ3NSAwLjkyNzc2NSA4Ljk5OTk3QzAuOTI3NzY1IDQuNTUyNDggNC41MzMxNiAwLjk0NzA4MyA4Ljk4MDY1IDAuOTQ3MDgzQzEzLjQyODEgMC45NDcwODMgMTcuMDMzNSA0LjU1MjQ4IDE3LjAzMzUgOC45OTk5N1oiIGZpbGw9IiM1MDU1NjIiLz4KPHBhdGggZD0iTTQuOTMxMjYgMTQuMTU3MUw2Ljc4MTA2IDMuNzE0NzFIMTAuMTM3NUMxMS4xOTE3IDMuNzE0NzEgMTEuOTgyNCAzLjk4MzIzIDEyLjUwOTUgNC41MjAyN0MxMy4wNDY1IDUuMDQ3MzYgMTMuMzE1IDUuNzMzNTggMTMuMzE1IDYuNTc4OTJDMTMuMzE1IDcuNDQ0MTQgMTMuMDcxNCA4LjE1NTIyIDEyLjU4NDEgOC43MTIxNUMxMi4xMDY3IDkuMjU5MTMgMTEuNDU1MyA5LjYzNzA1IDEwLjYyOTggOS44NDU5TDEyLjA2MTkgMTQuMTU3MUgxMC4zMzE1TDkuMDMzNjQgMTAuMDI0OUg3LjI0MzUxTDYuNTEyNTQgMTQuMTU3MUg0LjkzMTI2Wk03LjQ5NzExIDguNTkyODFIOS4yNDI0OEM5Ljk5ODMyIDguNTkyODEgMTAuNTkwMSA4LjQyMzc0IDExLjAxNzcgOC4wODU2MUMxMS40NTUzIDcuNzM3NTMgMTEuNjc0MSA3LjI2NTEzIDExLjY3NDEgNi42Njg0MkMxMS42NzQxIDYuMTkxMDYgMTEuNTI0OSA1LjgxODExIDExLjIyNjUgNS41NDk1OUMxMC45MjgyIDUuMjcxMTMgMTAuNDU1OCA1LjEzMTkgOS44MDkzNiA1LjEzMTlIOC4xMDg3NEw3LjQ5NzExIDguNTkyODFaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K">
-      <bpmn:extensionElements>
-        <zeebe:taskDefinition type="io.camunda:http-json:1" retries="3" />
-        <zeebe:ioMapping>
-          <zeebe:input source="noAuth" target="authentication.type" />
-          <zeebe:input source="GET" target="method" />
-          <zeebe:input source="https://camunda.foobar" target="url" />
-          <zeebe:input source="=false" target="storeResponse" />
-          <zeebe:input source="=20" target="connectionTimeoutInSeconds" />
-          <zeebe:input source="=20" target="readTimeoutInSeconds" />
-          <zeebe:input source="=false" target="ignoreNullValues" />
-        </zeebe:ioMapping>
-        <zeebe:taskHeaders>
-          <zeebe:header key="elementTemplateVersion" value="11" />
-          <zeebe:header key="elementTemplateId" value="io.camunda.connectors.HttpJson.v2" />
-          <zeebe:header key="resultVariable" />
-          <zeebe:header key="resultExpression" />
-          <zeebe:header key="errorExpression" />
-          <zeebe:header key="retryBackoff" value="PT0S" />
-        </zeebe:taskHeaders>
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0ggbd4s</bpmn:incoming>
-      <bpmn:outgoing>Flow_0il16f0</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:serviceTask id="ServiceTask_5" name="Job worker">
-      <bpmn:extensionElements>
-        <zeebe:taskDefinition type="foo" />
-        <zeebe:ioMapping>
-          <zeebe:input source="=foo" target="fooLocal" />
-          <zeebe:input source="=if jobWorkerDelay != null then jobWorkerDelay else 5" target="delay" />
-          <zeebe:output source="=foo" target="jobWorkerFoo" />
-        </zeebe:ioMapping>
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0il16f0</bpmn:incoming>
-      <bpmn:outgoing>Flow_0karkwj</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:sequenceFlow id="Flow_0il16f0" sourceRef="ServiceTask_4" targetRef="ServiceTask_5" />
-    <bpmn:serviceTask id="ServiceTask_6" name="RPA" zeebe:modelerTemplate="camunda.connectors.rpa" zeebe:modelerTemplateVersion="1" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyBpZD0iaWNvbiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogbm9uZTsKICAgICAgfQogICAgPC9zdHlsZT4KICA8L2RlZnM+CiAgPHRpdGxlPmJvdDwvdGl0bGU+CiAgPHJlY3QgeD0iMTgiIHk9IjEwIiB3aWR0aD0iMiIgaGVpZ2h0PSIyIi8+CiAgPHJlY3QgeD0iMTIiIHk9IjEwIiB3aWR0aD0iMiIgaGVpZ2h0PSIyIi8+CiAgPHBhdGggZD0iTTI2LDIwSDIxVjE4aDFhMi4wMDIzLDIuMDAyMywwLDAsMCwyLTJWMTJoMlYxMEgyNFY4YTIuMDAyMywyLjAwMjMsMCwwLDAtMi0ySDIwVjJIMThWNkgxNFYySDEyVjZIMTBBMi4wMDIzLDIuMDAyMywwLDAsMCw4LDh2Mkg2djJIOHY0YTIuMDAyMywyLjAwMjMsMCwwLDAsMiwyaDF2Mkg2YTIuMDAyMywyLjAwMjMsMCwwLDAtMiwydjhINlYyMkgyNnY4aDJWMjJBMi4wMDIzLDIuMDAyMywwLDAsMCwyNiwyMFpNMTAsOEgyMnY4SDEwWm0zLDEwaDZ2MkgxM1oiLz4KICA8cmVjdCBpZD0iX1RyYW5zcGFyZW50X1JlY3RhbmdsZV8iIGRhdGEtbmFtZT0iJmx0O1RyYW5zcGFyZW50IFJlY3RhbmdsZSZndDsiIGNsYXNzPSJjbHMtMSIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIi8+Cjwvc3ZnPgo=">
-      <bpmn:extensionElements>
-        <zeebe:linkedResources>
-          <zeebe:linkedResource resourceId="foo" resourceType="RPA" linkName="RPAScript" />
-        </zeebe:linkedResources>
-        <zeebe:ioMapping>
-          <zeebe:input source="default" target="camundaRpaWorkerLabel" />
-        </zeebe:ioMapping>
-        <zeebe:taskHeaders>
-          <zeebe:header key="camunda::timeout" />
-        </zeebe:taskHeaders>
-        <zeebe:taskDefinition type="={&#10;  label: if (camundaRpaWorkerLabel = null or camundaRpaWorkerLabel = &#34;&#34;) then &#34;default&#34; else camundaRpaWorkerLabel,&#10;  baseName: &#34;camunda::RPA-Task::&#34;,&#10;  definitionType: baseName + label&#10;}.definitionType" />
-        <zeebe:properties>
-          <zeebe:property name="camunda::enablePreRun" value="false" />
-          <zeebe:property name="camunda::postRun" value="false" />
-        </zeebe:properties>
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0karkwj</bpmn:incoming>
-      <bpmn:outgoing>Flow_0cr1jl0</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:sequenceFlow id="Flow_0karkwj" sourceRef="ServiceTask_5" targetRef="ServiceTask_6" />
-    <bpmn:endEvent id="EndEvent_1">
-      <bpmn:incoming>Flow_0cr1jl0</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_0cr1jl0" sourceRef="ServiceTask_6" targetRef="EndEvent_1" />
-    <bpmn:boundaryEvent id="Event_1op2ilo" name="10 seconds" attachedToRef="ServiceTask_5">
-      <bpmn:outgoing>Flow_0mpq4id</bpmn:outgoing>
-      <bpmn:timerEventDefinition id="TimerEventDefinition_0o7rdih">
-        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT10S</bpmn:timeDuration>
-      </bpmn:timerEventDefinition>
-    </bpmn:boundaryEvent>
-    <bpmn:endEvent id="EndEvent_2">
-      <bpmn:incoming>Flow_0mpq4id</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_0mpq4id" sourceRef="Event_1op2ilo" targetRef="EndEvent_2" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_TaskTesting">
-      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
-        <dc:Bounds x="152" y="102" width="36" height="36" />
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_0l767e0">
+      <bpmndi:BPMNShape id="Activity_05zghbw_di" bpmnElement="firstTask">
+        <dc:Bounds x="150" y="80" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_16890h2_di" bpmnElement="ServiceTask_2">
-        <dc:Bounds x="370" y="80" width="100" height="80" />
+      <bpmndi:BPMNShape id="Activity_00r5iws_di" bpmnElement="secondTask">
+        <dc:Bounds x="300" y="80" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0auwhtl_di" bpmnElement="ServiceTask_1">
-        <dc:Bounds x="230" y="80" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1ei6qdo_di" bpmnElement="ServiceTask_3">
-        <dc:Bounds x="510" y="80" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_037ias4" bpmnElement="ServiceTask_4">
-        <dc:Bounds x="650" y="80" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0qegbfq_di" bpmnElement="ServiceTask_5">
-        <dc:Bounds x="790" y="80" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0ginvcb_di" bpmnElement="ServiceTask_6">
-        <dc:Bounds x="930" y="80" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_09ccbkf_di" bpmnElement="EndEvent_1">
-        <dc:Bounds x="1072" y="102" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1y631x8_di" bpmnElement="EndEvent_2">
-        <dc:Bounds x="912" y="222" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1bi66jq_di" bpmnElement="Event_1op2ilo">
-        <dc:Bounds x="822" y="142" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="812" y="185" width="57" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_0d202t1_di" bpmnElement="Flow_0d202t1">
-        <di:waypoint x="188" y="120" />
-        <di:waypoint x="230" y="120" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0ggbd4s_di" bpmnElement="Flow_0ggbd4s">
-        <di:waypoint x="610" y="120" />
-        <di:waypoint x="650" y="120" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0szzvbm_di" bpmnElement="Flow_0szzvbm">
-        <di:waypoint x="330" y="120" />
-        <di:waypoint x="370" y="120" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1cskg4b_di" bpmnElement="Flow_1cskg4b">
-        <di:waypoint x="470" y="120" />
-        <di:waypoint x="510" y="120" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0il16f0_di" bpmnElement="Flow_0il16f0">
-        <di:waypoint x="750" y="120" />
-        <di:waypoint x="790" y="120" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0karkwj_di" bpmnElement="Flow_0karkwj">
-        <di:waypoint x="890" y="120" />
-        <di:waypoint x="930" y="120" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0cr1jl0_di" bpmnElement="Flow_0cr1jl0">
-        <di:waypoint x="1030" y="120" />
-        <di:waypoint x="1072" y="120" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0mpq4id_di" bpmnElement="Flow_0mpq4id">
-        <di:waypoint x="840" y="178" />
-        <di:waypoint x="840" y="240" />
-        <di:waypoint x="912" y="240" />
+      <bpmndi:BPMNEdge id="Flow_0mmccfx_di" bpmnElement="Flow_0mmccfx">
+        <di:waypoint x="250" y="120" />
+        <di:waypoint x="300" y="120" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

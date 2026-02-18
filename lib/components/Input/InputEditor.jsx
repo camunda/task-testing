@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { autocompletion, closeBrackets } from '@codemirror/autocomplete';
-import { defaultKeymap } from '@codemirror/commands';
+import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { bracketMatching, indentOnInput } from '@codemirror/language';
 import { Compartment, EditorState, Annotation } from '@codemirror/state';
 import { EditorView, keymap, placeholder } from '@codemirror/view';
@@ -30,13 +30,13 @@ export const INVALID_JSON_ERROR = 'JSON contains errors';
 const DEFAULT_ALL_OUTPUTS = {},
       DEFAULT_VARIABLES_FOR_ELEMENT = [];
 
-export default function InputEditor({
+function InputEditor({
   allOutputs = DEFAULT_ALL_OUTPUTS,
   value,
   onChange,
   onErrorChange,
   variablesForElement = DEFAULT_VARIABLES_FOR_ELEMENT
-}) {
+}, ref) {
   const autocompletions = useMemo(() => {
     const variablesForElementAutocompletions = variablesForElement.map(({ name, detail, info }) => ({
       label: name,
@@ -64,12 +64,30 @@ export default function InputEditor({
     return result;
   }, [ allOutputs, variablesForElement ]);
 
-  const ref = useRef(null);
+  const containerRef = useRef(null);
 
   /**
    * @type {ReturnType<typeof useState<EditorView>>}
    */
   const [ editorView, setEditorView ] = useState();
+
+  useImperativeHandle(ref, () => ({
+
+    /**
+     * Replace the editor content as a user edit so it integrates
+     * with the CodeMirror undo/redo history.
+     *
+     * @param {string} newValue
+     */
+    replaceContent(newValue) {
+      if (!editorView) return;
+      const currentValue = editorView.state.doc.toString();
+      if (newValue === currentValue) return;
+      editorView.dispatch({
+        changes: { from: 0, to: currentValue.length, insert: newValue }
+      });
+    }
+  }), [ editorView ]);
 
   /**
    * @type {ReturnType<typeof useState<string?>>}
@@ -77,7 +95,7 @@ export default function InputEditor({
   const [ error, setError ] = useState();
 
   useEffect(() => {
-    if (!ref.current) {
+    if (!containerRef.current) {
       return;
     }
 
@@ -100,10 +118,12 @@ export default function InputEditor({
         closeBrackets(),
         bracketMatching(),
         indentOnInput(),
+        history(),
         keymap.of([
-          ...defaultKeymap
+          ...defaultKeymap,
+          ...historyKeymap
         ]),
-        new Compartment().of(json()),
+        json(),
         new Compartment().of(EditorState.tabSize.of(2)),
         EditorView.contentAttributes.of({
           'aria-label': 'JSON editor',
@@ -130,7 +150,7 @@ export default function InputEditor({
 
     const view = new EditorView({
       state: editorState,
-      parent: ref.current,
+      parent: containerRef.current,
     });
 
     setEditorView(view);
@@ -169,11 +189,13 @@ export default function InputEditor({
 
   return <div className={ classNames('code__editor', { 'code__editor--error': error }) }>
     <div className="code__editor-codemirror">
-      <div ref={ ref } className="code__editor-codemirror-inner"></div>
+      <div ref={ containerRef } className="code__editor-codemirror-inner"></div>
     </div>
     { error && <div className="code__editor-error">{ error }</div> }
   </div>;
 }
+
+export default forwardRef(InputEditor);
 
 function getAutocompletionInfo(value, description) {
   const div = document.createElement('div');
