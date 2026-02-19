@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { autocompletion, closeBrackets } from '@codemirror/autocomplete';
-import { defaultKeymap } from '@codemirror/commands';
+import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { bracketMatching, indentOnInput } from '@codemirror/language';
 import { Compartment, EditorState, Annotation } from '@codemirror/state';
 import { EditorView, keymap, placeholder } from '@codemirror/view';
@@ -96,11 +96,13 @@ export default function InputEditor({
     const editorState = EditorState.create({
       doc: value,
       extensions: [
+        history(),
         autocompletion(),
         closeBrackets(),
         bracketMatching(),
         indentOnInput(),
         keymap.of([
+          ...historyKeymap,
           ...defaultKeymap
         ]),
         new Compartment().of(json()),
