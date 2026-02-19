@@ -177,7 +177,7 @@ export default function InputEditor({
     <div className="code__editor-buttons">
       <Button
         renderIcon={ Erase }
-        iconDescription="Clear editor"
+        iconDescription="Reset editor"
         size="sm"
         kind="ghost"
         hasIconOnly
