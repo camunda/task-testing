@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { autocompletion, closeBrackets } from '@codemirror/autocomplete';
-import { defaultKeymap } from '@codemirror/commands';
+import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { bracketMatching, indentOnInput } from '@codemirror/language';
 import { Compartment, EditorState, Annotation } from '@codemirror/state';
 import { EditorView, keymap, placeholder } from '@codemirror/view';
@@ -100,8 +100,10 @@ export default function InputEditor({
         closeBrackets(),
         bracketMatching(),
         indentOnInput(),
+        history(),
         keymap.of([
-          ...defaultKeymap
+          ...defaultKeymap,
+          ...historyKeymap
         ]),
         new Compartment().of(json()),
         new Compartment().of(EditorState.tabSize.of(2)),
@@ -250,3 +252,4 @@ function getDetail(value) {
 
   return type.charAt(0).toUpperCase() + type.slice(1);
 }
+

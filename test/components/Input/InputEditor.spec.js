@@ -312,6 +312,137 @@ describe('InputEditor', function() {
 
   });
 
+
+  describe('undo/redo', function() {
+
+    const isMac = /Mac/.test(navigator.platform);
+    const undoKeys = isMac ? '{Meta>}z{/Meta}' : '{Control>}z{/Control}';
+    const redoKeys = isMac ? '{Meta>}{Shift>}z{/Shift}{/Meta}' : '{Control>}y{/Control}';
+
+
+    it('should undo typing', async function() {
+
+      // given
+      const onChangeSpy = sinon.spy();
+
+      const { getByRole } = renderWithProps({
+        value: '{}',
+        onChange: onChangeSpy
+      });
+
+      const textbox = getByRole('textbox');
+      await user.click(textbox);
+
+      // when - type something
+      await user.keyboard('{ArrowRight}{Enter}"a": 1');
+
+      // assume - typing happened
+      await waitFor(() => {
+        expect(onChangeSpy).to.have.been.called;
+      });
+
+      const valueAfterTyping = onChangeSpy.lastCall.args[0];
+      expect(valueAfterTyping).to.contain('"a": 1');
+
+      onChangeSpy.resetHistory();
+
+      // when - undo
+      await user.keyboard(undoKeys);
+
+      // then - onChange should fire with reverted content
+      await waitFor(() => {
+        expect(onChangeSpy).to.have.been.called;
+      });
+    });
+
+
+    it('should undo reset', async function() {
+
+      // given
+      const onChangeSpy = sinon.spy();
+      const originalValue = '{\n  "foo": "bar"\n}';
+      const resetValue = '{}';
+
+      const { container, getByRole, rerender } = renderWithProps({
+        value: originalValue,
+        onChange: onChangeSpy
+      });
+
+      // assume - editor shows original value
+      expect(container.textContent).to.contain('"foo": "bar"');
+
+      // when - simulate reset by changing value prop
+      rerender(
+        <InputEditor
+          value={ resetValue }
+          onChange={ onChangeSpy }
+          onErrorChange={ () => {} }
+        />
+      );
+
+      await waitFor(() => {
+        expect(container.textContent).to.not.contain('"foo": "bar"');
+      });
+
+      // when - undo the reset
+      const textbox = getByRole('textbox');
+      await user.click(textbox);
+      await user.keyboard(undoKeys);
+
+      // then - editor should revert to original value
+      await waitFor(() => {
+        expect(onChangeSpy).to.have.been.calledWith(originalValue);
+      });
+    });
+
+
+    it('should redo after undo', async function() {
+
+      // given
+      const onChangeSpy = sinon.spy();
+      const originalValue = '{\n  "foo": "bar"\n}';
+      const resetValue = '{}';
+
+      const { container, getByRole, rerender } = renderWithProps({
+        value: originalValue,
+        onChange: onChangeSpy
+      });
+
+      // reset
+      rerender(
+        <InputEditor
+          value={ resetValue }
+          onChange={ onChangeSpy }
+          onErrorChange={ () => {} }
+        />
+      );
+
+      await waitFor(() => {
+        expect(container.textContent).to.not.contain('"foo": "bar"');
+      });
+
+      // undo
+      const textbox = getByRole('textbox');
+      await user.click(textbox);
+      await user.keyboard(undoKeys);
+
+      await waitFor(() => {
+        expect(onChangeSpy).to.have.been.calledWith(originalValue);
+      });
+
+      onChangeSpy.resetHistory();
+
+      // when - redo
+      await user.keyboard(redoKeys);
+
+      // then - should go back to reset value
+      await waitFor(() => {
+        expect(onChangeSpy).to.have.been.calledWith(resetValue);
+      });
+    });
+
+  });
+
 });
 
 function renderWithProps(props = {}) {

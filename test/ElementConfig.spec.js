@@ -112,7 +112,7 @@ describe('ElementConfig', function() {
       // then
       const inputConfigForElement = elementConfig.getInputConfigForElement(element);
 
-      expect(inputConfigForElement).to.eql('{}');
+      expect(inputConfigForElement).to.eql('{\n  \n}');
 
       expect(spy).to.have.been.calledOnce;
     }));
@@ -195,7 +195,7 @@ describe('ElementConfig', function() {
       const inputConfigForElement = elementConfig.getInputConfigForElement(element);
 
       // then
-      expect(inputConfigForElement).to.eql('{}');
+      expect(inputConfigForElement).to.eql('{\n  \n}');
     }));
 
   });

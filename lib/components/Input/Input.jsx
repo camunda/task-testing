@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
 import { Link } from '@carbon/react';
 import { Launch } from '@carbon/icons-react';
@@ -13,12 +13,19 @@ export default function Input({
   onSetInput,
   variablesForElement
 }) {
-  const handleResetInput = () => {
+
+  const containerRef = /** @type {import('react').RefObject<HTMLDivElement | null>} */ (useRef(null));
+
+  const handleReset = () => {
     onResetInput();
+    const cmContent = /** @type {HTMLElement | undefined} */ (
+      containerRef.current?.querySelector('.cm-content')
+    );
+    cmContent?.focus();
   };
 
   return (
-    <div className="input">
+    <div className="input" ref={ containerRef }>
       <div className="input__header">
         <div className="input__header--title">
           Input process variables
@@ -28,8 +35,8 @@ export default function Input({
         </Link>
         <Link
           className="input__header--button-reset"
-          onClick={ handleResetInput }
-          role="button">Clear</Link>
+          onClick={ handleReset }
+          role="button">Reset</Link>
       </div>
       <InputEditor
         allOutputs={ allOutputs }
