@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
 import { Link } from '@carbon/react';
 import { Information } from '@carbon/icons-react';
@@ -15,12 +15,19 @@ export default function Input({
   onSetInput,
   variablesForElement
 }) {
+
+  const containerRef = /** @type {import('react').RefObject<HTMLDivElement | null>} */ (useRef(null));
+
   const handleResetInput = () => {
     onResetInput();
+    const cmContent = /** @type {HTMLElement | undefined} */ (
+      containerRef.current?.querySelector('.cm-content')
+    );
+    cmContent?.focus();
   };
 
   return (
-    <div className="input">
+    <div className="input" ref={ containerRef }>
       <div className="input__header">
         <div className="input__header--title">
           <Tooltip className="has-tooltip" label={ <span>Variables the process instance will be started with. <Link
