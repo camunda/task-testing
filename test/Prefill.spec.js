@@ -96,6 +96,25 @@ describe('Prefill', function() {
       })
     );
 
+
+    it('should only prefill process variable from input mapping, not locally mapped script variable',
+      inject(async function(elementRegistry) {
+
+        // given - taskWithInputMapping has input mapping fooInput=foo and script =fooInput
+        const element = elementRegistry.get('taskWithInputMapping');
+
+        // when
+        const result = await elementConfig.getDefaultInputForElement(element);
+        const parsed = JSON.parse(result);
+
+        // then - only `foo` (from input mapping source) should be prefilled;
+        // `fooInput` is provided by the input mapping, not an external requirement
+        expect(parsed).to.have.property('foo', null);
+        expect(parsed).to.not.have.property('fooInput');
+        expect(parsed).to.not.have.property('mappedResult');
+      })
+    );
+
   });
 
 
