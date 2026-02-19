@@ -38,8 +38,9 @@ function renderWithProps(props) {
   const {
     element = elementRegistry.get('ServiceTask_1'),
     input = '{}',
-    setInput = () => {},
-    reset = () => {},
+    onSetInput = () => {},
+    onResetInput = () => {},
+    onErrorChange = () => {},
     variablesForElement,
     output,
     onRunTask = () => {}
@@ -49,8 +50,9 @@ function renderWithProps(props) {
     <Input
       element={ element }
       input={ input }
-      setInput={ setInput }
-      reset={ reset }
+      onSetInput={ onSetInput }
+      onResetInput={ onResetInput }
+      onErrorChange={ onErrorChange }
       variablesForElement={ variablesForElement }
       output={ output }
       onRunTask={ onRunTask }
