@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { autocompletion, closeBrackets } from '@codemirror/autocomplete';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { bracketMatching, indentOnInput } from '@codemirror/language';
-import { Compartment, EditorState, Annotation } from '@codemirror/state';
+import { Compartment, EditorState, Annotation, Transaction } from '@codemirror/state';
 import { EditorView, keymap, placeholder } from '@codemirror/view';
 import { linter } from '@codemirror/lint';
 import { json, jsonParseLinter } from '@codemirror/lang-json';
@@ -65,6 +65,9 @@ export default function InputEditor({
   }, [ allOutputs, variablesForElement ]);
 
   const ref = useRef(null);
+
+  /** @type {import('react').MutableRefObject<EditorView | null>} */
+  const initializedViewRef = useRef(null);
 
   /**
    * @type {ReturnType<typeof useState<EditorView>>}
@@ -137,6 +140,10 @@ export default function InputEditor({
 
     setEditorView(view);
 
+    if (value) {
+      initializedViewRef.current = view;
+    }
+
     return () => {
       view.destroy();
     };
@@ -158,13 +165,21 @@ export default function InputEditor({
     const editorValue = editorView.state.doc.toString();
 
     if (value !== editorValue) {
+      const isInitialFill = initializedViewRef.current !== editorView;
+      if (value) {
+        initializedViewRef.current = editorView;
+      }
+
       editorView.dispatch({
         changes: {
           from: 0,
           to: editorValue.length,
           insert: value
         },
-        annotations: fromPropAnnotation.of(true)
+        annotations: [
+          fromPropAnnotation.of(true),
+          ...isInitialFill ? [ Transaction.addToHistory.of(false) ] : []
+        ]
       });
     }
   }, [ editorView, value ]);

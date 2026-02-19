@@ -441,6 +441,83 @@ describe('InputEditor', function() {
       });
     });
 
+
+    it('should not undo the initial fill', async function() {
+
+      // given - editor starts without value, then receives async prefill
+      const onChangeSpy = sinon.spy();
+      const prefillValue = '{\n  "foo": "bar"\n}';
+
+      const { container, getByRole, rerender } = renderWithProps({
+        onChange: onChangeSpy
+      });
+
+      // simulate async prefill arriving
+      rerender(
+        <InputEditor
+          value={ prefillValue }
+          onChange={ onChangeSpy }
+          onErrorChange={ () => {} }
+        />
+      );
+
+      await waitFor(() => {
+        expect(container.textContent).to.contain('"foo": "bar"');
+      });
+
+      // when - try to undo the prefill
+      const textbox = getByRole('textbox');
+      await user.click(textbox);
+      await user.keyboard(undoKeys);
+
+      // then - prefill should remain (not undoable)
+      await new Promise(resolve => setTimeout(resolve, 100));
+      expect(onChangeSpy).to.not.have.been.called;
+      expect(container.textContent).to.contain('"foo": "bar"');
+    });
+
+
+    it('should not undo past the initial value', async function() {
+
+      // given - editor starts with value, user types something
+      const onChangeSpy = sinon.spy();
+      const initialValue = '{\n  "foo": "bar"\n}';
+
+      const { container, getByRole } = renderWithProps({
+        value: initialValue,
+        onChange: onChangeSpy
+      });
+
+      const textbox = getByRole('textbox');
+      await user.click(textbox);
+
+      // type something
+      await user.keyboard('{ArrowRight}{Enter}"a": 1');
+
+      await waitFor(() => {
+        expect(onChangeSpy).to.have.been.called;
+      });
+
+      onChangeSpy.resetHistory();
+
+      // when - undo typing
+      await user.keyboard(undoKeys);
+
+      await waitFor(() => {
+        expect(onChangeSpy).to.have.been.calledWith(initialValue);
+      });
+
+      onChangeSpy.resetHistory();
+
+      // when - undo again (should not go to empty)
+      await user.keyboard(undoKeys);
+
+      // then - should stay at initial value
+      await new Promise(resolve => setTimeout(resolve, 100));
+      expect(onChangeSpy).to.not.have.been.called;
+      expect(container.textContent).to.contain('"foo": "bar"');
+    });
+
   });
 
 });
