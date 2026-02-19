@@ -312,6 +312,114 @@ describe('InputEditor', function() {
 
   });
 
+
+  describe('undo/redo', function() {
+
+    it('should support undo after typing', async function() {
+
+      // given
+      const onChange = sinon.spy();
+      const initialValue = '{"foo": "bar"}';
+
+      const { container, getByRole } = renderWithProps({
+        value: initialValue,
+        onChange
+      });
+
+      // when - type some text
+      await user.click(getByRole('textbox'));
+      await user.keyboard('{ArrowLeft}{ArrowLeft}"baz": 42, ');
+
+      // then - text was added
+      await waitFor(() => {
+        expect(container.textContent).to.include('"baz": 42');
+      });
+
+      // when - undo
+      await user.keyboard('{Control>}z{/Control}');
+
+      // then - text was removed
+      await waitFor(() => {
+        expect(container.textContent).not.to.include('"baz": 42');
+        expect(container.textContent).to.include('"foo": "bar"');
+      });
+    });
+
+
+    it('should support redo after undo', async function() {
+
+      // given
+      const onChange = sinon.spy();
+      const initialValue = '{"foo": "bar"}';
+
+      const { container, getByRole } = renderWithProps({
+        value: initialValue,
+        onChange
+      });
+
+      // when - type some text
+      await user.click(getByRole('textbox'));
+      await user.keyboard('{ArrowLeft}{ArrowLeft}"baz": 42, ');
+
+      await waitFor(() => {
+        expect(container.textContent).to.include('"baz": 42');
+      });
+
+      // when - undo
+      await user.keyboard('{Control>}z{/Control}');
+
+      await waitFor(() => {
+        expect(container.textContent).not.to.include('"baz": 42');
+      });
+
+      // when - redo
+      await user.keyboard('{Control>}y{/Control}');
+
+      // then - text was restored
+      await waitFor(() => {
+        expect(container.textContent).to.include('"baz": 42');
+      });
+    });
+
+
+    it('should support undo after clearing content', async function() {
+
+      // given
+      const onChange = sinon.spy();
+      const initialValue = '{"foo": "bar", "baz": 1337}';
+
+      const { container, getByRole, rerender } = renderWithProps({
+        value: initialValue,
+        onChange
+      });
+
+      // when - clear content by setting value to empty object
+      rerender(
+        <InputEditor
+          value={ '{}' }
+          onChange={ onChange }
+        />
+      );
+
+      // then - content was cleared
+      await waitFor(() => {
+        expect(container.textContent).not.to.include('"foo": "bar"');
+        expect(container.textContent).not.to.include('"baz": 1337');
+      });
+
+      // when - focus editor and undo
+      await user.click(getByRole('textbox'));
+      await user.keyboard('{Control>}z{/Control}');
+
+      // then - content was restored
+      await waitFor(() => {
+        expect(container.textContent).to.include('"foo": "bar"');
+        expect(container.textContent).to.include('"baz": 1337');
+      });
+    });
+
+  });
+
 });
 
 function renderWithProps(props = {}) {
