@@ -32,8 +32,7 @@ import {
 import TaskTesting from '../../../lib/components/TaskTesting/TaskTesting';
 
 import {
-  SINGLE_TASK_SELECTION_REQUIRED_MESSAGE,
-  AD_HOC_SUBPROCESS_MESSAGE
+  SINGLE_TASK_SELECTION_REQUIRED_MESSAGE
 } from '../../../lib/hooks/useSelectedElement';
 
 import { DEFAULT_CONFIG } from '../../../lib/ElementConfig';
@@ -68,7 +67,7 @@ describe('TaskTesting', function() {
   }));
 
 
-  it('should not support a task in ad-hoc subprocess', inject(
+  it('should allow to test a task in an ad-hoc subprocess', inject(
     async function(elementRegistry, selection) {
 
       // given
@@ -78,12 +77,12 @@ describe('TaskTesting', function() {
       selection.select(elementRegistry.get('AdHocSubProcessTask'));
 
       // then
-      await screen.findByText(AD_HOC_SUBPROCESS_MESSAGE);
+      await screen.findByTestId('test-task-btn');
     })
   );
 
 
-  it('should not support a task in a collapsed ad-hoc subprocess', inject(
+  it('should allow to test a task in a collapsed ad-hoc subprocess', inject(
     async function(elementRegistry, selection, canvas) {
 
       // given
@@ -94,7 +93,7 @@ describe('TaskTesting', function() {
       selection.select(elementRegistry.get('CollapsedAdHocSubProcessTask'));
 
       // then
-      await screen.findByText(AD_HOC_SUBPROCESS_MESSAGE);
+      await screen.findByTestId('test-task-btn');
     })
   );
 
