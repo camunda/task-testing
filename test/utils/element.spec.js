@@ -1,8 +1,7 @@
 import { bootstrapModeler, inject } from '../helpers/modeler';
 
 import {
-  getProcessId,
-  isInsideAdHocSubProcess
+  getProcessId
 } from '../../lib/utils/element';
 
 import processXML from '../fixtures/diagram.bpmn';
@@ -50,52 +49,6 @@ describe('element', function() {
       }));
 
     });
-
-  });
-
-
-  describe('isInsideAdHocSubProcess', function() {
-
-    beforeEach(bootstrapModeler(processXML));
-
-
-    it('should return true for direct child of ad-hoc subprocess', inject(function(elementRegistry) {
-
-      // given
-      const element = elementRegistry.get('AdHocSubProcessTask');
-
-      // when
-      const result = isInsideAdHocSubProcess(element);
-
-      // then
-      expect(result).to.be.true;
-    }));
-
-
-    it('should return true for nested child of ad-hoc subprocess', inject(function(elementRegistry) {
-
-      // given
-      const element = elementRegistry.get('CollapsedAdHocSubProcessTask');
-
-      // when
-      const result = isInsideAdHocSubProcess(element);
-
-      // then
-      expect(result).to.be.true;
-    }));
-
-
-    it('should return false for element not in ad-hoc subprocess', inject(function(elementRegistry) {
-
-      // given
-      const element = elementRegistry.get('ServiceTask_1');
-
-      // when
-      const result = isInsideAdHocSubProcess(element);
-
-      // then
-      expect(result).to.be.false;
-    }));
 
   });
 

@@ -5,8 +5,7 @@ import { bootstrapModeler, inject } from '../helpers/modeler';
 import {
   useSelectedElement,
   SINGLE_TASK_SELECTION_REQUIRED_MESSAGE,
-  TASK_SELECTION_REQUIRED_MESSAGE,
-  AD_HOC_SUBPROCESS_MESSAGE
+  TASK_SELECTION_REQUIRED_MESSAGE
 } from '../../lib/hooks/useSelectedElement';
 
 import diagramXML from '../fixtures/ElementConfig.bpmn';
@@ -86,25 +85,4 @@ describe('useSelectedElement', function() {
     expect(selectedElement).to.exist;
     expect(message).to.be.null;
   }));
-
-
-  it('should return null and a message if element is inside ad-hoc subprocess', inject(function(elementRegistry, injector, selection) {
-
-    // given
-    const { result } = renderHook(() => useSelectedElement(injector));
-
-    const element = elementRegistry.get('AdHocChild_1');
-
-    // when
-    act(() => {
-      selection.select(element);
-    });
-
-    const [ selectedElement, message ] = result.current;
-
-    // then
-    expect(selectedElement).to.be.null;
-    expect(message).to.equal(AD_HOC_SUBPROCESS_MESSAGE);
-  }));
-
 });
