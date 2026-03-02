@@ -94,6 +94,7 @@
     "react-dom": "*"
   },
   "overrides": {
-    "react-is": "^18.0.0"
+    "react-is": "^18.0.0",
+    "@bpmn-io/variable-resolver": "$@bpmn-io/variable-resolver"
   }
 }
