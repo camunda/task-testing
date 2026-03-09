@@ -860,6 +860,11 @@
 
     .cds--popover {
       z-index: 100;
+
+      .cds--link {
+        color: hsl(218, 100%, 74%);
+        text-decoration: underline;
+      }
     }
   }
 
