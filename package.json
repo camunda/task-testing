@@ -6,6 +6,10 @@
   ],
   "main": "dist/index.js",
   "types": "dist/types/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/camunda/task-testing"
+  },
   "scripts": {
     "all": "run-s lint types test build",
     "open": "open-cli http://localhost:3000",
