@@ -14,15 +14,40 @@
  * @import { CamundaClient } from '@camunda8/orchestration-cluster-api'
  */
 
+import { isObject } from 'min-dash';
+
 const waitUpToMs = 0;
 const waitUpToMsProcessInstance = 10000;
+
+const SDK_ERROR_NAMES = new Set([
+  'HttpSdkError',
+  'ValidationSdkError',
+  'AuthSdkError',
+  'NetworkSdkError',
+  'CancelSdkError',
+]);
+
+function isSdkError(err) {
+  return !!err && isObject(err) && 'name' in err && SDK_ERROR_NAMES.has(err.name);
+}
 
 async function safe(promise) {
   try {
     const response = await promise;
     return { success: true, response };
   } catch (err) {
-    return { success: false, error: err.message };
+    if (isSdkError(err)) {
+      return {
+        success: false,
+        error: err.message,
+        errorType: err.name,          // e.g. 'HttpSdkError'
+        status: err.status ?? null,   // present on HttpSdkError / AuthSdkError
+        detail: err.detail ?? null,   // RFC 9457 detail, present on HttpSdkError
+        operationId: err.operationId ?? null
+      };
+    }
+
+    return { success: false, error: err.message, errorType: 'UnknownError' };
   }
 }
 
