@@ -1,60 +1,222 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0jc2nqw" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.44.0-rc.3" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.8.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0jc2nqw" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.44.0-dev" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.8.0">
   <bpmn:process id="Process_TaskTesting" isExecutable="true">
-    <bpmn:startEvent id="StartEvent_1">
-      <bpmn:outgoing>Flow_0d202t1</bpmn:outgoing>
-    </bpmn:startEvent>
-    <bpmn:sequenceFlow id="Flow_0d202t1" sourceRef="StartEvent_1" targetRef="ServiceTask_1" />
-    <bpmn:sequenceFlow id="Flow_0ggbd4s" sourceRef="ServiceTask_3" targetRef="ServiceTask_4" />
-    <bpmn:sequenceFlow id="Flow_0szzvbm" sourceRef="ServiceTask_1" targetRef="ServiceTask_2" />
-    <bpmn:sequenceFlow id="Flow_1cskg4b" sourceRef="ServiceTask_2" targetRef="ServiceTask_3" />
-    <bpmn:scriptTask id="ServiceTask_2" name="Inputs">
+    <bpmn:boundaryEvent id="TimerBoundaryNonInterrupting" name="1 second" cancelActivity="false" attachedToRef="ServiceTask_3">
+      <bpmn:outgoing>Flow_0nufm4k</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_192o2ws">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT1S</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="TimerBoundaryInterrupting" name="10 seconds" attachedToRef="ServiceTask_3">
+      <bpmn:outgoing>Flow_1m6w5nl</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_0o7rdih">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT10S</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:subProcess id="Activity_1dh97uw" triggeredByEvent="true">
+      <bpmn:startEvent id="Event_12ao523" name="5 seconds" isInterrupting="false">
+        <bpmn:outgoing>Flow_10bam8q</bpmn:outgoing>
+        <bpmn:timerEventDefinition id="TimerEventDefinition_19s8mcu">
+          <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT5S</bpmn:timeDuration>
+        </bpmn:timerEventDefinition>
+      </bpmn:startEvent>
+      <bpmn:scriptTask id="ScriptTask_3" name="Answer the big question">
+        <bpmn:extensionElements>
+          <zeebe:script expression="=&#34;Life is an endless Business Process Model and Notation process: start, make decisions, handle exceptions, and keep the flow moving.&#34;" resultVariable="meaningOfLife" />
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_10bam8q</bpmn:incoming>
+        <bpmn:outgoing>Flow_0xzq3yj</bpmn:outgoing>
+      </bpmn:scriptTask>
+      <bpmn:endEvent id="Event_0ni8gom">
+        <bpmn:incoming>Flow_0xzq3yj</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_0xzq3yj" sourceRef="ScriptTask_3" targetRef="Event_0ni8gom" />
+      <bpmn:sequenceFlow id="Flow_10bam8q" sourceRef="Event_12ao523" targetRef="ScriptTask_3" />
+    </bpmn:subProcess>
+    <bpmn:adHocSubProcess id="AdHocSubProcess_1" name="Agent" zeebe:modelerTemplate="io.camunda.connectors.agenticai.aiagent.jobworker.v1" zeebe:modelerTemplateVersion="5" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiNBNTZFRkYiLz4KPG1hc2sgaWQ9InBhdGgtMi1vdXRzaWRlLTFfMTg1XzYiIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjQiIHk9IjQiIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0iYmxhY2siPgo8cmVjdCBmaWxsPSJ3aGl0ZSIgeD0iNCIgeT0iNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0Ii8+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMjAuMDEwNSAxMi4wOTg3QzE4LjQ5IDEwLjU4OTQgMTcuMTU5NCA4LjEwODE0IDE2LjE3OTkgNi4wMTEwM0MxNi4xNTIgNi4wMDQ1MSAxNi4xMTc2IDYgMTYuMDc5NCA2QzE2LjA0MTEgNiAxNi4wMDY2IDYuMDA0NTEgMTUuOTc4OCA2LjAxMTA0QzE0Ljk5OTQgOC4xMDgxNCAxMy42Njk3IDEwLjU4ODkgMTIuMTQ4MSAxMi4wOTgxQzEwLjYyNjkgMTMuNjA3MSA4LjEyNTY4IDE0LjkyNjQgNi4wMTE1NyAxNS44OTgxQzYuMDA0NzQgMTUuOTI2MSA2IDE1Ljk2MTEgNiAxNkM2IDE2LjAzODcgNi4wMDQ2OCAxNi4wNzM2IDYuMDExNDQgMTYuMTAxNEM4LjEyNTE5IDE3LjA3MjkgMTAuNjI2MiAxOC4zOTE5IDEyLjE0NzcgMTkuOTAxNkMxMy42Njk3IDIxLjQxMDcgMTQuOTk5NiAyMy44OTIgMTUuOTc5MSAyNS45ODlDMTYuMDA2OCAyNS45OTU2IDE2LjA0MTEgMjYgMTYuMDc5MyAyNkMxNi4xMTc1IDI2IDE2LjE1MTkgMjUuOTk1NCAxNi4xNzk2IDI1Ljk4OUMxNy4xNTkxIDIzLjg5MiAxOC40ODg4IDIxLjQxMSAyMC4wMDk5IDE5LjkwMjFNMjAuMDA5OSAxOS45MDIxQzIxLjUyNTMgMTguMzk4NyAyMy45NDY1IDE3LjA2NjkgMjUuOTkxNSAxNi4wODI0QzI1Ljk5NjUgMTYuMDU5MyAyNiAxNi4wMzEgMjYgMTUuOTk5N0MyNiAxNS45Njg0IDI1Ljk5NjUgMTUuOTQwMyAyNS45OTE1IDE1LjkxNzFDMjMuOTQ3NCAxNC45MzI3IDIxLjUyNTkgMTMuNjAxIDIwLjAxMDUgMTIuMDk4NyIvPgo8L21hc2s+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMjAuMDEwNSAxMi4wOTg3QzE4LjQ5IDEwLjU4OTQgMTcuMTU5NCA4LjEwODE0IDE2LjE3OTkgNi4wMTEwM0MxNi4xNTIgNi4wMDQ1MSAxNi4xMTc2IDYgMTYuMDc5NCA2QzE2LjA0MTEgNiAxNi4wMDY2IDYuMDA0NTEgMTUuOTc4OCA2LjAxMTA0QzE0Ljk5OTQgOC4xMDgxNCAxMy42Njk3IDEwLjU4ODkgMTIuMTQ4MSAxMi4wOTgxQzEwLjYyNjkgMTMuNjA3MSA4LjEyNTY4IDE0LjkyNjQgNi4wMTE1NyAxNS44OTgxQzYuMDA0NzQgMTUuOTI2MSA2IDE1Ljk2MTEgNiAxNkM2IDE2LjAzODcgNi4wMDQ2OCAxNi4wNzM2IDYuMDExNDQgMTYuMTAxNEM4LjEyNTE5IDE3LjA3MjkgMTAuNjI2MiAxOC4zOTE5IDEyLjE0NzcgMTkuOTAxNkMxMy42Njk3IDIxLjQxMDcgMTQuOTk5NiAyMy44OTIgMTUuOTc5MSAyNS45ODlDMTYuMDA2OCAyNS45OTU2IDE2LjA0MTEgMjYgMTYuMDc5MyAyNkMxNi4xMTc1IDI2IDE2LjE1MTkgMjUuOTk1NCAxNi4xNzk2IDI1Ljk4OUMxNy4xNTkxIDIzLjg5MiAxOC40ODg4IDIxLjQxMSAyMC4wMDk5IDE5LjkwMjFNMjAuMDA5OSAxOS45MDIxQzIxLjUyNTMgMTguMzk4NyAyMy45NDY1IDE3LjA2NjkgMjUuOTkxNSAxNi4wODI0QzI1Ljk5NjUgMTYuMDU5MyAyNiAxNi4wMzEgMjYgMTUuOTk5N0MyNiAxNS45Njg0IDI1Ljk5NjUgMTUuOTQwMyAyNS45OTE1IDE1LjkxNzFDMjMuOTQ3NCAxNC45MzI3IDIxLjUyNTkgMTMuNjAxIDIwLjAxMDUgMTIuMDk4NyIgZmlsbD0id2hpdGUiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0yMC4wMTA1IDEyLjA5ODdDMTguNDkgMTAuNTg5NCAxNy4xNTk0IDguMTA4MTQgMTYuMTc5OSA2LjAxMTAzQzE2LjE1MiA2LjAwNDUxIDE2LjExNzYgNiAxNi4wNzk0IDZDMTYuMDQxMSA2IDE2LjAwNjYgNi4wMDQ1MSAxNS45Nzg4IDYuMDExMDRDMTQuOTk5NCA4LjEwODE0IDEzLjY2OTcgMTAuNTg4OSAxMi4xNDgxIDEyLjA5ODFDMTAuNjI2OSAxMy42MDcxIDguMTI1NjggMTQuOTI2NCA2LjAxMTU3IDE1Ljg5ODFDNi4wMDQ3NCAxNS45MjYxIDYgMTUuOTYxMSA2IDE2QzYgMTYuMDM4NyA2LjAwNDY4IDE2LjA3MzYgNi4wMTE0NCAxNi4xMDE0QzguMTI1MTkgMTcuMDcyOSAxMC42MjYyIDE4LjM5MTkgMTIuMTQ3NyAxOS45MDE2QzEzLjY2OTcgMjEuNDEwNyAxNC45OTk2IDIzLjg5MiAxNS45NzkxIDI1Ljk4OUMxNi4wMDY4IDI1Ljk5NTYgMTYuMDQxMSAyNiAxNi4wNzkzIDI2QzE2LjExNzUgMjYgMTYuMTUxOSAyNS45OTU0IDE2LjE3OTYgMjUuOTg5QzE3LjE1OTEgMjMuODkyIDE4LjQ4ODggMjEuNDExIDIwLjAwOTkgMTkuOTAyMU0yMC4wMDk5IDE5LjkwMjFDMjEuNTI1MyAxOC4zOTg3IDIzLjk0NjUgMTcuMDY2OSAyNS45OTE1IDE2LjA4MjRDMjUuOTk2NSAxNi4wNTkzIDI2IDE2LjAzMSAyNiAxNS45OTk3QzI2IDE1Ljk2ODQgMjUuOTk2NSAxNS45NDAzIDI1Ljk5MTUgMTUuOTE3MUMyMy45NDc0IDE0LjkzMjcgMjEuNTI1OSAxMy42MDEgMjAuMDEwNSAxMi4wOTg3IiBzdHJva2U9IiM0OTFEOEIiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgbWFzaz0idXJsKCNwYXRoLTItb3V0c2lkZS0xXzE4NV82KSIvPgo8L3N2Zz4K">
       <bpmn:extensionElements>
+        <zeebe:taskDefinition type="io.camunda.agenticai:aiagent-job-worker:1" retries="3" />
+        <zeebe:adHoc outputCollection="toolCallResults" outputElement="={&#10;  id: toolCall._meta.id,&#10;  name: toolCall._meta.name,&#10;  content: toolCallResult&#10;}" />
         <zeebe:ioMapping>
-          <zeebe:input source="=foo" target="fooInput" />
-          <zeebe:input source="=false" target="booleanFalseInput" />
-          <zeebe:input source="=true" target="booleanTrueInput" />
-          <zeebe:input source="={ foo: 1 }" target="contextInput" />
-          <zeebe:input source="=foo + bar + baz" target="complexInput" />
-          <zeebe:output source="=fooOutput" target="foo" />
-          <zeebe:output source="=true" target="baz" />
+          <zeebe:input source="openai" target="provider.type" />
+          <zeebe:input target="provider.openai.authentication.apiKey" />
+          <zeebe:input source="gpt-4o" target="provider.openai.model.model" />
+          <zeebe:input source="=&#34;You are **TaskAgent**, a helpful, generic chat agent that can handle a wide variety of customer requests using your own domain knowledge **and** any tools explicitly provided to you at runtime.&#10;&#10;If tools are provided, you should prefer them instead of guessing an answer. You can call the same tool multiple times by providing different input values. Don&#39;t guess any tools which were not explicitly configured. If no tool matches the request, try to generate an answer. If you&#39;re not able to find a good answer, return with a message stating why you&#39;re not able to.&#10;&#10;Wrap minimal, inspectable reasoning in *exactly* this XML template:&#10;&#10;&#60;thinking&#62;&#10;&#60;context&#62;…briefly state the customer’s need and current state…&#60;/context&#62;&#10;&#60;reflection&#62;…list candidate tools, justify which you will call next and why…&#60;/reflection&#62;&#10;&#60;/thinking&#62;&#10;&#10;Reveal **no** additional private reasoning outside these tags.&#34;" target="data.systemPrompt.prompt" />
+          <zeebe:input source="=&#34;Answer the question: What is the meaning of life? and create 3 different haikus based on the answer. Then rank them and show me the ranking&#34;" target="data.userPrompt.prompt" />
+          <zeebe:input target="agentContext" />
+          <zeebe:input source="in-process" target="data.memory.storage.type" />
+          <zeebe:input source="=20" target="data.memory.contextWindowSize" />
+          <zeebe:input source="=10" target="data.limits.maxModelCalls" />
+          <zeebe:input source="WAIT_FOR_TOOL_CALL_RESULTS" target="data.events.behavior" />
+          <zeebe:input source="text" target="data.response.format.type" />
+          <zeebe:input source="=false" target="data.response.format.parseJson" />
+          <zeebe:input source="=false" target="data.response.includeAssistantMessage" />
+          <zeebe:input source="=false" target="data.response.includeAgentContext" />
+          <zeebe:output source="=agent" target="agent" />
         </zeebe:ioMapping>
-        <zeebe:script expression="=fooInput + 2" resultVariable="fooOutput" />
+        <zeebe:taskHeaders>
+          <zeebe:header key="elementTemplateVersion" value="5" />
+          <zeebe:header key="elementTemplateId" value="io.camunda.connectors.agenticai.aiagent.jobworker.v1" />
+          <zeebe:header key="errorExpression" />
+          <zeebe:header key="retryBackoff" value="PT0S" />
+        </zeebe:taskHeaders>
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0szzvbm</bpmn:incoming>
-      <bpmn:outgoing>Flow_1cskg4b</bpmn:outgoing>
-    </bpmn:scriptTask>
-    <bpmn:scriptTask id="ServiceTask_1" name="No inputs">
+      <bpmn:incoming>Flow_03l9p18</bpmn:incoming>
+      <bpmn:outgoing>Flow_11m19en</bpmn:outgoing>
+      <bpmn:serviceTask id="Activity_1u6unkc" name="Answer the big questions" zeebe:modelerTemplate="io.camunda.connectors.OpenAI.v1" zeebe:modelerTemplateVersion="6" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iMjU2cHgiIGhlaWdodD0iMjYwcHgiIHZpZXdCb3g9IjAgMCAyNTYgMjYwIiB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHByZXNlcnZlQXNwZWN0UmF0aW89InhNaWRZTWlkIj4KICAgIDx0aXRsZT5PcGVuQUk8L3RpdGxlPgogICAgPGc+CiAgICAgICAgPHBhdGggZD0iTTIzOS4xODM5MTQsMTA2LjIwMjc4MyBDMjQ1LjA1NDMwNCw4OC41MjQyMDk2IDI0My4wMjIyOCw2OS4xNzMzODA1IDIzMy42MDc1OTksNTMuMDk5ODg2NCBDMjE5LjQ1MTY3OCwyOC40NTg4MDIxIDE5MC45OTk3MDMsMTUuNzgzNjEyOSAxNjMuMjEzMDA3LDIxLjczOTUwNSBDMTQ3LjU1NDA3Nyw0LjMyMTQ1ODgzIDEyMy43OTQ5MDksLTMuNDIzOTg1NTQgMTAwLjg3OTAxLDEuNDE4NzM4OTggQzc3Ljk2MzExMDUsNi4yNjE0NjM0OSA1OS4zNjkwMDkzLDIyLjk1NzI1MzYgNTIuMDk1OTYyMSw0NS4yMjE0MjE5IEMzMy44NDM2NDk0LDQ4Ljk2NDQ4NjcgMTguMDkwMTcyMSw2MC4zOTI3NDkgOC44NjY3MjUxMyw3Ni41ODE4MDMzIEMtNS40NDM0OTEsMTAxLjE4Mjk2MiAtMi4xOTU0NDQzMSwxMzIuMjE1MjU1IDE2Ljg5ODY2NjIsMTUzLjMyMDA5NCBDMTEuMDA2MDg2NSwxNzAuOTkwNjU2IDEzLjAxOTcyODMsMTkwLjM0Mzk5MSAyMi40MjM4MjMxLDIwNi40MjI5OTEgQzM2LjU5NzU1NTMsMjMxLjA3MjM0NCA2NS4wNjgwMzQyLDI0My43NDY1NjYgOTIuODY5NTczOCwyMzcuNzgzMzcyIEMxMDUuMjM1NjM5LDI1MS43MDgyNDkgMTIzLjAwMTExMywyNTkuNjMwOTQyIDE0MS42MjM5NjgsMjU5LjUyNjkyIEMxNzAuMTA1MzU5LDI1OS41NTIxNjkgMTk1LjMzNzYxMSwyNDEuMTY1NzE4IDIwNC4wMzc3NzcsMjE0LjA0NTY2MSBDMjIyLjI4NzM0LDIxMC4yOTYzNTYgMjM4LjAzODQ4OSwxOTguODY5NzgzIDI0Ny4yNjcwMTQsMTgyLjY4NTI4IEMyNjEuNDA0NDUzLDE1OC4xMjc1MTUgMjU4LjE0MjQ5NCwxMjcuMjYyNzc1IDIzOS4xODM5MTQsMTA2LjIwMjc4MyBMMjM5LjE4MzkxNCwxMDYuMjAyNzgzIFogTTE0MS42MjM5NjgsMjQyLjU0MTIwNyBDMTMwLjI1NTY4MiwyNDIuNTU5MTc3IDExOS4yNDM4NzYsMjM4LjU3NDY0MiAxMTAuNTE5MzgxLDIzMS4yODYxOTcgTDExMi4wNTQxNDYsMjMwLjQxNjQ5NiBMMTYzLjcyNDU5NSwyMDAuNTkwODgxIEMxNjYuMzQwNjQ4LDE5OS4wNTY0NDQgMTY3Ljk1NDMyMSwxOTYuMjU2ODE4IDE2Ny45NzA3ODEsMTkzLjIyNDAwNSBMMTY3Ljk3MDc4MSwxMjAuMzczNzg4IEwxODkuODE1NjE0LDEzMy4wMTAwMjYgQzE5MC4wMzQxMzIsMTMzLjEyMTQyMyAxOTAuMTg2MjM1LDEzMy4zMzA1NjQgMTkwLjIyNDg4NSwxMzMuNTcyNzc0IEwxOTAuMjI0ODg1LDE5My45NDAyMjkgQzE5MC4xNjg2MDMsMjIwLjc1ODQyNyAxNjguNDQyMTY2LDI0Mi40ODQ4NjQgMTQxLjYyMzk2OCwyNDIuNTQxMjA3IFogTTM3LjE1NzU3NDksMTk3LjkzMDYyIEMzMS40NTY0OTgsMTg4LjA4NjM1OSAyOS40MDk0ODE4LDE3Ni41NDY5ODQgMzEuMzc2NjIzNywxNjUuMzQyNDI2IEwzMi45MTEzODk1LDE2Ni4yNjMyODUgTDg0LjYzMjk5NzMsMTk2LjA4ODkwMSBDODcuMjM4OTM0OSwxOTcuNjE4MjA3IDkwLjQ2ODI3MTcsMTk3LjYxODIwNyA5My4wNzQyMDkzLDE5Ni4wODg5MDEgTDE1Ni4yNTU0MDIsMTU5LjY2Mzc5MyBMMTU2LjI1NTQwMiwxODQuODg1MTExIEMxNTYuMjQzNTU3LDE4NS4xNDk3NzEgMTU2LjExMTcyNSwxODUuMzk0NjAyIDE1NS44OTcyOSwxODUuNTUwMTc2IEwxMDMuNTYxNzc2LDIxNS43MzM5MDMgQzgwLjMwNTQ5NTMsMjI5LjEzMTYzMiA1MC41OTI0OTU0LDIyMS4xNjU0MzUgMzcuMTU3NTc0OSwxOTcuOTMwNjIgWiBNMjMuNTQ5MzE4MSw4NS4zODExMjczIEMyOS4yODk5ODYxLDc1LjQ3MzMwOTcgMzguMzUxMTkxMSw2Ny45MTYyNjQ4IDQ5LjEyODc0ODIsNjQuMDQ3ODgyNSBMNDkuMTI4NzQ4MiwxMjUuNDM4NTE1IEM0OS4wODkxNDkyLDEyOC40NTk0MjUgNTAuNjk2NTM4NiwxMzEuMjYyNTU2IDUzLjMyMzc3NDgsMTMyLjc1NDIzMiBMMTE2LjE5ODAxNCwxNjkuMDI1ODY0IEw5NC4zNTMxODA4LDE4MS42NjIxMDIgQzk0LjExMzIzMjUsMTgxLjc4OTQzNCA5My44MjU3NDYxLDE4MS43ODk0MzQgOTMuNTg1Nzk3OSwxODEuNjYyMTAyIEw0MS4zNTI2MDE1LDE1MS41Mjk1MzQgQzE4LjE0MTk0MjYsMTM4LjA3NjA5OCAxMC4xODE3NjgxLDEwOC4zODU1NjIgMjMuNTQ5MzE4MSw4NS4xMjUzMzMgTDIzLjU0OTMxODEsODUuMzgxMTI3MyBaIE0yMDMuMDE0NiwxMjcuMDc1NTk4IEwxMzkuOTM1NzI1LDkwLjQ0NTg1NDUgTDE2MS43Mjk0LDc3Ljg2MDc3NDggQzE2MS45NjkzNDgsNzcuNzMzNDQzNCAxNjIuMjU2ODM0LDc3LjczMzQ0MzQgMTYyLjQ5Njc4Myw3Ny44NjA3NzQ4IEwyMTQuNzI5OTc5LDEwOC4wNDQ1MDIgQzIzMS4wMzIzMjksMTE3LjQ1MTc0NyAyNDAuNDM3Mjk0LDEzNS40MjYxMDkgMjM4Ljg3MTUwNCwxNTQuMTgyNzM5IEMyMzcuMzA1NzE0LDE3Mi45MzkzNjggMjI1LjA1MDcxOSwxODkuMTA1NTcyIDIwNy40MTQyNjIsMTk1LjY3OTYzIEwyMDcuNDE0MjYyLDEzNC4yODg5OTggQzIwNy4zMjI1MjEsMTMxLjI3Njg2NyAyMDUuNjUwNjk3LDEyOC41MzU4NTMgMjAzLjAxNDYsMTI3LjA3NTU5OCBaIE0yMjQuNzU3MTE2LDk0LjM4NTA4NjcgTDIyMy4yMjIzNSw5My40NjQyMjcyIEwxNzEuNjAzMDYsNjMuMzgyODE3MyBDMTY4Ljk4MTI5Myw2MS44NDQzNzUxIDE2NS43MzI0NTYsNjEuODQ0Mzc1MSAxNjMuMTEwNjg5LDYzLjM4MjgxNzMgTDk5Ljk4MDY1NTQsOTkuODA3OTI1OSBMOTkuOTgwNjU1NCw3NC41ODY2MDc3IEM5OS45NTMzMDA0LDc0LjMyNTQwODggMTAwLjA3MTA5NSw3NC4wNzAxODY5IDEwMC4yODc2MDksNzMuOTIxNTQyNiBMMTUyLjUyMDgwNSw0My43ODg5NzM4IEMxNjguODYzMDk4LDM0LjM3NDM1MTggMTg5LjE3NDI1NiwzNS4yNTI5MDQzIDIwNC42NDI1NzksNDYuMDQzNDg0MSBDMjIwLjExMDkwMyw1Ni44MzQwNjM4IDIyNy45NDkyNjksNzUuNTkyMzk1OSAyMjQuNzU3MTE2LDk0LjE4MDQ1MTMgTDIyNC43NTcxMTYsOTQuMzg1MDg2NyBaIE04OC4wNjA2NDA5LDEzOS4wOTc5MzEgTDY2LjIxNTgwNzYsMTI2LjUxMjg1MSBDNjUuOTk1MDM5OSwxMjYuMzc5MDkxIDY1Ljg0NTA5NjUsMTI2LjE1NDE3NiA2NS44MDY1MzY3LDEyNS44OTg5NDUgTDY1LjgwNjUzNjcsNjUuNjg0OTY2IEM2NS44MzE0NDk1LDQ2LjgyODUzNjcgNzYuNzUwMDYwNSwyOS42ODQ2MDMyIDkzLjgyNzA4NTIsMjEuNjg4MzA1NSBDMTEwLjkwNDExLDEzLjY5MjAwNzkgMTMxLjA2MzgzMywxNi4yODM1NDYyIDE0NS41NjMyLDI4LjMzODk5OCBMMTQ0LjAyODQzNCwyOS4yMDg2OTg2IEw5Mi4zNTc5ODUyLDU5LjAzNDMxNDIgQzg5Ljc0MTkzMjcsNjAuNTY4NzUxMyA4OC4xMjgyNTk3LDYzLjM2ODM3NjcgODguMTExNzk5OCw2Ni40MDExOTAxIEw4OC4wNjA2NDA5LDEzOS4wOTc5MzEgWiBNOTkuOTI5NDk2NSwxMTMuNTE4NSBMMTI4LjA2Njg3LDk3LjMwMTE0MTcgTDE1Ni4yNTU0MDIsMTEzLjUxODUgTDE1Ni4yNTU0MDIsMTQ1Ljk1MzIxOCBMMTI4LjE2OTE4NywxNjIuMTcwNTc3IEw5OS45ODA2NTU0LDE0NS45NTMyMTggTDk5LjkyOTQ5NjUsMTEzLjUxODUgWiIgZmlsbD0iIzAwMDAwMCI+PC9wYXRoPgogICAgPC9nPgo8L3N2Zz4K">
+        <bpmn:documentation>Answers the questions</bpmn:documentation>
+        <bpmn:extensionElements>
+          <zeebe:taskDefinition type="io.camunda:http-json:1" />
+          <zeebe:ioMapping>
+            <zeebe:input source="bearer" target="authentication.type" />
+            <zeebe:input target="authentication.token" />
+            <zeebe:input source="=if is defined(internal_organization) and internal_organization != null then {&#34;Content-Type&#34;:&#34;application/json&#34;, &#34;OpenAI-Organization&#34;:internal_organization} else {&#34;Content-Type&#34;:&#34;application/json&#34;}" target="headers" />
+            <zeebe:input source="chat" target="operation" />
+            <zeebe:input source="post" target="method" />
+            <zeebe:input source="https://api.openai.com/v1/chat/completions" target="url" />
+            <zeebe:input source="gpt-3.5-turbo" target="internal_model" />
+            <zeebe:input source="1" target="internal_temperature" />
+            <zeebe:input source="You answer the big questions" target="internal_systemMessage" />
+            <zeebe:input source="=&#34;Answer the big question: &#34; + fromAi(toolCall.question, &#34;The big question to answer&#34;)" target="internal_prompt" />
+            <zeebe:input source="1" target="internal_choices" />
+            <zeebe:input source="=append(concatenate(if is defined(internal_systemMessage) then [{&#34;role&#34;: &#34;system&#34;, &#34;content&#34;: internal_systemMessage}] else [], if is defined(internal_chatHistory) then internal_chatHistory else []), {&#34;role&#34;: &#34;user&#34;, &#34;content&#34;: internal_prompt})" target="internal_messages" />
+            <zeebe:input source="={&#34;model&#34;: if is defined(internal_custom_model) then internal_custom_model else internal_model, &#34;messages&#34;: internal_messages, &#34;n&#34;: number(internal_choices), &#34;temperature&#34;: number(internal_temperature)}" target="body" />
+            <zeebe:input source="30" target="connectionTimeoutInSeconds" />
+          </zeebe:ioMapping>
+          <zeebe:taskHeaders>
+            <zeebe:header key="resultVariable" />
+            <zeebe:header key="resultExpression" value="={toolCallResult: response.body.choices[1].message.content}" />
+            <zeebe:header key="errorExpression" />
+            <zeebe:header key="elementTemplateVersion" value="6" />
+            <zeebe:header key="elementTemplateId" value="io.camunda.connectors.OpenAI.v1" />
+          </zeebe:taskHeaders>
+        </bpmn:extensionElements>
+      </bpmn:serviceTask>
+      <bpmn:serviceTask id="Activity_1ylae1o" name="Create haiku" zeebe:modelerTemplate="io.camunda.connectors.OpenAI.v1" zeebe:modelerTemplateVersion="6" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iMjU2cHgiIGhlaWdodD0iMjYwcHgiIHZpZXdCb3g9IjAgMCAyNTYgMjYwIiB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHByZXNlcnZlQXNwZWN0UmF0aW89InhNaWRZTWlkIj4KICAgIDx0aXRsZT5PcGVuQUk8L3RpdGxlPgogICAgPGc+CiAgICAgICAgPHBhdGggZD0iTTIzOS4xODM5MTQsMTA2LjIwMjc4MyBDMjQ1LjA1NDMwNCw4OC41MjQyMDk2IDI0My4wMjIyOCw2OS4xNzMzODA1IDIzMy42MDc1OTksNTMuMDk5ODg2NCBDMjE5LjQ1MTY3OCwyOC40NTg4MDIxIDE5MC45OTk3MDMsMTUuNzgzNjEyOSAxNjMuMjEzMDA3LDIxLjczOTUwNSBDMTQ3LjU1NDA3Nyw0LjMyMTQ1ODgzIDEyMy43OTQ5MDksLTMuNDIzOTg1NTQgMTAwLjg3OTAxLDEuNDE4NzM4OTggQzc3Ljk2MzExMDUsNi4yNjE0NjM0OSA1OS4zNjkwMDkzLDIyLjk1NzI1MzYgNTIuMDk1OTYyMSw0NS4yMjE0MjE5IEMzMy44NDM2NDk0LDQ4Ljk2NDQ4NjcgMTguMDkwMTcyMSw2MC4zOTI3NDkgOC44NjY3MjUxMyw3Ni41ODE4MDMzIEMtNS40NDM0OTEsMTAxLjE4Mjk2MiAtMi4xOTU0NDQzMSwxMzIuMjE1MjU1IDE2Ljg5ODY2NjIsMTUzLjMyMDA5NCBDMTEuMDA2MDg2NSwxNzAuOTkwNjU2IDEzLjAxOTcyODMsMTkwLjM0Mzk5MSAyMi40MjM4MjMxLDIwNi40MjI5OTEgQzM2LjU5NzU1NTMsMjMxLjA3MjM0NCA2NS4wNjgwMzQyLDI0My43NDY1NjYgOTIuODY5NTczOCwyMzcuNzgzMzcyIEMxMDUuMjM1NjM5LDI1MS43MDgyNDkgMTIzLjAwMTExMywyNTkuNjMwOTQyIDE0MS42MjM5NjgsMjU5LjUyNjkyIEMxNzAuMTA1MzU5LDI1OS41NTIxNjkgMTk1LjMzNzYxMSwyNDEuMTY1NzE4IDIwNC4wMzc3NzcsMjE0LjA0NTY2MSBDMjIyLjI4NzM0LDIxMC4yOTYzNTYgMjM4LjAzODQ4OSwxOTguODY5NzgzIDI0Ny4yNjcwMTQsMTgyLjY4NTI4IEMyNjEuNDA0NDUzLDE1OC4xMjc1MTUgMjU4LjE0MjQ5NCwxMjcuMjYyNzc1IDIzOS4xODM5MTQsMTA2LjIwMjc4MyBMMjM5LjE4MzkxNCwxMDYuMjAyNzgzIFogTTE0MS42MjM5NjgsMjQyLjU0MTIwNyBDMTMwLjI1NTY4MiwyNDIuNTU5MTc3IDExOS4yNDM4NzYsMjM4LjU3NDY0MiAxMTAuNTE5MzgxLDIzMS4yODYxOTcgTDExMi4wNTQxNDYsMjMwLjQxNjQ5NiBMMTYzLjcyNDU5NSwyMDAuNTkwODgxIEMxNjYuMzQwNjQ4LDE5OS4wNTY0NDQgMTY3Ljk1NDMyMSwxOTYuMjU2ODE4IDE2Ny45NzA3ODEsMTkzLjIyNDAwNSBMMTY3Ljk3MDc4MSwxMjAuMzczNzg4IEwxODkuODE1NjE0LDEzMy4wMTAwMjYgQzE5MC4wMzQxMzIsMTMzLjEyMTQyMyAxOTAuMTg2MjM1LDEzMy4zMzA1NjQgMTkwLjIyNDg4NSwxMzMuNTcyNzc0IEwxOTAuMjI0ODg1LDE5My45NDAyMjkgQzE5MC4xNjg2MDMsMjIwLjc1ODQyNyAxNjguNDQyMTY2LDI0Mi40ODQ4NjQgMTQxLjYyMzk2OCwyNDIuNTQxMjA3IFogTTM3LjE1NzU3NDksMTk3LjkzMDYyIEMzMS40NTY0OTgsMTg4LjA4NjM1OSAyOS40MDk0ODE4LDE3Ni41NDY5ODQgMzEuMzc2NjIzNywxNjUuMzQyNDI2IEwzMi45MTEzODk1LDE2Ni4yNjMyODUgTDg0LjYzMjk5NzMsMTk2LjA4ODkwMSBDODcuMjM4OTM0OSwxOTcuNjE4MjA3IDkwLjQ2ODI3MTcsMTk3LjYxODIwNyA5My4wNzQyMDkzLDE5Ni4wODg5MDEgTDE1Ni4yNTU0MDIsMTU5LjY2Mzc5MyBMMTU2LjI1NTQwMiwxODQuODg1MTExIEMxNTYuMjQzNTU3LDE4NS4xNDk3NzEgMTU2LjExMTcyNSwxODUuMzk0NjAyIDE1NS44OTcyOSwxODUuNTUwMTc2IEwxMDMuNTYxNzc2LDIxNS43MzM5MDMgQzgwLjMwNTQ5NTMsMjI5LjEzMTYzMiA1MC41OTI0OTU0LDIyMS4xNjU0MzUgMzcuMTU3NTc0OSwxOTcuOTMwNjIgWiBNMjMuNTQ5MzE4MSw4NS4zODExMjczIEMyOS4yODk5ODYxLDc1LjQ3MzMwOTcgMzguMzUxMTkxMSw2Ny45MTYyNjQ4IDQ5LjEyODc0ODIsNjQuMDQ3ODgyNSBMNDkuMTI4NzQ4MiwxMjUuNDM4NTE1IEM0OS4wODkxNDkyLDEyOC40NTk0MjUgNTAuNjk2NTM4NiwxMzEuMjYyNTU2IDUzLjMyMzc3NDgsMTMyLjc1NDIzMiBMMTE2LjE5ODAxNCwxNjkuMDI1ODY0IEw5NC4zNTMxODA4LDE4MS42NjIxMDIgQzk0LjExMzIzMjUsMTgxLjc4OTQzNCA5My44MjU3NDYxLDE4MS43ODk0MzQgOTMuNTg1Nzk3OSwxODEuNjYyMTAyIEw0MS4zNTI2MDE1LDE1MS41Mjk1MzQgQzE4LjE0MTk0MjYsMTM4LjA3NjA5OCAxMC4xODE3NjgxLDEwOC4zODU1NjIgMjMuNTQ5MzE4MSw4NS4xMjUzMzMgTDIzLjU0OTMxODEsODUuMzgxMTI3MyBaIE0yMDMuMDE0NiwxMjcuMDc1NTk4IEwxMzkuOTM1NzI1LDkwLjQ0NTg1NDUgTDE2MS43Mjk0LDc3Ljg2MDc3NDggQzE2MS45NjkzNDgsNzcuNzMzNDQzNCAxNjIuMjU2ODM0LDc3LjczMzQ0MzQgMTYyLjQ5Njc4Myw3Ny44NjA3NzQ4IEwyMTQuNzI5OTc5LDEwOC4wNDQ1MDIgQzIzMS4wMzIzMjksMTE3LjQ1MTc0NyAyNDAuNDM3Mjk0LDEzNS40MjYxMDkgMjM4Ljg3MTUwNCwxNTQuMTgyNzM5IEMyMzcuMzA1NzE0LDE3Mi45MzkzNjggMjI1LjA1MDcxOSwxODkuMTA1NTcyIDIwNy40MTQyNjIsMTk1LjY3OTYzIEwyMDcuNDE0MjYyLDEzNC4yODg5OTggQzIwNy4zMjI1MjEsMTMxLjI3Njg2NyAyMDUuNjUwNjk3LDEyOC41MzU4NTMgMjAzLjAxNDYsMTI3LjA3NTU5OCBaIE0yMjQuNzU3MTE2LDk0LjM4NTA4NjcgTDIyMy4yMjIzNSw5My40NjQyMjcyIEwxNzEuNjAzMDYsNjMuMzgyODE3MyBDMTY4Ljk4MTI5Myw2MS44NDQzNzUxIDE2NS43MzI0NTYsNjEuODQ0Mzc1MSAxNjMuMTEwNjg5LDYzLjM4MjgxNzMgTDk5Ljk4MDY1NTQsOTkuODA3OTI1OSBMOTkuOTgwNjU1NCw3NC41ODY2MDc3IEM5OS45NTMzMDA0LDc0LjMyNTQwODggMTAwLjA3MTA5NSw3NC4wNzAxODY5IDEwMC4yODc2MDksNzMuOTIxNTQyNiBMMTUyLjUyMDgwNSw0My43ODg5NzM4IEMxNjguODYzMDk4LDM0LjM3NDM1MTggMTg5LjE3NDI1NiwzNS4yNTI5MDQzIDIwNC42NDI1NzksNDYuMDQzNDg0MSBDMjIwLjExMDkwMyw1Ni44MzQwNjM4IDIyNy45NDkyNjksNzUuNTkyMzk1OSAyMjQuNzU3MTE2LDk0LjE4MDQ1MTMgTDIyNC43NTcxMTYsOTQuMzg1MDg2NyBaIE04OC4wNjA2NDA5LDEzOS4wOTc5MzEgTDY2LjIxNTgwNzYsMTI2LjUxMjg1MSBDNjUuOTk1MDM5OSwxMjYuMzc5MDkxIDY1Ljg0NTA5NjUsMTI2LjE1NDE3NiA2NS44MDY1MzY3LDEyNS44OTg5NDUgTDY1LjgwNjUzNjcsNjUuNjg0OTY2IEM2NS44MzE0NDk1LDQ2LjgyODUzNjcgNzYuNzUwMDYwNSwyOS42ODQ2MDMyIDkzLjgyNzA4NTIsMjEuNjg4MzA1NSBDMTEwLjkwNDExLDEzLjY5MjAwNzkgMTMxLjA2MzgzMywxNi4yODM1NDYyIDE0NS41NjMyLDI4LjMzODk5OCBMMTQ0LjAyODQzNCwyOS4yMDg2OTg2IEw5Mi4zNTc5ODUyLDU5LjAzNDMxNDIgQzg5Ljc0MTkzMjcsNjAuNTY4NzUxMyA4OC4xMjgyNTk3LDYzLjM2ODM3NjcgODguMTExNzk5OCw2Ni40MDExOTAxIEw4OC4wNjA2NDA5LDEzOS4wOTc5MzEgWiBNOTkuOTI5NDk2NSwxMTMuNTE4NSBMMTI4LjA2Njg3LDk3LjMwMTE0MTcgTDE1Ni4yNTU0MDIsMTEzLjUxODUgTDE1Ni4yNTU0MDIsMTQ1Ljk1MzIxOCBMMTI4LjE2OTE4NywxNjIuMTcwNTc3IEw5OS45ODA2NTU0LDE0NS45NTMyMTggTDk5LjkyOTQ5NjUsMTEzLjUxODUgWiIgZmlsbD0iIzAwMDAwMCI+PC9wYXRoPgogICAgPC9nPgo8L3N2Zz4K">
+        <bpmn:documentation>Generates haikus based on the user prompt</bpmn:documentation>
+        <bpmn:extensionElements>
+          <zeebe:taskDefinition type="io.camunda:http-json:1" />
+          <zeebe:ioMapping>
+            <zeebe:input source="bearer" target="authentication.type" />
+            <zeebe:input target="authentication.token" />
+            <zeebe:input source="=if is defined(internal_organization) and internal_organization != null then {&#34;Content-Type&#34;:&#34;application/json&#34;, &#34;OpenAI-Organization&#34;:internal_organization} else {&#34;Content-Type&#34;:&#34;application/json&#34;}" target="headers" />
+            <zeebe:input source="chat" target="operation" />
+            <zeebe:input source="post" target="method" />
+            <zeebe:input source="https://api.openai.com/v1/chat/completions" target="url" />
+            <zeebe:input source="gpt-3.5-turbo" target="internal_model" />
+            <zeebe:input source="1" target="internal_temperature" />
+            <zeebe:input source="You generate haikus based on the user prompt" target="internal_systemMessage" />
+            <zeebe:input source="=&#34;Generate a haiku about: &#34; + fromAi(toolCall.userPrompt, &#34;The user prompt for generating the haiku&#34;)" target="internal_prompt" />
+            <zeebe:input source="1" target="internal_choices" />
+            <zeebe:input source="=append(concatenate(if is defined(internal_systemMessage) then [{&#34;role&#34;: &#34;system&#34;, &#34;content&#34;: internal_systemMessage}] else [], if is defined(internal_chatHistory) then internal_chatHistory else []), {&#34;role&#34;: &#34;user&#34;, &#34;content&#34;: internal_prompt})" target="internal_messages" />
+            <zeebe:input source="={&#34;model&#34;: if is defined(internal_custom_model) then internal_custom_model else internal_model, &#34;messages&#34;: internal_messages, &#34;n&#34;: number(internal_choices), &#34;temperature&#34;: number(internal_temperature)}" target="body" />
+            <zeebe:input source="30" target="connectionTimeoutInSeconds" />
+          </zeebe:ioMapping>
+          <zeebe:taskHeaders>
+            <zeebe:header key="resultVariable" />
+            <zeebe:header key="resultExpression" value="={toolCallResult: response.body.choices[1].message.content}" />
+            <zeebe:header key="errorExpression" />
+            <zeebe:header key="elementTemplateVersion" value="6" />
+            <zeebe:header key="elementTemplateId" value="io.camunda.connectors.OpenAI.v1" />
+          </zeebe:taskHeaders>
+        </bpmn:extensionElements>
+      </bpmn:serviceTask>
+    </bpmn:adHocSubProcess>
+    <bpmn:serviceTask id="Activity_16yfymc" name="Bar job worker">
       <bpmn:extensionElements>
-        <zeebe:script expression="=foo + 1" resultVariable="fooPlusOne" />
-        <zeebe:ioMapping>
-          <zeebe:output source="=1" target="output1" />
-          <zeebe:output source="=true" target="output2" />
-          <zeebe:output source="={ &#34;foo&#34;: 1 }" target="output3" />
-          <zeebe:output source="=&#34;foo&#34;" target="output4" />
-          <zeebe:output source="=fooPlusOne" target="fooPlusOneOutput" />
-        </zeebe:ioMapping>
+        <zeebe:taskDefinition type="bar" />
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0d202t1</bpmn:incoming>
-      <bpmn:outgoing>Flow_0szzvbm</bpmn:outgoing>
-    </bpmn:scriptTask>
-    <bpmn:serviceTask id="ServiceTask_3" name="REST" zeebe:modelerTemplate="io.camunda.connectors.HttpJson.v2" zeebe:modelerTemplateVersion="11" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE3LjAzMzUgOC45OTk5N0MxNy4wMzM1IDEzLjQ0NzUgMTMuNDI4MSAxNy4wNTI5IDguOTgwNjUgMTcuMDUyOUM0LjUzMzE2IDE3LjA1MjkgMC45Mjc3NjUgMTMuNDQ3NSAwLjkyNzc2NSA4Ljk5OTk3QzAuOTI3NzY1IDQuNTUyNDggNC41MzMxNiAwLjk0NzA4MyA4Ljk4MDY1IDAuOTQ3MDgzQzEzLjQyODEgMC45NDcwODMgMTcuMDMzNSA0LjU1MjQ4IDE3LjAzMzUgOC45OTk5N1oiIGZpbGw9IiM1MDU1NjIiLz4KPHBhdGggZD0iTTQuOTMxMjYgMTQuMTU3MUw2Ljc4MTA2IDMuNzE0NzFIMTAuMTM3NUMxMS4xOTE3IDMuNzE0NzEgMTEuOTgyNCAzLjk4MzIzIDEyLjUwOTUgNC41MjAyN0MxMy4wNDY1IDUuMDQ3MzYgMTMuMzE1IDUuNzMzNTggMTMuMzE1IDYuNTc4OTJDMTMuMzE1IDcuNDQ0MTQgMTMuMDcxNCA4LjE1NTIyIDEyLjU4NDEgOC43MTIxNUMxMi4xMDY3IDkuMjU5MTMgMTEuNDU1MyA5LjYzNzA1IDEwLjYyOTggOS44NDU5TDEyLjA2MTkgMTQuMTU3MUgxMC4zMzE1TDkuMDMzNjQgMTAuMDI0OUg3LjI0MzUxTDYuNTEyNTQgMTQuMTU3MUg0LjkzMTI2Wk03LjQ5NzExIDguNTkyODFIOS4yNDI0OEM5Ljk5ODMyIDguNTkyODEgMTAuNTkwMSA4LjQyMzc0IDExLjAxNzcgOC4wODU2MUMxMS40NTUzIDcuNzM3NTMgMTEuNjc0MSA3LjI2NTEzIDExLjY3NDEgNi42Njg0MkMxMS42NzQxIDYuMTkxMDYgMTEuNTI0OSA1LjgxODExIDExLjIyNjUgNS41NDk1OUMxMC45MjgyIDUuMjcxMTMgMTAuNDU1OCA1LjEzMTkgOS44MDkzNiA1LjEzMTlIOC4xMDg3NEw3LjQ5NzExIDguNTkyODFaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K">
+      <bpmn:incoming>Flow_0nufm4k</bpmn:incoming>
+      <bpmn:outgoing>Flow_06cqvxh</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Activity_1m0j029" name="Baz job worker">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="baz" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1m6w5nl</bpmn:incoming>
+      <bpmn:outgoing>Flow_02ercis</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_0g7rfcn">
+      <bpmn:incoming>Flow_0rlkdg6</bpmn:incoming>
+      <bpmn:terminateEventDefinition id="TerminateEventDefinition_1mfjk4r" />
+    </bpmn:endEvent>
+    <bpmn:endEvent id="Event_0mamn5m">
+      <bpmn:incoming>Flow_0f2v3oj</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="Event_1hzo51y">
+      <bpmn:incoming>Flow_02ercis</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="Event_1mmakrt">
+      <bpmn:incoming>Flow_105vzb3</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_02ercis" sourceRef="Activity_1m0j029" targetRef="Event_1hzo51y" />
+    <bpmn:sequenceFlow id="Flow_03l9p18" sourceRef="ReceiveTask_1" targetRef="AdHocSubProcess_1" />
+    <bpmn:sequenceFlow id="Flow_03u11ql" sourceRef="ServiceTask_4" targetRef="UserTask_1" />
+    <bpmn:sequenceFlow id="Flow_06cqvxh" sourceRef="Activity_16yfymc" targetRef="Gateway_1m89oya" />
+    <bpmn:sequenceFlow id="Flow_0d202t1" sourceRef="StartEvent_1" targetRef="ScriptTask_1" />
+    <bpmn:sequenceFlow id="Flow_0f2v3oj" sourceRef="SubProcess_1" targetRef="Event_0mamn5m" />
+    <bpmn:sequenceFlow id="Flow_0ggbd4s" sourceRef="ServiceTask_1" targetRef="ServiceTask_2" />
+    <bpmn:sequenceFlow id="Flow_0il16f0" sourceRef="ServiceTask_2" targetRef="ServiceTask_3" />
+    <bpmn:sequenceFlow id="Flow_0karkwj" sourceRef="ServiceTask_3" targetRef="ServiceTask_4" />
+    <bpmn:sequenceFlow id="Flow_0nufm4k" sourceRef="TimerBoundaryNonInterrupting" targetRef="Activity_16yfymc" />
+    <bpmn:sequenceFlow id="Flow_105vzb3" sourceRef="Gateway_1m89oya" targetRef="Event_1mmakrt" />
+    <bpmn:sequenceFlow id="Flow_11m19en" sourceRef="AdHocSubProcess_1" targetRef="SubProcess_1" />
+    <bpmn:sequenceFlow id="Flow_1cskg4b" sourceRef="ScriptTask_1" targetRef="ServiceTask_1" />
+    <bpmn:sequenceFlow id="Flow_1m6w5nl" sourceRef="TimerBoundaryInterrupting" targetRef="Activity_1m0j029" />
+    <bpmn:sequenceFlow id="Flow_1ynrz1o" sourceRef="UserTask_1" targetRef="ReceiveTask_1" />
+    <bpmn:serviceTask id="ServiceTask_3" name="Foo job worker">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="foo" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=foo" target="fooLocal" />
+          <zeebe:input source="=if jobWorkerDelay != null then jobWorkerDelay else 5" target="delay" />
+        </zeebe:ioMapping>
+        <zeebe:executionListeners>
+          <zeebe:executionListener eventType="start" type="fooStart" />
+          <zeebe:executionListener eventType="end" type="fooEnd" />
+        </zeebe:executionListeners>
+        <zeebe:taskHeaders>
+          <zeebe:header key="fooHeader" value="&#34;fooHeader&#34;" />
+          <zeebe:header key="barHeader" value="&#34;barHeader&#34;" />
+        </zeebe:taskHeaders>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0il16f0</bpmn:incoming>
+      <bpmn:outgoing>Flow_0karkwj</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="UserTask_1" name="Form">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition formId="Form" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_03u11ql</bpmn:incoming>
+      <bpmn:outgoing>Flow_1ynrz1o</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:receiveTask id="ReceiveTask_1" name="Receive message" messageRef="Message_3d5mgj5">
+      <bpmn:extensionElements>
+        <zeebe:executionListeners>
+          <zeebe:executionListener eventType="start" type="publish-message" />
+        </zeebe:executionListeners>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1ynrz1o</bpmn:incoming>
+      <bpmn:outgoing>Flow_03l9p18</bpmn:outgoing>
+    </bpmn:receiveTask>
+    <bpmn:serviceTask id="ServiceTask_1" name="REST" zeebe:modelerTemplate="io.camunda.connectors.HttpJson.v2" zeebe:modelerTemplateVersion="11" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE3LjAzMzUgOC45OTk5N0MxNy4wMzM1IDEzLjQ0NzUgMTMuNDI4MSAxNy4wNTI5IDguOTgwNjUgMTcuMDUyOUM0LjUzMzE2IDE3LjA1MjkgMC45Mjc3NjUgMTMuNDQ3NSAwLjkyNzc2NSA4Ljk5OTk3QzAuOTI3NzY1IDQuNTUyNDggNC41MzMxNiAwLjk0NzA4MyA4Ljk4MDY1IDAuOTQ3MDgzQzEzLjQyODEgMC45NDcwODMgMTcuMDMzNSA0LjU1MjQ4IDE3LjAzMzUgOC45OTk5N1oiIGZpbGw9IiM1MDU1NjIiLz4KPHBhdGggZD0iTTQuOTMxMjYgMTQuMTU3MUw2Ljc4MTA2IDMuNzE0NzFIMTAuMTM3NUMxMS4xOTE3IDMuNzE0NzEgMTEuOTgyNCAzLjk4MzIzIDEyLjUwOTUgNC41MjAyN0MxMy4wNDY1IDUuMDQ3MzYgMTMuMzE1IDUuNzMzNTggMTMuMzE1IDYuNTc4OTJDMTMuMzE1IDcuNDQ0MTQgMTMuMDcxNCA4LjE1NTIyIDEyLjU4NDEgOC43MTIxNUMxMi4xMDY3IDkuMjU5MTMgMTEuNDU1MyA5LjYzNzA1IDEwLjYyOTggOS44NDU5TDEyLjA2MTkgMTQuMTU3MUgxMC4zMzE1TDkuMDMzNjQgMTAuMDI0OUg3LjI0MzUxTDYuNTEyNTQgMTQuMTU3MUg0LjkzMTI2Wk03LjQ5NzExIDguNTkyODFIOS4yNDI0OEM5Ljk5ODMyIDguNTkyODEgMTAuNTkwMSA4LjQyMzc0IDExLjAxNzcgOC4wODU2MUMxMS40NTUzIDcuNzM3NTMgMTEuNjc0MSA3LjI2NTEzIDExLjY3NDEgNi42Njg0MkMxMS42NzQxIDYuMTkxMDYgMTEuNTI0OSA1LjgxODExIDExLjIyNjUgNS41NDk1OUMxMC45MjgyIDUuMjcxMTMgMTAuNDU1OCA1LjEzMTkgOS44MDkzNiA1LjEzMTlIOC4xMDg3NEw3LjQ5NzExIDguNTkyODFaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="io.camunda:http-json:1" retries="3" />
         <zeebe:ioMapping>
+          <zeebe:input source="=false" target="ignoreNullValues" />
           <zeebe:input source="noAuth" target="authentication.type" />
           <zeebe:input source="GET" target="method" />
           <zeebe:input source="https://camunda.com" target="url" />
           <zeebe:input source="=false" target="storeResponse" />
           <zeebe:input source="=20" target="connectionTimeoutInSeconds" />
           <zeebe:input source="=20" target="readTimeoutInSeconds" />
-          <zeebe:input source="=false" target="ignoreNullValues" />
         </zeebe:ioMapping>
         <zeebe:taskHeaders>
           <zeebe:header key="elementTemplateVersion" value="11" />
           <zeebe:header key="elementTemplateId" value="io.camunda.connectors.HttpJson.v2" />
-          <zeebe:header key="resultVariable" />
-          <zeebe:header key="resultExpression" />
+          <zeebe:header key="resultVariable" value="response" />
+          <zeebe:header key="resultExpression" value="={ status: response.status }" />
           <zeebe:header key="errorExpression" />
           <zeebe:header key="retryBackoff" value="PT0S" />
         </zeebe:taskHeaders>
@@ -62,17 +224,17 @@
       <bpmn:incoming>Flow_1cskg4b</bpmn:incoming>
       <bpmn:outgoing>Flow_0ggbd4s</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="ServiceTask_4" name="REST Incident" zeebe:modelerTemplate="io.camunda.connectors.HttpJson.v2" zeebe:modelerTemplateVersion="11" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE3LjAzMzUgOC45OTk5N0MxNy4wMzM1IDEzLjQ0NzUgMTMuNDI4MSAxNy4wNTI5IDguOTgwNjUgMTcuMDUyOUM0LjUzMzE2IDE3LjA1MjkgMC45Mjc3NjUgMTMuNDQ3NSAwLjkyNzc2NSA4Ljk5OTk3QzAuOTI3NzY1IDQuNTUyNDggNC41MzMxNiAwLjk0NzA4MyA4Ljk4MDY1IDAuOTQ3MDgzQzEzLjQyODEgMC45NDcwODMgMTcuMDMzNSA0LjU1MjQ4IDE3LjAzMzUgOC45OTk5N1oiIGZpbGw9IiM1MDU1NjIiLz4KPHBhdGggZD0iTTQuOTMxMjYgMTQuMTU3MUw2Ljc4MTA2IDMuNzE0NzFIMTAuMTM3NUMxMS4xOTE3IDMuNzE0NzEgMTEuOTgyNCAzLjk4MzIzIDEyLjUwOTUgNC41MjAyN0MxMy4wNDY1IDUuMDQ3MzYgMTMuMzE1IDUuNzMzNTggMTMuMzE1IDYuNTc4OTJDMTMuMzE1IDcuNDQ0MTQgMTMuMDcxNCA4LjE1NTIyIDEyLjU4NDEgOC43MTIxNUMxMi4xMDY3IDkuMjU5MTMgMTEuNDU1MyA5LjYzNzA1IDEwLjYyOTggOS44NDU5TDEyLjA2MTkgMTQuMTU3MUgxMC4zMzE1TDkuMDMzNjQgMTAuMDI0OUg3LjI0MzUxTDYuNTEyNTQgMTQuMTU3MUg0LjkzMTI2Wk03LjQ5NzExIDguNTkyODFIOS4yNDI0OEM5Ljk5ODMyIDguNTkyODEgMTAuNTkwMSA4LjQyMzc0IDExLjAxNzcgOC4wODU2MUMxMS40NTUzIDcuNzM3NTMgMTEuNjc0MSA3LjI2NTEzIDExLjY3NDEgNi42Njg0MkMxMS42NzQxIDYuMTkxMDYgMTEuNTI0OSA1LjgxODExIDExLjIyNjUgNS41NDk1OUMxMC45MjgyIDUuMjcxMTMgMTAuNDU1OCA1LjEzMTkgOS44MDkzNiA1LjEzMTlIOC4xMDg3NEw3LjQ5NzExIDguNTkyODFaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K">
+    <bpmn:serviceTask id="ServiceTask_2" name="REST Incident" zeebe:modelerTemplate="io.camunda.connectors.HttpJson.v2" zeebe:modelerTemplateVersion="11" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE3LjAzMzUgOC45OTk5N0MxNy4wMzM1IDEzLjQ0NzUgMTMuNDI4MSAxNy4wNTI5IDguOTgwNjUgMTcuMDUyOUM0LjUzMzE2IDE3LjA1MjkgMC45Mjc3NjUgMTMuNDQ3NSAwLjkyNzc2NSA4Ljk5OTk3QzAuOTI3NzY1IDQuNTUyNDggNC41MzMxNiAwLjk0NzA4MyA4Ljk4MDY1IDAuOTQ3MDgzQzEzLjQyODEgMC45NDcwODMgMTcuMDMzNSA0LjU1MjQ4IDE3LjAzMzUgOC45OTk5N1oiIGZpbGw9IiM1MDU1NjIiLz4KPHBhdGggZD0iTTQuOTMxMjYgMTQuMTU3MUw2Ljc4MTA2IDMuNzE0NzFIMTAuMTM3NUMxMS4xOTE3IDMuNzE0NzEgMTEuOTgyNCAzLjk4MzIzIDEyLjUwOTUgNC41MjAyN0MxMy4wNDY1IDUuMDQ3MzYgMTMuMzE1IDUuNzMzNTggMTMuMzE1IDYuNTc4OTJDMTMuMzE1IDcuNDQ0MTQgMTMuMDcxNCA4LjE1NTIyIDEyLjU4NDEgOC43MTIxNUMxMi4xMDY3IDkuMjU5MTMgMTEuNDU1MyA5LjYzNzA1IDEwLjYyOTggOS44NDU5TDEyLjA2MTkgMTQuMTU3MUgxMC4zMzE1TDkuMDMzNjQgMTAuMDI0OUg3LjI0MzUxTDYuNTEyNTQgMTQuMTU3MUg0LjkzMTI2Wk03LjQ5NzExIDguNTkyODFIOS4yNDI0OEM5Ljk5ODMyIDguNTkyODEgMTAuNTkwMSA4LjQyMzc0IDExLjAxNzcgOC4wODU2MUMxMS40NTUzIDcuNzM3NTMgMTEuNjc0MSA3LjI2NTEzIDExLjY3NDEgNi42Njg0MkMxMS42NzQxIDYuMTkxMDYgMTEuNTI0OSA1LjgxODExIDExLjIyNjUgNS41NDk1OUMxMC45MjgyIDUuMjcxMTMgMTAuNDU1OCA1LjEzMTkgOS44MDkzNiA1LjEzMTlIOC4xMDg3NEw3LjQ5NzExIDguNTkyODFaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="io.camunda:http-json:1" retries="3" />
         <zeebe:ioMapping>
+          <zeebe:input source="=false" target="ignoreNullValues" />
           <zeebe:input source="noAuth" target="authentication.type" />
           <zeebe:input source="GET" target="method" />
           <zeebe:input source="https://camunda.foobar" target="url" />
           <zeebe:input source="=false" target="storeResponse" />
           <zeebe:input source="=20" target="connectionTimeoutInSeconds" />
           <zeebe:input source="=20" target="readTimeoutInSeconds" />
-          <zeebe:input source="=false" target="ignoreNullValues" />
         </zeebe:ioMapping>
         <zeebe:taskHeaders>
           <zeebe:header key="elementTemplateVersion" value="11" />
@@ -86,20 +248,7 @@
       <bpmn:incoming>Flow_0ggbd4s</bpmn:incoming>
       <bpmn:outgoing>Flow_0il16f0</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="ServiceTask_5" name="Job worker">
-      <bpmn:extensionElements>
-        <zeebe:taskDefinition type="foo" />
-        <zeebe:ioMapping>
-          <zeebe:input source="=foo" target="fooLocal" />
-          <zeebe:input source="=if jobWorkerDelay != null then jobWorkerDelay else 5" target="delay" />
-          <zeebe:output source="=foo" target="jobWorkerFoo" />
-        </zeebe:ioMapping>
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0il16f0</bpmn:incoming>
-      <bpmn:outgoing>Flow_0karkwj</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:sequenceFlow id="Flow_0il16f0" sourceRef="ServiceTask_4" targetRef="ServiceTask_5" />
-    <bpmn:serviceTask id="ServiceTask_6" name="RPA" zeebe:modelerTemplate="camunda.connectors.rpa" zeebe:modelerTemplateVersion="1" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyBpZD0iaWNvbiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogbm9uZTsKICAgICAgfQogICAgPC9zdHlsZT4KICA8L2RlZnM+CiAgPHRpdGxlPmJvdDwvdGl0bGU+CiAgPHJlY3QgeD0iMTgiIHk9IjEwIiB3aWR0aD0iMiIgaGVpZ2h0PSIyIi8+CiAgPHJlY3QgeD0iMTIiIHk9IjEwIiB3aWR0aD0iMiIgaGVpZ2h0PSIyIi8+CiAgPHBhdGggZD0iTTI2LDIwSDIxVjE4aDFhMi4wMDIzLDIuMDAyMywwLDAsMCwyLTJWMTJoMlYxMEgyNFY4YTIuMDAyMywyLjAwMjMsMCwwLDAtMi0ySDIwVjJIMThWNkgxNFYySDEyVjZIMTBBMi4wMDIzLDIuMDAyMywwLDAsMCw4LDh2Mkg2djJIOHY0YTIuMDAyMywyLjAwMjMsMCwwLDAsMiwyaDF2Mkg2YTIuMDAyMywyLjAwMjMsMCwwLDAtMiwydjhINlYyMkgyNnY4aDJWMjJBMi4wMDIzLDIuMDAyMywwLDAsMCwyNiwyMFpNMTAsOEgyMnY4SDEwWm0zLDEwaDZ2MkgxM1oiLz4KICA8cmVjdCBpZD0iX1RyYW5zcGFyZW50X1JlY3RhbmdsZV8iIGRhdGEtbmFtZT0iJmx0O1RyYW5zcGFyZW50IFJlY3RhbmdsZSZndDsiIGNsYXNzPSJjbHMtMSIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIi8+Cjwvc3ZnPgo=">
+    <bpmn:serviceTask id="ServiceTask_4" name="RPA" zeebe:modelerTemplate="camunda.connectors.rpa" zeebe:modelerTemplateVersion="1" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyBpZD0iaWNvbiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogbm9uZTsKICAgICAgfQogICAgPC9zdHlsZT4KICA8L2RlZnM+CiAgPHRpdGxlPmJvdDwvdGl0bGU+CiAgPHJlY3QgeD0iMTgiIHk9IjEwIiB3aWR0aD0iMiIgaGVpZ2h0PSIyIi8+CiAgPHJlY3QgeD0iMTIiIHk9IjEwIiB3aWR0aD0iMiIgaGVpZ2h0PSIyIi8+CiAgPHBhdGggZD0iTTI2LDIwSDIxVjE4aDFhMi4wMDIzLDIuMDAyMywwLDAsMCwyLTJWMTJoMlYxMEgyNFY4YTIuMDAyMywyLjAwMjMsMCwwLDAtMi0ySDIwVjJIMThWNkgxNFYySDEyVjZIMTBBMi4wMDIzLDIuMDAyMywwLDAsMCw4LDh2Mkg2djJIOHY0YTIuMDAyMywyLjAwMjMsMCwwLDAsMiwyaDF2Mkg2YTIuMDAyMywyLjAwMjMsMCwwLDAtMiwydjhINlYyMkgyNnY4aDJWMjJBMi4wMDIzLDIuMDAyMywwLDAsMCwyNiwyMFpNMTAsOEgyMnY4SDEwWm0zLDEwaDZ2MkgxM1oiLz4KICA8cmVjdCBpZD0iX1RyYW5zcGFyZW50X1JlY3RhbmdsZV8iIGRhdGEtbmFtZT0iJmx0O1RyYW5zcGFyZW50IFJlY3RhbmdsZSZndDsiIGNsYXNzPSJjbHMtMSIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIi8+Cjwvc3ZnPgo=">
       <bpmn:extensionElements>
         <zeebe:linkedResources>
           <zeebe:linkedResource resourceId="foo" resourceType="RPA" linkName="RPAScript" />
@@ -117,95 +266,262 @@
         </zeebe:properties>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0karkwj</bpmn:incoming>
-      <bpmn:outgoing>Flow_0cr1jl0</bpmn:outgoing>
+      <bpmn:outgoing>Flow_03u11ql</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:sequenceFlow id="Flow_0karkwj" sourceRef="ServiceTask_5" targetRef="ServiceTask_6" />
-    <bpmn:endEvent id="EndEvent_1">
-      <bpmn:incoming>Flow_0cr1jl0</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_0cr1jl0" sourceRef="ServiceTask_6" targetRef="EndEvent_1" />
-    <bpmn:boundaryEvent id="Event_1op2ilo" name="10 seconds" attachedToRef="ServiceTask_5">
-      <bpmn:outgoing>Flow_0mpq4id</bpmn:outgoing>
-      <bpmn:timerEventDefinition id="TimerEventDefinition_0o7rdih">
-        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT10S</bpmn:timeDuration>
-      </bpmn:timerEventDefinition>
-    </bpmn:boundaryEvent>
-    <bpmn:endEvent id="EndEvent_2">
-      <bpmn:incoming>Flow_0mpq4id</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_0mpq4id" sourceRef="Event_1op2ilo" targetRef="EndEvent_2" />
+    <bpmn:scriptTask id="ScriptTask_1" name="Script">
+      <bpmn:extensionElements>
+        <zeebe:script expression="=foo + bar" resultVariable="baz" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0d202t1</bpmn:incoming>
+      <bpmn:outgoing>Flow_1cskg4b</bpmn:outgoing>
+    </bpmn:scriptTask>
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_0d202t1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:subProcess id="SubProcess_1">
+      <bpmn:incoming>Flow_11m19en</bpmn:incoming>
+      <bpmn:outgoing>Flow_0f2v3oj</bpmn:outgoing>
+      <bpmn:adHocSubProcess id="AdHocSubProcess_2" name="AdHoc">
+        <bpmn:extensionElements>
+          <zeebe:adHoc activeElementsCollection="=[&#34;ScriptTask_1&#34;]" outputCollection="haikus" outputElement="={&#10;  &#34;haiku&#34;: haiku&#10;}" />
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_0ek248u</bpmn:incoming>
+        <bpmn:outgoing>Flow_0xcmxua</bpmn:outgoing>
+        <bpmn:scriptTask id="ScriptTask_2" name="Create haiku">
+          <bpmn:extensionElements>
+            <zeebe:script expression="=&#34;Swimlanes hold the flow,&#10;Gateways guard each branching choice,&#10;Tasks hum, end events glow.&#34;" resultVariable="haiku" />
+          </bpmn:extensionElements>
+        </bpmn:scriptTask>
+      </bpmn:adHocSubProcess>
+      <bpmn:endEvent id="Event_05uneqm">
+        <bpmn:incoming>Flow_0xcmxua</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:startEvent id="Event_0zpa9tc">
+        <bpmn:outgoing>Flow_0ek248u</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:sequenceFlow id="Flow_0ek248u" sourceRef="Event_0zpa9tc" targetRef="AdHocSubProcess_2" />
+      <bpmn:sequenceFlow id="Flow_0xcmxua" sourceRef="AdHocSubProcess_2" targetRef="Event_05uneqm" />
+    </bpmn:subProcess>
+    <bpmn:exclusiveGateway id="Gateway_1m89oya" name="Terminate?" default="Flow_105vzb3">
+      <bpmn:incoming>Flow_06cqvxh</bpmn:incoming>
+      <bpmn:outgoing>Flow_105vzb3</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0rlkdg6</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_0rlkdg6" name="yes" sourceRef="Gateway_1m89oya" targetRef="Event_0g7rfcn">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=terminate = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
   </bpmn:process>
+  <bpmn:message id="Message_21kumir" name="Message">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="=&#34;foobar&#34;" />
+    </bpmn:extensionElements>
+  </bpmn:message>
+  <bpmn:message id="Message_3d5mgj5" name="Message_1">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="=correlationKey" />
+    </bpmn:extensionElements>
+  </bpmn:message>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_TaskTesting">
-      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
-        <dc:Bounds x="152" y="102" width="36" height="36" />
+      <bpmndi:BPMNShape id="Activity_018bood_di" bpmnElement="Activity_1dh97uw" isExpanded="true">
+        <dc:Bounds x="645" y="530" width="350" height="200" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_16890h2_di" bpmnElement="ServiceTask_2">
-        <dc:Bounds x="370" y="80" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0auwhtl_di" bpmnElement="ServiceTask_1">
-        <dc:Bounds x="230" y="80" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1ei6qdo_di" bpmnElement="ServiceTask_3">
-        <dc:Bounds x="510" y="80" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_037ias4" bpmnElement="ServiceTask_4">
-        <dc:Bounds x="650" y="80" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0qegbfq_di" bpmnElement="ServiceTask_5">
-        <dc:Bounds x="790" y="80" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0ginvcb_di" bpmnElement="ServiceTask_6">
-        <dc:Bounds x="930" y="80" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_09ccbkf_di" bpmnElement="EndEvent_1">
-        <dc:Bounds x="1072" y="102" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1y631x8_di" bpmnElement="EndEvent_2">
-        <dc:Bounds x="912" y="222" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1bi66jq_di" bpmnElement="Event_1op2ilo">
-        <dc:Bounds x="822" y="142" width="36" height="36" />
+      <bpmndi:BPMNShape id="Event_0tskhn3_di" bpmnElement="Event_12ao523">
+        <dc:Bounds x="675" y="612" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="812" y="185" width="57" height="14" />
+          <dc:Bounds x="668" y="655" width="51" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1au6490_di" bpmnElement="ScriptTask_3">
+        <dc:Bounds x="770" y="590" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0ni8gom_di" bpmnElement="Event_0ni8gom">
+        <dc:Bounds x="932" y="612" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0xzq3yj_di" bpmnElement="Flow_0xzq3yj">
+        <di:waypoint x="870" y="630" />
+        <di:waypoint x="932" y="630" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10bam8q_di" bpmnElement="Flow_10bam8q">
+        <di:waypoint x="711" y="630" />
+        <di:waypoint x="770" y="630" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Activity_0sl1og8_di" bpmnElement="AdHocSubProcess_1" isExpanded="true">
+        <dc:Bounds x="1210" y="230" width="350" height="200" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1u6unkc_di" bpmnElement="Activity_1u6unkc">
+        <dc:Bounds x="1260" y="290" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_1g652fc" bpmnElement="Activity_1ylae1o">
+        <dc:Bounds x="1400" y="290" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0lhze4m_di" bpmnElement="Activity_16yfymc">
+        <dc:Bounds x="770" y="170" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0u6du8i_di" bpmnElement="Activity_1m0j029">
+        <dc:Bounds x="770" y="410" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0g7rfcn_di" bpmnElement="Event_0g7rfcn">
+        <dc:Bounds x="1032" y="82" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0mamn5m_di" bpmnElement="Event_0mamn5m">
+        <dc:Bounds x="2242" y="312" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0vbfdqv_di" bpmnElement="Event_1hzo51y">
+        <dc:Bounds x="922" y="432" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1mmakrt_di" bpmnElement="Event_1mmakrt">
+        <dc:Bounds x="1032" y="192" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0qegbfq_di" bpmnElement="ServiceTask_3">
+        <dc:Bounds x="650" y="290" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ii7hye_di" bpmnElement="UserTask_1">
+        <dc:Bounds x="930" y="290" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_16890h2_di" bpmnElement="ScriptTask_1">
+        <dc:Bounds x="230" y="290" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0mmlnsy_di" bpmnElement="ReceiveTask_1">
+        <dc:Bounds x="1070" y="290" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ei6qdo_di" bpmnElement="ServiceTask_1">
+        <dc:Bounds x="370" y="290" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_037ias4" bpmnElement="ServiceTask_2">
+        <dc:Bounds x="510" y="290" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0ginvcb_di" bpmnElement="ServiceTask_4">
+        <dc:Bounds x="790" y="290" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="152" y="312" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0upgd3o_di" bpmnElement="SubProcess_1" isExpanded="true">
+        <dc:Bounds x="1610" y="170" width="580" height="320" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0zpa9tc_di" bpmnElement="Event_0zpa9tc">
+        <dc:Bounds x="1642" y="312" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1j6vjzg_di" bpmnElement="AdHocSubProcess_2" isExpanded="true">
+        <dc:Bounds x="1760" y="230" width="270" height="200" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0qzqnkg_di" bpmnElement="ScriptTask_2">
+        <dc:Bounds x="1840" y="290" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_05uneqm_di" bpmnElement="Event_05uneqm">
+        <dc:Bounds x="2112" y="312" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0ek248u_di" bpmnElement="Flow_0ek248u">
+        <di:waypoint x="1678" y="330" />
+        <di:waypoint x="1760" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0xcmxua_di" bpmnElement="Flow_0xcmxua">
+        <di:waypoint x="2030" y="330" />
+        <di:waypoint x="2112" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Gateway_1m89oya_di" bpmnElement="Gateway_1m89oya" isMarkerVisible="true">
+        <dc:Bounds x="925" y="185" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="923" y="242" width="54" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1bi66jq_di" bpmnElement="TimerBoundaryInterrupting">
+        <dc:Bounds x="682" y="352" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="672" y="395" width="57" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_12ea3ob_di" bpmnElement="TimerBoundaryNonInterrupting">
+        <dc:Bounds x="682" y="272" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="678" y="242" width="45" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_02ercis_di" bpmnElement="Flow_02ercis">
+        <di:waypoint x="870" y="450" />
+        <di:waypoint x="922" y="450" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03l9p18_di" bpmnElement="Flow_03l9p18">
+        <di:waypoint x="1170" y="330" />
+        <di:waypoint x="1210" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03u11ql_di" bpmnElement="Flow_03u11ql">
+        <di:waypoint x="890" y="330" />
+        <di:waypoint x="930" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_06cqvxh_di" bpmnElement="Flow_06cqvxh">
+        <di:waypoint x="870" y="210" />
+        <di:waypoint x="925" y="210" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0d202t1_di" bpmnElement="Flow_0d202t1">
-        <di:waypoint x="188" y="120" />
-        <di:waypoint x="230" y="120" />
+        <di:waypoint x="188" y="330" />
+        <di:waypoint x="230" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0f2v3oj_di" bpmnElement="Flow_0f2v3oj">
+        <di:waypoint x="2190" y="330" />
+        <di:waypoint x="2242" y="330" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0ggbd4s_di" bpmnElement="Flow_0ggbd4s">
-        <di:waypoint x="610" y="120" />
-        <di:waypoint x="650" y="120" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0szzvbm_di" bpmnElement="Flow_0szzvbm">
-        <di:waypoint x="330" y="120" />
-        <di:waypoint x="370" y="120" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1cskg4b_di" bpmnElement="Flow_1cskg4b">
-        <di:waypoint x="470" y="120" />
-        <di:waypoint x="510" y="120" />
+        <di:waypoint x="470" y="330" />
+        <di:waypoint x="510" y="330" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0il16f0_di" bpmnElement="Flow_0il16f0">
-        <di:waypoint x="750" y="120" />
-        <di:waypoint x="790" y="120" />
+        <di:waypoint x="610" y="330" />
+        <di:waypoint x="650" y="330" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0karkwj_di" bpmnElement="Flow_0karkwj">
-        <di:waypoint x="890" y="120" />
-        <di:waypoint x="930" y="120" />
+        <di:waypoint x="750" y="330" />
+        <di:waypoint x="790" y="330" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0cr1jl0_di" bpmnElement="Flow_0cr1jl0">
-        <di:waypoint x="1030" y="120" />
-        <di:waypoint x="1072" y="120" />
+      <bpmndi:BPMNEdge id="Flow_0nufm4k_di" bpmnElement="Flow_0nufm4k">
+        <di:waypoint x="700" y="272" />
+        <di:waypoint x="700" y="210" />
+        <di:waypoint x="770" y="210" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0mpq4id_di" bpmnElement="Flow_0mpq4id">
-        <di:waypoint x="840" y="178" />
-        <di:waypoint x="840" y="240" />
-        <di:waypoint x="912" y="240" />
+      <bpmndi:BPMNEdge id="Flow_105vzb3_di" bpmnElement="Flow_105vzb3">
+        <di:waypoint x="975" y="210" />
+        <di:waypoint x="1032" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11m19en_di" bpmnElement="Flow_11m19en">
+        <di:waypoint x="1560" y="330" />
+        <di:waypoint x="1610" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1cskg4b_di" bpmnElement="Flow_1cskg4b">
+        <di:waypoint x="330" y="330" />
+        <di:waypoint x="370" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1m6w5nl_di" bpmnElement="Flow_1m6w5nl">
+        <di:waypoint x="700" y="388" />
+        <di:waypoint x="700" y="450" />
+        <di:waypoint x="770" y="450" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ynrz1o_di" bpmnElement="Flow_1ynrz1o">
+        <di:waypoint x="1030" y="330" />
+        <di:waypoint x="1070" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0rlkdg6_di" bpmnElement="Flow_0rlkdg6">
+        <di:waypoint x="950" y="185" />
+        <di:waypoint x="950" y="100" />
+        <di:waypoint x="1032" y="100" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="957" y="140" width="17" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

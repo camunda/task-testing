@@ -36,7 +36,7 @@ module.exports = {
         ]
       },
       {
-        test: /\.(bpmn|html)$/i,
+        test: /\.(bpmn|form|html)$/i,
         use: 'raw-loader'
       }
     ]

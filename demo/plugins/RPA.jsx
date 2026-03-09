@@ -6,11 +6,11 @@ import logHtml from './log.html';
 export const RPATab = () => {
   const render = useCallback(({ output }) => {
 
-    if (!output.variables?.RPA_Result) {
+    if (!output?.variables?.RPA_Result) {
       return;
     }
 
-    return <iframe width="100%" srcDoc={ logHtml } />;
+    return <iframe width="100%" height="100%" srcDoc={ logHtml } />;
   }, []);
 
   return <TaskTesting.Tab
