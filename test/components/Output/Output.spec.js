@@ -1,22 +1,228 @@
+/**
+ * @import {
+ *   ElementOutput,
+ *   ElementOutputVariables
+ * }
+ */
+
 import React from 'react';
 
 import { render } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 
-import Output, { NO_OPERATE_URL_TOOLTIP } from '../../../lib/components/Output/Output';
+import Output from '../../../lib/components/Output/Output';
 
-import { SCOPES } from '../../../lib/TaskExecution';
+import { SCOPES } from '../../../lib/utils/variables';
 import { PluginContext, usePluginsProviderValue } from '../../../lib/components/shared/plugins';
-import { pickVariables } from '../../../lib/components/Output/OutputVariables';
+import { pickVariables } from '../../../lib/utils/variables';
 
 describe('Output', function() {
 
-  it('should render', async function() {
+  it('should render empty state when no output', async function() {
+
+    // when
+    const { queryByText } = renderWithProps({
+      output: null
+    });
+
+    // then
+    expect(queryByText(/Result will appear here after you run the test/i)).to.exist;
+    expect(queryByText(/Test passed/i)).to.not.exist;
+    expect(queryByText(/Running test/i)).to.not.exist;
+  });
+
+
+  it('should render executing banner', async function() {
+
+    // when
+    const { queryByText } = renderWithProps({
+      isTaskExecuting: true,
+      output: null
+    });
+
+    // then
+    expect(queryByText(/Running test/i)).to.exist;
+    expect(queryByText(/Result will appear here/i)).to.not.exist;
+  });
+
+
+  it('should render success banner', async function() {
 
     // given
-    /** @type {import('../../../lib/types').ElementOutput} */
     const output = {
       success: true,
+      variables: {}
+    };
+
+    // when
+    const { queryByText } = renderWithProps({ output });
+
+    // then
+    expect(queryByText(/Test passed/i)).to.exist;
+  });
+
+
+  it('should render variables for success output', async function() {
+
+    // given
+    /** @type {ElementOutput} */
+    const output = {
+      success: true,
+      variables: {
+        1: {
+          name: 'foo',
+          value: 'bar',
+          scope: SCOPES.PROCESS
+        },
+        2: {
+          name: 'localFoo',
+          value: 'localBar',
+          scope: SCOPES.LOCAL
+        }
+      }
+    };
+
+    // when
+    const { getAllByRole, queryByText } = renderWithProps({
+      output
+    });
+
+    // then
+    expect(queryByText(/Process variables/i)).to.exist;
+    expect(queryByText(/Local variables/i)).to.exist;
+
+    const textboxes = getAllByRole('textbox');
+
+    const hasMatch = textboxes.some(tb => /"foo": "bar"/i.test(tb.textContent));
+    expect(hasMatch).to.be.true;
+
+    const hasLocalMatch = textboxes.some(tb => /"localFoo": "localBar"/i.test(tb.textContent));
+    expect(hasLocalMatch).to.be.true;
+  });
+
+
+  it('should render error banner', async function() {
+
+    // given
+    const output = {
+      success: false,
+      error: {
+        message: 'Foo',
+        response: 'Bar'
+      }
+    };
+
+    // when
+    const { queryByText } = renderWithProps({ output });
+
+    // then
+    expect(queryByText(/Error: Foo/i)).to.exist;
+  });
+
+
+  it('should render variables for error output', async function() {
+
+    // given
+    /** @type {ElementOutput} */
+    const output = {
+      success: false,
+      error: {
+        message: 'Foo',
+        response: 'Bar'
+      },
+      variables: {
+        1: { name: 'foo', value: 'bar', scope: SCOPES.PROCESS }
+      }
+    };
+
+    // when
+    const { getAllByRole, queryByText } = renderWithProps({
+      output
+    });
+
+    // then
+    expect(queryByText(/Process variables/i)).to.exist;
+
+    const textboxes = getAllByRole('textbox');
+
+    const hasMatch = textboxes.some(tb => /"foo": "bar"/i.test(tb.textContent));
+    expect(hasMatch).to.be.true;
+  });
+
+
+  it('should render incident banner', async function() {
+
+    // given
+    const output = {
+      success: false,
+      incident: {
+        errorType: 'JOB_NO_RETRIES',
+        errorMessage: 'No retries left'
+      }
+    };
+
+    // when
+    const { queryByText } = renderWithProps({ output });
+
+    // then
+    expect(queryByText(/Incident: JOB_NO_RETRIES/i)).to.exist;
+    expect(queryByText(/No retries left/i)).to.exist;
+  });
+
+
+  it('should render variables for incident output', async function() {
+
+    // given
+    /** @type {ElementOutput} */
+    const output = {
+      success: false,
+      incident: {
+        errorType: 'JOB_NO_RETRIES',
+        errorMessage: 'No retries left'
+      },
+      variables: {
+        1: { name: 'foo', value: 'bar', scope: SCOPES.PROCESS }
+      }
+    };
+
+    // when
+    const { getAllByRole, queryByText } = renderWithProps({
+      output
+    });
+
+    // then
+    expect(queryByText(/Process variables/i)).to.exist;
+
+    const textboxes = getAllByRole('textbox');
+
+    const hasMatch = textboxes.some(tb => /"foo": "bar"/i.test(tb.textContent));
+    expect(hasMatch).to.be.true;
+  });
+
+
+  it('should render terminated banner', async function() {
+
+    // given
+    const output = {
+      success: false,
+      terminated: true
+    };
+
+    // when
+    const { queryByText } = renderWithProps({ output });
+
+    // then
+    expect(queryByText(/Process instance terminated/i)).to.exist;
+    expect(queryByText(/terminated before the test could complete/i)).to.exist;
+  });
+
+
+  it('should render variables for terminated output', async function() {
+
+    // given
+    /** @type {ElementOutput} */
+    const output = {
+      success: false,
+      terminated: true,
       variables: {
         1: {
           name: 'foo',
@@ -27,53 +233,60 @@ describe('Output', function() {
     };
 
     // when
-    const { getByRole, queryByText } = renderWithProps({
+    const { getAllByRole, queryByText } = renderWithProps({
       output
     });
 
     // then
     expect(queryByText(/Process variables/i)).to.exist;
-    expect(queryByText(/Local variables/i)).to.exist;
-    expect(getByRole('textbox').textContent).to.match(/"foo": "bar"/i);
+
+    const textboxes = getAllByRole('textbox');
+    const hasMatch = textboxes.some(tb => /"foo": "bar"/i.test(tb.textContent));
+    expect(hasMatch).to.be.true;
   });
 
 
-  describe('error banner', function() {
+  it('should render canceled banner', async function() {
 
-    it('should render action link when onConfigureConnection is provided', async function() {
+    // given
+    const output = {
+      success: false,
+      canceled: true
+    };
 
-      // when
-      const { queryByText } = renderWithProps({
-        isConnectionConfigured: false,
-        configureConnectionBannerTitle: 'Foo',
-        configureConnectionBannerDescription: 'Bar',
-        configureConnectionLabel: 'Baz',
-        onConfigureConnection: () => {}
-      });
+    // when
+    const { queryByText } = renderWithProps({ output });
 
-      // then
-      expect(queryByText(/Foo/i)).to.exist;
-      expect(queryByText(/Bar/i)).to.exist;
-      expect(queryByText(/Baz/i)).to.exist;
-    });
+    // then
+    expect(queryByText(/Test canceled/i)).to.exist;
+    expect(queryByText(/manually canceled/i)).to.exist;
+  });
 
 
-    it('should not render action link when onConfigureConnection is not provided', async function() {
+  it('should render variables for canceled output', async function() {
 
-      // when
-      const { queryByText } = renderWithProps({
-        isConnectionConfigured: false,
-        configureConnectionBannerTitle: 'Foo',
-        configureConnectionBannerDescription: 'Bar',
-        configureConnectionLabel: 'Baz'
-      });
+    // given
+    const output = {
+      success: false,
+      canceled: true,
+      variables: {
+        1: {
+          name: 'myVar',
+          value: 'snapshot',
+          scope: SCOPES.PROCESS
+        }
+      }
+    };
 
-      // then
-      expect(queryByText(/Foo/i)).to.exist;
-      expect(queryByText(/Bar/i)).to.exist;
-      expect(queryByText(/Baz/i)).to.not.exist;
-    });
+    // when
+    const { getAllByRole, queryByText } = renderWithProps({ output });
 
+    // then
+    expect(queryByText(/Process variables/i)).to.exist;
+
+    const textboxes = getAllByRole('textbox');
+    const hasMatch = textboxes.some(tb => /"myVar": "snapshot"/i.test(tb.textContent));
+    expect(hasMatch).to.be.true;
   });
 
 
@@ -124,6 +337,7 @@ describe('Output', function() {
       expect(localVariables).to.eql({});
     });
 
+
     // see https://github.com/camunda/task-testing/issues/48 for legacy format
     it('should not pick variables if legacy format (no name)', function() {
 
@@ -152,77 +366,36 @@ describe('Output', function() {
 
   });
 
-
-  describe('Operate URL', function() {
-
-    it('should show Operate URL when set in output', function() {
-
-      // given
-      const output = {
-        success: true,
-        operateUrl: 'https://camunda.com',
-        variables: {}
-      };
-
-      // when
-      const { queryByText } = renderWithProps({
-        output
-      });
-
-      // then
-      expect(queryByText(/View in Operate/i)).to.exist;
-    });
-
-
-    it('should show Operate URL tooltip when not set in output', function() {
-
-      // given
-      const output = {
-        success: true,
-        variables: {}
-      };
-
-      // when
-      const { queryByText } = renderWithProps({
-        output
-      });
-
-      userEvent.hover(queryByText(/View in Operate/i));
-
-      // then
-      expect(queryByText(NO_OPERATE_URL_TOOLTIP)).to.exist;
-    });
-
-  });
-
 });
 
-function renderWithProps(props) {
+function renderWithProps(props = {}) {
   const {
+    element,
     isConnectionConfigured = true,
-    configureConnectionBannerTitle = 'Configure Connection',
-    configureConnectionBannerDescription = 'Please configure your connection settings.',
-    configureConnectionLabel = 'Configure Connection',
-    onConfigureConnection,
+    currentOperateUrl = null,
     isTaskExecuting = false,
     output = {},
     onResetOutput = () => {},
-    taskExecutionStatus = 'FOO'
+    taskExecutionState,
+    executionLog = [],
+    tasklistBaseUrl,
+    currentVariables
   } = props;
 
 
   return render(
     <Wrapper>
       <Output
+        element={ element }
         isConnectionConfigured={ isConnectionConfigured }
-        configureConnectionBannerTitle={ configureConnectionBannerTitle }
-        configureConnectionBannerDescription={ configureConnectionBannerDescription }
-        configureConnectionLabel={ configureConnectionLabel }
-        onConfigureConnection={ onConfigureConnection }
+        currentOperateUrl={ currentOperateUrl }
         isTaskExecuting={ isTaskExecuting }
         output={ output }
         onResetOutput={ onResetOutput }
-        taskExecutionStatus={ taskExecutionStatus }
+        taskExecutionState={ taskExecutionState }
+        executionLog={ executionLog }
+        tasklistBaseUrl={ tasklistBaseUrl }
+        currentVariables={ currentVariables }
       />
     </Wrapper>
   );

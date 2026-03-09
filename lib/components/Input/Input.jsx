@@ -1,9 +1,9 @@
 import React from 'react';
 
-import { Link } from '@carbon/react';
-import { Launch } from '@carbon/icons-react';
+import { Link, Tooltip } from '@carbon/react';
 
 import InputEditor from './InputEditor';
+import { Information } from '@carbon/icons-react';
 
 export default function Input({
   allOutputs,
@@ -21,23 +21,31 @@ export default function Input({
     <div className="input">
       <div className="input__header">
         <div className="input__header--title">
-          Input process variables
+          <Tooltip className="show-tooltip" label={ <span>Variables the process instance will be started with. <Link
+            href="https://docs.camunda.io/docs/components/concepts/variables/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Learn more.</Link></span> } align="bottom-start">
+            <span>Process variables</span>
+          </Tooltip>
         </div>
-        <Link href="https://docs.camunda.io/docs/components/concepts/variables/" target="_blank" title="Open documentation">
-          <Launch />
-        </Link>
-        <Link
-          className="input__header--button-reset"
-          onClick={ handleResetInput }
-          role="button">Clear</Link>
       </div>
       <InputEditor
         allOutputs={ allOutputs }
         value={ input }
         onChange={ onSetInput }
+        onClear={ handleResetInput }
         onErrorChange={ onErrorChange }
         variablesForElement={ variablesForElement }
       />
+      <div className="input__footer">
+        <div className="input__footer--icon">
+          <Information />
+        </div>
+        <div className="input__footer--text">
+          Optionally define process variables to start the process instance with.
+        </div>
+      </div>
     </div>
   );
 }

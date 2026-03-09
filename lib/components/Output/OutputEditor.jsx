@@ -4,10 +4,10 @@ import { Button } from '@carbon/react';
 import { Copy } from '@carbon/icons-react';
 
 import { EditorState } from '@codemirror/state';
-import { EditorView } from '@codemirror/view';
+import { EditorView, keymap } from '@codemirror/view';
 import { json } from '@codemirror/lang-json';
+import { foldGutter, foldKeymap } from '@codemirror/language';
 import theme from '../shared/CodeMirrorTheme';
-
 
 export default function OutputEditor({ value }) {
 
@@ -31,7 +31,9 @@ export default function OutputEditor({ value }) {
         EditorState.readOnly.of(true),
         EditorView.editable.of(false),
         EditorView.lineWrapping,
-        theme,
+        foldGutter(),
+        keymap.of(foldKeymap),
+        theme
       ]
     });
 

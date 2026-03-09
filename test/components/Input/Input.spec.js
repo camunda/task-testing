@@ -2,7 +2,7 @@ import React from 'react';
 
 import { render } from '@testing-library/react';
 
-import { bootstrapModeler, getModeler } from '../../util/Util';
+import { bootstrapModeler, getModeler } from '../../helpers/modeler';
 
 import Input from '../../../lib/components/Input/Input';
 

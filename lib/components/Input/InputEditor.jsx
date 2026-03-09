@@ -8,6 +8,7 @@ import { Compartment, EditorState, Annotation } from '@codemirror/state';
 import { EditorView, keymap, placeholder } from '@codemirror/view';
 import { linter } from '@codemirror/lint';
 import { json, jsonParseLinter } from '@codemirror/lang-json';
+import { foldGutter, foldKeymap } from '@codemirror/language';
 
 import classNames from 'classnames';
 
@@ -17,7 +18,9 @@ import theme from '../shared/CodeMirrorTheme';
 
 import { getAutocompletionExtensions } from '../../utils/autocompletion';
 
-import { SCOPES } from '../../TaskExecution';
+import { SCOPES } from '../../utils/variables';
+import { Button } from '@carbon/react';
+import { Erase } from '@carbon/icons-react';
 
 const fromPropAnnotation = Annotation.define();
 
@@ -34,6 +37,7 @@ export default function InputEditor({
   allOutputs = DEFAULT_ALL_OUTPUTS,
   value,
   onChange,
+  onClear,
   onErrorChange,
   variablesForElement = DEFAULT_VARIABLES_FOR_ELEMENT
 }) {
@@ -112,6 +116,8 @@ export default function InputEditor({
         linter(source, { delay: 300 }),
         autocompletionCompartment.of(getAutocompletionExtensions(autocompletions)),
         placeholder(PLACEHOLDER_TEXT),
+        foldGutter(),
+        keymap.of(foldKeymap),
         theme,
         EditorView.lineWrapping,
         EditorView.updateListener.of((update) => {
@@ -168,7 +174,16 @@ export default function InputEditor({
   }, [ editorView, value ]);
 
   return <div className={ classNames('code__editor', { 'code__editor--error': error }) }>
+    <Button
+      className="code__editor-clear-button"
+      renderIcon={ Erase }
+      iconDescription="Clear editor"
+      size="sm"
+      kind="ghost"
+      hasIconOnly
+      onClick={ onClear } />
     <div className="code__editor-codemirror">
+      <div className="code__editor-codemirror-error-overlay"></div>
       <div ref={ ref } className="code__editor-codemirror-inner"></div>
     </div>
     { error && <div className="code__editor-error">{ error }</div> }
@@ -231,7 +246,7 @@ function getAllOutputVariables(allOutputs) {
  *
  * @param {any} value
  *
- * @return {string}
+ * @returns {string}
  */
 function getDetail(value) {
   const type = typeof value;

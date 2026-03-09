@@ -31,5 +31,11 @@ describe('getOperateUrl', function() {
     expect(getOperateUrl(operateBaseUrl, processInstanceKey)).to.eql(expectedUrl);
   });
 
+
+  it('should return null for invalid base URL', function() {
+    const operateBaseUrl = 'http://%';
+    expect(getOperateUrl(operateBaseUrl, processInstanceKey)).to.be.null;
+  });
+
 });
 
