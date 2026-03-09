@@ -915,13 +915,14 @@ describe('ExecutionLog', function() {
 
     describe('failed API responses', function() {
 
-      it('should skip items from failed poll responses', function() {
+      it('should skip items from failed jobs response', function() {
 
         // when
         executionLog.setPolledResult(createPolledResult({
           jobsResponse: createGetProcessInstanceJobsResponse({
             success: false,
-            error: { message: 'Failed to fetch jobs' }
+            error: 'Failed to fetch jobs',
+            errorType: 'HttpSdkError'
           }),
           userTasksResponse: createGetProcessInstanceUserTasksResponse({
             response: { items: [ createUserTaskDetails() ] }
@@ -936,6 +937,79 @@ describe('ExecutionLog', function() {
         expect(jobEntries).to.have.length(0);
         expect(taskEntries.length).to.be.greaterThan(0);
       });
+
+
+      it('should skip items from failed user tasks response', function() {
+
+        // when
+        executionLog.setPolledResult(createPolledResult({
+          userTasksResponse: createGetProcessInstanceUserTasksResponse({
+            success: false,
+            error: 'Failed to fetch user tasks',
+            errorType: 'HttpSdkError'
+          }),
+          jobsResponse: createGetProcessInstanceJobsResponse({
+            response: { items: [ createJobDetails() ] }
+          })
+        }), createMockTimestamp());
+
+        // then
+        const entries = executionLog.getEntries();
+        const taskEntries = entries.filter(e => e.type === EXECUTION_LOG_ENTRY_TYPE.USER_TASK);
+        const jobEntries = entries.filter(e => e.type === EXECUTION_LOG_ENTRY_TYPE.JOB);
+
+        expect(taskEntries).to.have.length(0);
+        expect(jobEntries.length).to.be.greaterThan(0);
+      });
+
+
+      it('should skip items from failed element instances response', function() {
+
+        // when
+        executionLog.setPolledResult(createPolledResult({
+          elementInstancesResponse: createGetProcessInstanceElementInstancesResponse({
+            success: false,
+            error: 'Failed to fetch element instances',
+            errorType: 'HttpSdkError'
+          }),
+          jobsResponse: createGetProcessInstanceJobsResponse({
+            response: { items: [ createJobDetails() ] }
+          })
+        }), createMockTimestamp());
+
+        // then
+        const entries = executionLog.getEntries();
+        const instanceEntries = entries.filter(e => e.type === EXECUTION_LOG_ENTRY_TYPE.ELEMENT_INSTANCE);
+        const jobEntries = entries.filter(e => e.type === EXECUTION_LOG_ENTRY_TYPE.JOB);
+
+        expect(instanceEntries).to.have.length(0);
+        expect(jobEntries.length).to.be.greaterThan(0);
+      });
+
+
+      it('should skip items from failed message subscriptions response', function() {
+
+        // when
+        executionLog.setPolledResult(createPolledResult({
+          messageSubscriptionsResponse: createGetProcessInstanceMessageSubscriptionsResponse({
+            success: false,
+            error: 'Failed to fetch message subscriptions',
+            errorType: 'HttpSdkError'
+          }),
+          jobsResponse: createGetProcessInstanceJobsResponse({
+            response: { items: [ createJobDetails() ] }
+          })
+        }), createMockTimestamp());
+
+        // then
+        const entries = executionLog.getEntries();
+        const subEntries = entries.filter(e => e.type === EXECUTION_LOG_ENTRY_TYPE.MESSAGE_SUBSCRIPTION);
+        const jobEntries = entries.filter(e => e.type === EXECUTION_LOG_ENTRY_TYPE.JOB);
+
+        expect(subEntries).to.have.length(0);
+        expect(jobEntries.length).to.be.greaterThan(0);
+      });
+
     });
 
 

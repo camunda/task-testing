@@ -420,7 +420,7 @@ function ResultBanner({
       </div>
       { detailsExpanded && detailsContent && (
         <div className="output__banner-details">
-          <pre className="output__banner-details-content">{ detailsContent }</pre>
+          <div className="output__banner-details-content">{ detailsContent }</div>
         </div>
       ) }
       {
@@ -435,10 +435,30 @@ function ResultBanner({
                   <dt className="output__banner-details-label">Message</dt>
                   <dd className="output__banner-details-value">{ output.error?.message || 'No error message available' }</dd>
                 </div>
-                <div className="output__banner-details-row">
-                  <dt className="output__banner-details-label">Response</dt>
-                  <dd className="output__banner-details-value">{ output.error?.response || 'No error response available' }</dd>
-                </div>
+                { output.error?.detail && (
+                  <div className="output__banner-details-row">
+                    <dt className="output__banner-details-label">Detail</dt>
+                    <dd className="output__banner-details-value">{ output.error.detail }</dd>
+                  </div>
+                ) }
+                { output.error?.errorType && (
+                  <div className="output__banner-details-row">
+                    <dt className="output__banner-details-label">Error type</dt>
+                    <dd className="output__banner-details-value">{ output.error.errorType }</dd>
+                  </div>
+                ) }
+                { output.error?.status != null && (
+                  <div className="output__banner-details-row">
+                    <dt className="output__banner-details-label">Status</dt>
+                    <dd className="output__banner-details-value">{ output.error.status }</dd>
+                  </div>
+                ) }
+                { output.error?.response && (
+                  <div className="output__banner-details-row">
+                    <dt className="output__banner-details-label">Response</dt>
+                    <dd className="output__banner-details-value">{ output.error.response }</dd>
+                  </div>
+                ) }
               </div>
             </div>
           </div>

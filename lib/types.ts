@@ -71,7 +71,11 @@ export type ApiResponse<T> = {
   response: T;
 } | {
   success: false;
-  error: TaskExecutionError;
+  error: string;
+  errorType?: string;
+  status?: number | null;
+  detail?: string | null;
+  operationId?: string | null;
 };
 
 export type DeployResponse = ApiResponse<DeploymentResult>;
@@ -170,7 +174,11 @@ export type TaskExecutionFinishedResult =
 
 export type TaskExecutionError = {
   message: string;
-  response?: any;
+  response?: string;
+  errorType?: string;
+  status?: number | null;
+  detail?: string | null;
+  operationId?: string | null;
 };
 
 export type ExecutionLogEntryStatus = typeof EXECUTION_LOG_ENTRY_STATUS[keyof typeof EXECUTION_LOG_ENTRY_STATUS];

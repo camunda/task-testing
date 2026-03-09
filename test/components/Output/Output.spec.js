@@ -14,6 +14,7 @@ import Output from '../../../lib/components/Output/Output';
 import { SCOPES } from '../../../lib/utils/variables';
 import { PluginContext, usePluginsProviderValue } from '../../../lib/components/shared/plugins';
 import { pickVariables } from '../../../lib/utils/variables';
+import { createIncidentDetails } from '../../helpers/responses';
 
 describe('Output', function() {
 
@@ -119,6 +120,32 @@ describe('Output', function() {
   });
 
 
+  it('should render all error details', async function() {
+
+    // given
+    const output = {
+      success: false,
+      error: {
+        message: 'Something went wrong',
+        detail: 'The connector timed out',
+        errorType: 'HttpSdkError',
+        status: 503,
+        response: 'Service Unavailable'
+      }
+    };
+
+    // when
+    const { queryByText } = renderWithProps({ output });
+
+    // then
+    expect(queryByText('Something went wrong')).to.exist;
+    expect(queryByText('The connector timed out')).to.exist;
+    expect(queryByText('HttpSdkError')).to.exist;
+    expect(queryByText('503')).to.exist;
+    expect(queryByText('Service Unavailable')).to.exist;
+  });
+
+
   it('should render variables for error output', async function() {
 
     // given
@@ -166,6 +193,27 @@ describe('Output', function() {
     // then
     expect(queryByText(/Incident: JOB_NO_RETRIES/i)).to.exist;
     expect(queryByText(/No retries left/i)).to.exist;
+  });
+
+
+  it('should render all incident details', async function() {
+
+    // given
+    const output = {
+      success: false,
+      incident: createIncidentDetails({
+        errorType: 'JOB_NO_RETRIES',
+        errorMessage: 'No retries left'
+      })
+    };
+
+    // when
+    const { queryByText } = renderWithProps({ output });
+
+    // then
+    expect(queryByText('Incident details')).to.exist;
+    expect(queryByText('JOB_NO_RETRIES')).to.exist;
+    expect(queryByText('No retries left')).to.exist;
   });
 
 
