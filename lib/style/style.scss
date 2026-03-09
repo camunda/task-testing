@@ -872,6 +872,9 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 2px;
+    background-color: var(--color-bg-light);
 
     .code__editor-codemirror-error-overlay {
       display: none;
@@ -902,7 +905,7 @@
       }
 
       .cm-content {
-        padding: 15px;
+        padding: 6px;
       }
 
       .cm-focused {
@@ -914,7 +917,7 @@
       }
 
       .info {
-        padding: 5px;
+        padding: 6px;
         font-family: monospace;
         font-size: 12px;
         max-width: 300px;
@@ -934,9 +937,17 @@
 
     .code__editor-copy-button {
       position: absolute;
-      top: 10px;
-      right: 10px;
+      top: 4px;
+      right: 4px;
       z-index: 10;
+      block-size: 24px;
+      inline-size: 24px;
+      padding-block-start: 0;
+      padding-inline-end: 0;
+      min-block-size: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
 
       svg {
         fill: var(--color-text-secondary);
@@ -945,9 +956,17 @@
 
     .code__editor-clear-button {
       position: absolute;
-      top: 10px;
-      right: 10px;
+      top: 4px;
+      right: 4px;
       z-index: 10;
+      block-size: 24px;
+      inline-size: 24px;
+      padding-block-start: 0;
+      padding-inline-end: 0;
+      min-block-size: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
 
       svg {
         fill: var(--color-text-secondary);
