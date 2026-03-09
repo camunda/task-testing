@@ -1,3 +1,7 @@
+// configures browsers to run test against
+// any of [ 'ChromeHeadless', 'Chrome', 'Firefox' ]
+const browsers = (process.env.TEST_BROWSERS || 'ChromeHeadless').split(',');
+
 module.exports = function(config) {
   config.set({
     frameworks: [
@@ -11,7 +15,7 @@ module.exports = function(config) {
     preprocessors: {
       ['test/**/*.spec.js']: [ 'webpack', 'env' ]
     },
-    browsers: [ 'ChromeHeadless' ],
+    browsers,
     singleRun: true,
     webpack: {
       mode: 'development',
