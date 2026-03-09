@@ -1,9 +1,11 @@
 import React from 'react';
 
-import { Link, Tooltip } from '@carbon/react';
+import { Link } from '@carbon/react';
+import { Information } from '@carbon/icons-react';
 
 import InputEditor from './InputEditor';
-import { Information } from '@carbon/icons-react';
+
+import Tooltip from '../shared/Tooltip';
 
 export default function Input({
   allOutputs,

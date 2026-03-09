@@ -201,9 +201,7 @@
       width: 140px;
     }
 
-    .cds--tooltip-content {
-      padding: 12px;
-    }
+
 
     .cds--btn .cds--inline-loading {
       inline-size: initial;
@@ -445,7 +443,7 @@
 
       .output__banner-details-value {
         color: var(--color-text-primary);
-        font-family: monospace;
+        font-family: 'IBM Plex Mono', monospace;
         width: 70%;
         white-space: pre-wrap;
         word-break: break-word;
@@ -654,7 +652,7 @@
 
     .execution-log__details-value {
       color: var(--color-text-primary);
-      font-family: monospace;
+      font-family: 'IBM Plex Mono', monospace;
       width: 70%;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -849,23 +847,10 @@
     }
   }
 
-  .cds--popover-container:not(.show-tooltip) .cds--popover {
-    display: none !important;
-  }
-
-  .show-tooltip {
-    text-decoration: underline;
-    text-decoration-style: dotted;
-    text-underline-offset: 2px;
-
-    .cds--popover {
-      z-index: 100;
-
-      .cds--link {
-        color: hsl(218, 100%, 74%);
-        text-decoration: underline;
-      }
-    }
+  .task-testing-tooltip__wrapper {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
   }
 
   .code__editor {
@@ -918,7 +903,7 @@
 
       .info {
         padding: 6px;
-        font-family: monospace;
+        font-family: 'IBM Plex Mono', monospace;
         font-size: 12px;
         max-width: 300px;
         word-wrap: break-word;
@@ -971,6 +956,122 @@
       svg {
         fill: var(--color-text-secondary);
       }
+    }
+  }
+
+  .show-tooltip {
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 2px;
+  }
+}
+
+// Tooltip (portaled to document.body)
+.task-testing-tooltip {
+  --tooltip-color-bg: hsl(0, 0%, 22%);
+  --tooltip-color-text: #fff;
+  --tooltip-color-link: hsl(218, 100%, 74%);
+  --tooltip-color-code-text: hsl(225, 10%, 35%);
+  --tooltip-color-code-bg: hsl(225, 10%, 97%);
+  --tooltip-color-code-border: hsl(225, 10%, 85%);
+
+  position: fixed;
+  z-index: 1000;
+  max-width: 300px;
+  font-size: 13px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: var(--tooltip-color-text);
+
+  .task-testing-tooltip__content {
+    background-color: var(--tooltip-color-bg);
+    color: var(--tooltip-color-text);
+    padding: 16px;
+    border-radius: 2px;
+    font-size: 14px;
+    font-weight: 400;
+    white-space: pre-wrap;
+    line-height: 21px;
+
+    .bio-properties-panel-tooltip-content h1 {
+      font-size: 14px;
+      font-weight: bold;
+      margin: 0;
+    }
+
+    a {
+      color: var(--tooltip-color-link) !important;
+      text-decoration: underline !important;
+    }
+
+    code, pre {
+      color: var(--tooltip-color-code-text);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      line-height: 17px;
+      padding: 0 2px;
+      background-color: var(--tooltip-color-code-bg);
+      border: 1px solid var(--tooltip-color-code-border);
+      border-radius: 2px;
+    }
+
+    pre code {
+      border: none;
+    }
+
+    p:first-child {
+      margin-top: 0;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .task-testing-tooltip__arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+  }
+
+  // bottom-start / bottom-end
+  &.bottom-start,
+  &.bottom-end {
+    padding-top: 6px;
+
+    .task-testing-tooltip__arrow {
+      top: 1px;
+      left: 12px;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-bottom: 5px solid var(--tooltip-color-bg);
+    }
+  }
+
+  &.bottom-end {
+    .task-testing-tooltip__arrow {
+      left: auto;
+      right: 12px;
+    }
+  }
+
+  // top-start / top-end
+  &.top-start,
+  &.top-end {
+    padding-bottom: 6px;
+
+    .task-testing-tooltip__arrow {
+      bottom: 1px;
+      left: 12px;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid var(--tooltip-color-bg);
+    }
+  }
+
+  &.top-end {
+    .task-testing-tooltip__arrow {
+      left: auto;
+      right: 12px;
     }
   }
 }

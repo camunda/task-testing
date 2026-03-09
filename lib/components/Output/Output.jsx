@@ -15,8 +15,7 @@ import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } 
 import {
   InlineLoading,
   Link,
-  SkeletonPlaceholder,
-  Tooltip
+  SkeletonPlaceholder
 } from '@carbon/react';
 
 import {
@@ -34,6 +33,7 @@ import { isFunction } from 'min-dash';
 import OutputEditor from './OutputEditor';
 import { ExecutionLog } from './ExecutionLog';
 import { PluginContext } from '../shared/plugins';
+import Tooltip from '../shared/Tooltip';
 import { SCOPES, pickVariables } from '../../utils/variables';
 
 /**
