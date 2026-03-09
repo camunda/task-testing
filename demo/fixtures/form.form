@@ -1,0 +1,33 @@
+{
+  "components": [
+    {
+      "label": "What is the meaning of life?",
+      "values": [
+        {
+          "label": "Life is a well-modeled Business Process Model and Notation process: start event, decisions, and continuous flow toward outcomes.",
+          "value": "Life is a well-modeled Business Process Model and Notation process: start event, decisions, and continuous flow toward outcomes."
+        },
+        {
+          "label": "Life is an infinite Business Process Model and Notation loop: events happen, gateways decide paths, and the process never truly ends.",
+          "value": "Life is an infinite Business Process Model and Notation loop: events happen, gateways decide paths, and the process never truly ends."
+        }
+      ],
+      "type": "radio",
+      "layout": {
+        "row": "Row_05afcu5",
+        "columns": null
+      },
+      "id": "Field_1m5ap7q",
+      "key": "radio_a3raup"
+    }
+  ],
+  "type": "default",
+  "id": "Form",
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.9.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.44.0"
+  },
+  "schemaVersion": 19
+}
