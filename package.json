@@ -54,7 +54,7 @@
     "@types/codemirror": "^5.60.16",
     "@types/react": "^19.1.12",
     "babel-loader": "^10.1.1",
-    "bpmn-js-element-templates": "^2.15.1",
+    "bpmn-js-element-templates": "^2.22.0",
     "bpmn-js-headless": "^0.1.0",
     "bpmn-js-properties-panel": "^5.42.3",
     "camunda-bpmn-js": "^5.14.2",
