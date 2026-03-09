@@ -6,6 +6,23 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+## 3.0.0
+
+* `FEAT`: show execution log in the task testing panel tracking process execution step by step ([#81](https://github.com/camunda/task-testing/pull/81))
+* `FEAT`: persist execution log ([#81](https://github.com/camunda/task-testing/pull/81))
+* `FEAT`: show CTA for active jobs, message subscriptions, and user tasks ([#81](https://github.com/camunda/task-testing/pull/81))
+* `CHORE`: migrate from `@camunda8/sdk` to `@camunda8/orchestration-cluster-api` ([#81](https://github.com/camunda/task-testing/pull/81))
+* `CHORE`: consolidate task testing events ([#81](https://github.com/camunda/task-testing/pull/81))
+
+### Breaking Changes
+
+* `taskExecution.status.changed` event replaced by `taskExecution.state.changed`
+* `taskExecution.error` event removed; errors now surfaced via `taskExecution.finished` with `reason: 'error'`
+* `taskExecution.interrupted` event removed; replaced by `taskExecution.finished` with `reason: 'user.selectionChanged'`
+* `onTaskExecutionFinished` callback now receives a `TaskExecutionFinishedResult` object (not the old output shape)
+* `onTaskExecutionInterrupted` prop removed
+* `TaskExecutionApi` requires three new methods: `getProcessInstanceJobs`, `getProcessInstanceMessageSubscriptions`, `getProcessInstanceUserTasks`
+
 ## 2.2.0
 
 * `FEAT`: bundle and export types ([#74](https://github.com/camunda/task-testing/pull/74))
