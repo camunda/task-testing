@@ -281,7 +281,7 @@ const OperateLink = () => {
   const getTooltip = useCallback(({ output, currentOperateUrl }) => {
     const operateUrl = currentOperateUrl || output?.operateUrl;
 
-    return !operateUrl ? 'Operate URL not found' : 'Open process instance in Operate';
+    return !operateUrl ? 'Operate URL not found' : null;
   }, []);
 
   return <HeaderLink
