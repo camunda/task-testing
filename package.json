@@ -38,7 +38,7 @@
     "classnames": "^2.5.1",
     "codemirror": "^6.0.2",
     "events": "^3.3.0",
-    "min-dash": "^4.2.3"
+    "min-dash": "^5.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.28.0",
