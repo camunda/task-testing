@@ -1,8 +1,43 @@
 import sinon from 'sinon';
 
-import { bootstrapModeler, inject } from './util/Util';
+import { bootstrapModeler, inject } from './helpers/modeler';
+import {
+  createCreateProcessInstanceSDKResponse,
+  createDeployResponse,
+  createDeployResourcesSDKResponse,
+  createElementInstanceDetails,
+  createEmptyGetProcessInstanceJobsResponse,
+  createEmptyGetProcessInstanceMessageSubscriptionsResponse,
+  createEmptyGetProcessInstanceResponse,
+  createEmptyGetProcessInstanceUserTasksResponse,
+  createGetProcessInstanceElementInstancesResponse,
+  createGetProcessInstanceIncidentResponse,
+  createGetProcessInstanceJobsResponse,
+  createGetProcessInstanceResponse,
+  createGetProcessInstanceVariablesResponse,
+  createProcessInstanceDetails,
+  createSearchElementInstancesSDKResponse,
+  createSearchIncidentSDKResponse,
+  createSearchProcessInstancesSDKResponse,
+  createStartInstanceResponse,
+  DEFAULT_DEPLOY_ERROR,
+  DEFAULT_INCIDENT,
+  DEFAULT_INCIDENT_KEY,
+  DEFAULT_PROCESS_DEFINITION_KEY,
+  DEFAULT_PROCESS_INSTANCE_KEY,
+  DEFAULT_START_INSTANCE_ERROR
+} from './helpers/responses';
 
-import TaskExecution, { getProcessDefinitionKey, getVariables, INTERVAL_MS, SCOPES } from '../lib/TaskExecution';
+import TaskExecution, {
+  getElementInstance,
+  getIncident,
+  getProcessDefinitionKey,
+  POLL_INTERVAL_MS,
+  TASK_EXECUTION_EVENT,
+  TASK_EXECUTION_FINISHED_REASON
+} from '../lib/TaskExecution';
+
+import { createDeferred } from './helpers/deferred';
 
 import diagramXML from './fixtures/diagram.bpmn';
 
@@ -22,167 +57,297 @@ describe('TaskExecution', function() {
 
   let api, taskExecution;
 
-  const statusChangeSpy = sinon.spy();
+  const stateChangedSpy = sinon.spy();
+  const deployedSpy = sinon.spy();
+  const instanceStartedSpy = sinon.spy();
+  const polledSpy = sinon.spy();
   const finishedSpy = sinon.spy();
-  const errorSpy = sinon.spy();
 
   beforeEach(inject(function(injector) {
     api = {
       deploy: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
-      startInstance: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
       getProcessInstance: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
-      getProcessInstanceVariables: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
       getProcessInstanceElementInstances: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
-      getProcessInstanceIncident: sinon.stub().resolves({ success: false, error: 'Not implemented' })
+      getProcessInstanceIncident: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
+      getProcessInstanceJobs: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
+      getProcessInstanceMessageSubscriptions: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
+      getProcessInstanceUserTasks: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
+      getProcessInstanceVariables: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
+      startInstance: sinon.stub().resolves({ success: false, error: 'Not implemented' })
     };
 
     taskExecution = new TaskExecution(injector, api);
 
-    taskExecution.on('taskExecution.status.changed', statusChangeSpy);
-    taskExecution.on('taskExecution.finished', finishedSpy);
-    taskExecution.on('taskExecution.error', errorSpy);
+    taskExecution.on(TASK_EXECUTION_EVENT.STATE_CHANGED, stateChangedSpy);
+    taskExecution.on(TASK_EXECUTION_EVENT.DEPLOYED, deployedSpy);
+    taskExecution.on(TASK_EXECUTION_EVENT.INSTANCE_STARTED, instanceStartedSpy);
+    taskExecution.on(TASK_EXECUTION_EVENT.POLLED, polledSpy);
+    taskExecution.on(TASK_EXECUTION_EVENT.FINISHED, finishedSpy);
   }));
 
   afterEach(function() {
     taskExecution.removeAllListeners();
 
-    statusChangeSpy.resetHistory();
+    stateChangedSpy.resetHistory();
+    deployedSpy.resetHistory();
+    instanceStartedSpy.resetHistory();
+    polledSpy.resetHistory();
     finishedSpy.resetHistory();
-    errorSpy.resetHistory();
   });
 
 
-  it('should execute a task', inject(async function(elementRegistry) {
+  it('should execute a task (single poll)', inject(async function(elementRegistry) {
 
     // given
-    api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
-    api.startInstance.resolves({ success: true, response: DEFAULT_START_INSTANCE_RESPONSE });
-    api.getProcessInstance.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_RESPONSE });
-    api.getProcessInstanceVariables.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_VARIABLES_RESPONSE });
-    api.getProcessInstanceElementInstances.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_ELEMENT_INSTANCES_RESPONSE });
+    const deployResponse = createDeployResponse();
+    const getProcessInstanceResponse = createGetProcessInstanceResponse();
+    const getProcessInstanceElementInstancesResponse = createGetProcessInstanceElementInstancesResponse();
+    const getProcessInstanceJobsResponse = createGetProcessInstanceJobsResponse();
+    const getProcessInstanceMessageSubscriptionsResponse = createEmptyGetProcessInstanceMessageSubscriptionsResponse();
+    const getProcessInstanceUserTasksResponse = createEmptyGetProcessInstanceUserTasksResponse();
+    const getProcessInstanceVariablesResponse = createGetProcessInstanceVariablesResponse();
+    const startInstanceResponse = createStartInstanceResponse();
+
+    api.deploy.resolves(deployResponse);
+    api.getProcessInstance.resolves(getProcessInstanceResponse);
+    api.getProcessInstanceElementInstances.resolves(getProcessInstanceElementInstancesResponse);
+    api.getProcessInstanceJobs.resolves(getProcessInstanceJobsResponse);
+    api.getProcessInstanceMessageSubscriptions.resolves(getProcessInstanceMessageSubscriptionsResponse);
+    api.getProcessInstanceUserTasks.resolves(getProcessInstanceUserTasksResponse);
+    api.getProcessInstanceVariables.resolves(getProcessInstanceVariablesResponse);
+    api.startInstance.resolves(startInstanceResponse);
 
     // when
     taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
 
-    await clock.tickAsync(1500);
+    await clock.tickAsync(POLL_INTERVAL_MS);
 
     // then
-    expect(statusChangeSpy).to.have.been.calledWith('deploying');
-    expect(statusChangeSpy).to.have.been.calledWith('starting-instance');
-    expect(statusChangeSpy).to.have.been.calledWith('executing');
+    expect(stateChangedSpy.callCount).to.equal(4);
+    expect(stateChangedSpy.getCall(0)).to.have.been.calledWith('deploying');
+    expect(stateChangedSpy.getCall(1)).to.have.been.calledWith('starting-instance');
+    expect(stateChangedSpy.getCall(2)).to.have.been.calledWith('executing');
+    expect(stateChangedSpy.getCall(3)).to.have.been.calledWith('idle');
 
-    expect(errorSpy).to.not.have.been.called;
+    expect(deployedSpy).to.have.been.calledOnce;
+    expect(deployedSpy).to.have.been.calledWith(deployResponse);
 
-    expect(api.deploy).to.have.been.calledOnce;
-    expect(api.startInstance).to.have.been.calledOnce;
-    expect(api.getProcessInstance).to.have.been.calledOnce;
-    expect(api.getProcessInstanceVariables).to.have.been.calledOnce;
-    expect(api.getProcessInstanceElementInstances).to.have.been.calledOnce;
-    expect(api.getProcessInstanceIncident).to.not.have.been.called;
+    expect(instanceStartedSpy).to.have.been.calledOnce;
+    expect(instanceStartedSpy).to.have.been.calledWith(startInstanceResponse);
 
+    expect(polledSpy).to.have.been.calledOnce;
+    expect(polledSpy).to.have.been.calledWithMatch({
+      elementId: 'ServiceTask_1',
+      processInstanceKey: DEFAULT_PROCESS_INSTANCE_KEY,
+      elementInstancesResponse: getProcessInstanceElementInstancesResponse,
+      jobsResponse: getProcessInstanceJobsResponse,
+      messageSubscriptionsResponse: getProcessInstanceMessageSubscriptionsResponse,
+      processInstanceResponse: getProcessInstanceResponse,
+      userTasksResponse: getProcessInstanceUserTasksResponse,
+      variablesResponse: getProcessInstanceVariablesResponse
+    });
+
+    expect(finishedSpy).to.have.been.calledOnce;
     expect(finishedSpy).to.have.been.calledWithMatch({
-      'incident': null,
-      'success': true,
-      'variables': {
-        '2251799813755923': {
-          'name': 'foo',
-          'value': 'bar',
-          'scope': 'PROCESS'
-        },
-        '2251799813755924': {
-          'name': 'baz',
-          'value': 42,
-          'scope': 'PROCESS'
-        }
+      success: true,
+      processInstanceKey: DEFAULT_PROCESS_INSTANCE_KEY,
+      lastPolledResult: {
+        variablesResponse: getProcessInstanceVariablesResponse,
+        elementInstancesResponse: getProcessInstanceElementInstancesResponse,
+        processInstanceResponse: getProcessInstanceResponse
       }
     });
+
+    expect(api.deploy).to.have.been.calledOnce;
+    expect(api.getProcessInstance).to.have.been.calledOnce;
+    expect(api.getProcessInstance).to.have.been.calledWithMatch(DEFAULT_PROCESS_INSTANCE_KEY);
+    expect(api.getProcessInstanceElementInstances).to.have.been.calledOnce;
+    expect(api.getProcessInstanceElementInstances).to.have.been.calledWithMatch(DEFAULT_PROCESS_INSTANCE_KEY);
+    expect(api.getProcessInstanceIncident).to.not.have.been.called;
+    expect(api.getProcessInstanceJobs).to.have.been.calledOnce;
+    expect(api.getProcessInstanceJobs).to.have.been.calledWithMatch(DEFAULT_PROCESS_INSTANCE_KEY, 'ServiceTask_1');
+    expect(api.getProcessInstanceMessageSubscriptions).to.have.been.calledOnce;
+    expect(api.getProcessInstanceMessageSubscriptions).to.have.been.calledWithMatch(DEFAULT_PROCESS_INSTANCE_KEY, 'ServiceTask_1');
+    expect(api.getProcessInstanceUserTasks).to.have.been.calledOnce;
+    expect(api.getProcessInstanceUserTasks).to.have.been.calledWithMatch(DEFAULT_PROCESS_INSTANCE_KEY, 'ServiceTask_1');
+    expect(api.getProcessInstanceVariables).to.have.been.calledOnce;
+    expect(api.getProcessInstanceVariables).to.have.been.calledWithMatch(DEFAULT_PROCESS_INSTANCE_KEY);
+    expect(api.startInstance).to.have.been.calledOnce;
+    expect(api.startInstance).to.have.been.calledWithMatch(
+      DEFAULT_PROCESS_DEFINITION_KEY,
+      'ServiceTask_1',
+      { foo: 'bar' }
+    );
   }));
 
 
-  it('should execute a task and poll until process instance found', inject(async function(elementRegistry) {
+  it('should execute a task and poll until process instance found (2 polls)', inject(async function(elementRegistry) {
 
     // given
-    api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
-    api.startInstance.resolves({ success: true, response: DEFAULT_START_INSTANCE_RESPONSE });
-    api.getProcessInstance.onFirstCall().resolves({ success: true, response: { items: [] } });
-    api.getProcessInstance.onSecondCall().resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_RESPONSE });
-    api.getProcessInstanceVariables.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_VARIABLES_RESPONSE });
-    api.getProcessInstanceElementInstances.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_ELEMENT_INSTANCES_RESPONSE });
+    const deployResponse = createDeployResponse();
+    const emptyGetProcessInstanceResponse = createEmptyGetProcessInstanceResponse();
+    const getProcessInstanceResponse = createGetProcessInstanceResponse();
+    const getProcessInstanceElementInstancesResponse = createGetProcessInstanceElementInstancesResponse();
+    const getProcessInstanceJobsResponse = createGetProcessInstanceJobsResponse();
+    const getProcessInstanceMessageSubscriptionsResponse = createEmptyGetProcessInstanceMessageSubscriptionsResponse();
+    const getProcessInstanceUserTasksResponse = createEmptyGetProcessInstanceUserTasksResponse();
+    const getProcessInstanceVariablesResponse = createGetProcessInstanceVariablesResponse();
+    const startInstanceResponse = createStartInstanceResponse();
+
+    api.deploy.resolves(deployResponse);
+    api.getProcessInstance.onFirstCall().resolves(emptyGetProcessInstanceResponse);
+    api.getProcessInstance.onSecondCall().resolves(getProcessInstanceResponse);
+    api.getProcessInstanceElementInstances.resolves(getProcessInstanceElementInstancesResponse);
+    api.getProcessInstanceJobs.resolves(getProcessInstanceJobsResponse);
+    api.getProcessInstanceMessageSubscriptions.resolves(getProcessInstanceMessageSubscriptionsResponse);
+    api.getProcessInstanceUserTasks.resolves(getProcessInstanceUserTasksResponse);
+    api.getProcessInstanceVariables.resolves(getProcessInstanceVariablesResponse);
+    api.startInstance.resolves(startInstanceResponse);
 
     // when
     taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
 
-    await clock.tickAsync(2500);
+    await clock.tickAsync(POLL_INTERVAL_MS * 2);
 
     // then
-    expect(finishedSpy).to.have.been.calledOnce;
-    expect(errorSpy).to.not.have.been.called;
-    expect(api.deploy).to.have.been.calledOnce;
-    expect(api.startInstance).to.have.been.calledOnce;
-    expect(api.getProcessInstance).to.have.been.calledTwice;
-    expect(api.getProcessInstanceVariables).to.have.been.calledOnce;
-    expect(api.getProcessInstanceElementInstances).to.have.been.calledOnce;
-    expect(api.getProcessInstanceIncident).to.not.have.been.called;
+    expect(stateChangedSpy.callCount).to.equal(4);
+    expect(stateChangedSpy.getCall(0)).to.have.been.calledWith('deploying');
+    expect(stateChangedSpy.getCall(1)).to.have.been.calledWith('starting-instance');
+    expect(stateChangedSpy.getCall(2)).to.have.been.calledWith('executing');
+    expect(stateChangedSpy.getCall(3)).to.have.been.calledWith('idle');
 
+    expect(deployedSpy).to.have.been.calledOnce;
+    expect(deployedSpy).to.have.been.calledWith(deployResponse);
+
+    expect(instanceStartedSpy).to.have.been.calledOnce;
+    expect(instanceStartedSpy).to.have.been.calledWith(startInstanceResponse);
+
+    expect(polledSpy).to.have.been.calledOnce;
+    expect(polledSpy).to.have.been.calledWithMatch({
+      elementId: 'ServiceTask_1',
+      elementInstancesResponse: getProcessInstanceElementInstancesResponse,
+      jobsResponse: getProcessInstanceJobsResponse,
+      messageSubscriptionsResponse: getProcessInstanceMessageSubscriptionsResponse,
+      processInstanceResponse: getProcessInstanceResponse,
+      userTasksResponse: getProcessInstanceUserTasksResponse,
+      variablesResponse: getProcessInstanceVariablesResponse
+    });
+
+    expect(finishedSpy).to.have.been.calledOnce;
     expect(finishedSpy).to.have.been.calledWithMatch({
-      'incident': null,
-      'variables': {
-        '2251799813755923': {
-          'name': 'foo',
-          'value': 'bar',
-          'scope': 'PROCESS'
-        },
-        '2251799813755924': {
-          'name': 'baz',
-          'value': 42,
-          'scope': 'PROCESS'
-        }
+      success: true,
+      processInstanceKey: DEFAULT_PROCESS_INSTANCE_KEY,
+      lastPolledResult: {
+        variablesResponse: getProcessInstanceVariablesResponse,
+        elementInstancesResponse: getProcessInstanceElementInstancesResponse,
+        processInstanceResponse: getProcessInstanceResponse
       }
     });
+
+    expect(api.deploy).to.have.been.calledOnce;
+    expect(api.getProcessInstance).to.have.been.calledTwice;
+    expect(api.getProcessInstance).to.have.been.calledWithMatch(DEFAULT_PROCESS_INSTANCE_KEY);
+    expect(api.getProcessInstanceElementInstances).to.have.been.calledOnce;
+    expect(api.getProcessInstanceElementInstances).to.have.been.calledWithMatch(DEFAULT_PROCESS_INSTANCE_KEY);
+    expect(api.getProcessInstanceIncident).to.not.have.been.called;
+    expect(api.getProcessInstanceJobs).to.have.been.calledOnce;
+    expect(api.getProcessInstanceJobs).to.have.been.calledWithMatch(DEFAULT_PROCESS_INSTANCE_KEY, 'ServiceTask_1');
+    expect(api.getProcessInstanceMessageSubscriptions).to.have.been.calledOnce;
+    expect(api.getProcessInstanceMessageSubscriptions).to.have.been.calledWithMatch(DEFAULT_PROCESS_INSTANCE_KEY, 'ServiceTask_1');
+    expect(api.getProcessInstanceUserTasks).to.have.been.calledOnce;
+    expect(api.getProcessInstanceUserTasks).to.have.been.calledWithMatch(DEFAULT_PROCESS_INSTANCE_KEY, 'ServiceTask_1');
+    expect(api.getProcessInstanceVariables).to.have.been.calledOnce;
+    expect(api.getProcessInstanceVariables).to.have.been.calledWithMatch(DEFAULT_PROCESS_INSTANCE_KEY);
+    expect(api.startInstance).to.have.been.calledOnce;
+    expect(api.startInstance).to.have.been.calledWithMatch(
+      DEFAULT_PROCESS_DEFINITION_KEY,
+      'ServiceTask_1',
+      { foo: 'bar' }
+    );
   }));
 
 
   it('should execute a task and not finish if process instance is still active', inject(async function(elementRegistry) {
 
     // given
-    api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
-    api.startInstance.resolves({ success: true, response: DEFAULT_START_INSTANCE_RESPONSE });
-    api.getProcessInstance.resolves({ success: true, response: {
-      items: [
-        {
-          'processDefinitionId': 'Process_TaskTesting',
-          'processDefinitionName': 'Process_TaskTesting',
-          'processDefinitionVersion': 1,
-          'startDate': '2025-09-04T12:43:52.704Z',
-          'endDate': null,
-          'state': 'ACTIVE',
-          'hasIncident': false,
-          'tenantId': '<default>',
-          'processInstanceKey': '2251799813755922',
-          'processDefinitionKey': '2251799813686881'
-        }
-      ]
-    } });
+    const deployResponse = createDeployResponse();
+    const activeProcessInstanceResponse = createGetProcessInstanceResponse({
+      response: createSearchProcessInstancesSDKResponse({
+        items: [ createProcessInstanceDetails({ state: 'ACTIVE', endDate: '' }) ]
+      })
+    });
+    const getProcessInstanceElementInstancesResponse = createGetProcessInstanceElementInstancesResponse();
+    const getProcessInstanceJobsResponse = createGetProcessInstanceJobsResponse();
+    const getProcessInstanceMessageSubscriptionsResponse = createEmptyGetProcessInstanceMessageSubscriptionsResponse();
+    const getProcessInstanceUserTasksResponse = createEmptyGetProcessInstanceUserTasksResponse();
+    const getProcessInstanceVariablesResponse = createGetProcessInstanceVariablesResponse();
+    const startInstanceResponse = createStartInstanceResponse();
+
+    api.deploy.resolves(deployResponse);
+    api.getProcessInstance.resolves(activeProcessInstanceResponse);
+    api.getProcessInstanceElementInstances.resolves(getProcessInstanceElementInstancesResponse);
+    api.getProcessInstanceJobs.resolves(getProcessInstanceJobsResponse);
+    api.getProcessInstanceMessageSubscriptions.resolves(getProcessInstanceMessageSubscriptionsResponse);
+    api.getProcessInstanceUserTasks.resolves(getProcessInstanceUserTasksResponse);
+    api.getProcessInstanceVariables.resolves(getProcessInstanceVariablesResponse);
+    api.startInstance.resolves(startInstanceResponse);
 
     // when
     taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
 
-    await clock.tickAsync(2500);
+    await clock.tickAsync(POLL_INTERVAL_MS * 2);
 
     // then
+    expect(stateChangedSpy.callCount).to.equal(3);
+    expect(stateChangedSpy.getCall(0)).to.have.been.calledWith('deploying');
+    expect(stateChangedSpy.getCall(1)).to.have.been.calledWith('starting-instance');
+    expect(stateChangedSpy.getCall(2)).to.have.been.calledWith('executing');
+
+    expect(deployedSpy).to.have.been.calledOnce;
+    expect(deployedSpy).to.have.been.calledWith(deployResponse);
+
+    expect(instanceStartedSpy).to.have.been.calledOnce;
+    expect(instanceStartedSpy).to.have.been.calledWith(startInstanceResponse);
+
+    expect(polledSpy).to.have.been.calledTwice;
+    expect(polledSpy).to.have.been.calledWithMatch({
+      elementId: 'ServiceTask_1',
+      elementInstancesResponse: getProcessInstanceElementInstancesResponse,
+      jobsResponse: getProcessInstanceJobsResponse,
+      messageSubscriptionsResponse: getProcessInstanceMessageSubscriptionsResponse,
+      processInstanceResponse: activeProcessInstanceResponse,
+      userTasksResponse: getProcessInstanceUserTasksResponse,
+      variablesResponse: getProcessInstanceVariablesResponse
+    });
+
     expect(finishedSpy).to.not.have.been.called;
-    expect(errorSpy).to.not.have.been.called;
+
     expect(api.deploy).to.have.been.calledOnce;
-    expect(api.startInstance).to.have.been.calledOnce;
     expect(api.getProcessInstance).to.have.been.calledTwice;
-    expect(api.getProcessInstanceVariables).to.not.have.been.called;
+    expect(api.getProcessInstance).to.have.been.calledWithMatch(DEFAULT_PROCESS_INSTANCE_KEY);
+    expect(api.getProcessInstanceElementInstances).to.have.been.calledTwice;
+    expect(api.getProcessInstanceElementInstances).to.have.been.calledWithMatch(DEFAULT_PROCESS_INSTANCE_KEY);
     expect(api.getProcessInstanceIncident).to.not.have.been.called;
+    expect(api.getProcessInstanceJobs).to.have.been.calledTwice;
+    expect(api.getProcessInstanceJobs).to.have.been.calledWithMatch(DEFAULT_PROCESS_INSTANCE_KEY, 'ServiceTask_1');
+    expect(api.getProcessInstanceMessageSubscriptions).to.have.been.calledTwice;
+    expect(api.getProcessInstanceMessageSubscriptions).to.have.been.calledWithMatch(DEFAULT_PROCESS_INSTANCE_KEY, 'ServiceTask_1');
+    expect(api.getProcessInstanceUserTasks).to.have.been.calledTwice;
+    expect(api.getProcessInstanceUserTasks).to.have.been.calledWithMatch(DEFAULT_PROCESS_INSTANCE_KEY, 'ServiceTask_1');
+    expect(api.getProcessInstanceVariables).to.have.been.calledTwice;
+    expect(api.getProcessInstanceVariables).to.have.been.calledWithMatch(DEFAULT_PROCESS_INSTANCE_KEY);
+    expect(api.startInstance).to.have.been.calledOnce;
+    expect(api.startInstance).to.have.been.calledWithMatch(
+      DEFAULT_PROCESS_DEFINITION_KEY,
+      'ServiceTask_1',
+      { foo: 'bar' }
+    );
   }));
 
 
   describe('errors', function() {
 
-    it('should handle no process ID error', inject(async function(elementFactory) {
+    it('should handle no process ID error (return without error)', inject(async function(elementFactory) {
 
       // given
       const task = elementFactory.create('shape', {
@@ -190,42 +355,40 @@ describe('TaskExecution', function() {
       });
 
       // when
-      taskExecution.executeTask(task, { foo: 'bar' });
+      taskExecution.executeTask(task);
 
-      await clock.tickAsync(500);
+      await clock.tickAsync(POLL_INTERVAL_MS);
 
       // then
       expect(finishedSpy).to.not.have.been.called;
-      expect(errorSpy).to.have.been.calledOnce;
-      expect(errorSpy).to.have.been.calledWithMatch({
-        message: `Process ID for element <${task.id}> not found`
-      });
     }));
 
 
     it('should handle deploy error', inject(async function(elementRegistry) {
 
       // given
-      api.deploy.resolves({ success: false, error: DEPLOY_ERROR });
+      api.deploy.resolves(createDeployResponse({ success: false, error: DEFAULT_DEPLOY_ERROR }));
 
       // when
-      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
+      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'));
 
-      await clock.tickAsync(500);
+      await clock.tickAsync(POLL_INTERVAL_MS);
 
       // then
-      expect(finishedSpy).to.not.have.been.called;
-      expect(errorSpy).to.have.been.calledOnce;
-      expect(statusChangeSpy).to.have.been.calledWith('deploying');
+      expect(stateChangedSpy).to.have.been.calledWith('deploying');
       expect(api.deploy).to.have.been.calledOnce;
       expect(api.startInstance).to.not.have.been.called;
-      expect(api.getProcessInstance).to.not.have.been.called;
-      expect(api.getProcessInstanceVariables).to.not.have.been.called;
-      expect(api.getProcessInstanceIncident).to.not.have.been.called;
 
-      expect(errorSpy).to.have.been.calledWithMatch({
-        message: 'Failed to deploy process definition',
-        response: DEPLOY_ERROR
+      expect(finishedSpy).to.have.been.calledOnce;
+      expect(finishedSpy).to.have.been.calledWithMatch({
+        success: false,
+        reason: TASK_EXECUTION_FINISHED_REASON.ERROR,
+        error: {
+          message: 'Failed to deploy process definition',
+          response: DEFAULT_DEPLOY_ERROR
+        },
+        processInstanceKey: null,
+        lastPolledResult: null
       });
     }));
 
@@ -233,28 +396,28 @@ describe('TaskExecution', function() {
     it('should handle start instance error', inject(async function(elementRegistry) {
 
       // given
-      api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
-      api.startInstance.resolves({ success: false, error: START_INSTANCE_ERROR });
+      api.deploy.resolves(createDeployResponse());
+      api.startInstance.resolves(createStartInstanceResponse({ success: false, error: DEFAULT_START_INSTANCE_ERROR }));
 
       // when
-      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
+      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'));
 
-      await clock.tickAsync(500);
+      await clock.tickAsync(POLL_INTERVAL_MS);
 
       // then
-      expect(finishedSpy).to.not.have.been.called;
-      expect(errorSpy).to.have.been.calledOnce;
-      expect(statusChangeSpy).to.have.been.calledWith('deploying');
-      expect(api.deploy).to.have.been.calledOnce;
-      expect(statusChangeSpy).to.have.been.calledWith('starting-instance');
+      expect(stateChangedSpy).to.have.been.calledWith('starting-instance');
       expect(api.startInstance).to.have.been.calledOnce;
-      expect(api.getProcessInstance).to.not.have.been.called;
-      expect(api.getProcessInstanceVariables).to.not.have.been.called;
-      expect(api.getProcessInstanceIncident).to.not.have.been.called;
 
-      expect(errorSpy).to.have.been.calledWithMatch({
-        message: 'Failed to start process instance',
-        response: START_INSTANCE_ERROR
+      expect(finishedSpy).to.have.been.calledOnce;
+      expect(finishedSpy).to.have.been.calledWithMatch({
+        success: false,
+        reason: TASK_EXECUTION_FINISHED_REASON.ERROR,
+        error: {
+          message: 'Failed to start process instance',
+          response: DEFAULT_START_INSTANCE_ERROR
+        },
+        processInstanceKey: null,
+        lastPolledResult: null
       });
     }));
 
@@ -262,67 +425,29 @@ describe('TaskExecution', function() {
     it('should handle no process instance key error', inject(async function(elementRegistry) {
 
       // given
-      api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
-      api.startInstance.resolves({ success: true, response: {
-        'processDefinitionId': 'Process_TaskTesting',
-        'processDefinitionVersion': 1,
-        'tenantId': '<default>',
-        'variables': {},
-        'processDefinitionKey': '2251799813686881',
-        'processInstanceKey': null,
-        'tags': []
-      } });
+      api.deploy.resolves(createDeployResponse());
+      api.startInstance.resolves(createStartInstanceResponse({ response: createCreateProcessInstanceSDKResponse({
+        processInstanceKey: null
+      }) }));
 
       // when
-      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
+      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'));
 
-      await clock.tickAsync(500);
+      await clock.tickAsync(POLL_INTERVAL_MS);
 
       // then
-      expect(finishedSpy).to.not.have.been.called;
-      expect(errorSpy).to.have.been.calledOnce;
-      expect(statusChangeSpy).to.have.been.calledWith('starting-instance');
-      expect(api.deploy).to.have.been.calledOnce;
-      expect(statusChangeSpy).to.have.been.calledWith('deploying');
+      expect(stateChangedSpy).to.have.been.calledWith('starting-instance');
       expect(api.startInstance).to.have.been.calledOnce;
-      expect(api.getProcessInstance).to.not.have.been.called;
-      expect(api.getProcessInstanceVariables).to.not.have.been.called;
-      expect(api.getProcessInstanceIncident).to.not.have.been.called;
 
-      expect(errorSpy).to.have.been.calledWithMatch({
-        message: 'Failed to retrieve process instance key from start instance response'
-      });
-    }));
-
-
-    it('should handle get process instance error (retry)', inject(async function(elementRegistry) {
-
-      // given
-      api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
-      api.startInstance.resolves({ success: true, response: DEFAULT_START_INSTANCE_RESPONSE });
-      api.getProcessInstance.onFirstCall().resolves({ success: false, error: GET_PROCESS_INSTANCE_ERROR });
-      api.getProcessInstance.onSecondCall().resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_RESPONSE });
-      api.getProcessInstanceVariables.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_VARIABLES_RESPONSE });
-      api.getProcessInstanceElementInstances.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_ELEMENT_INSTANCES_RESPONSE });
-
-      // when
-      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
-
-      await clock.tickAsync(INTERVAL_MS * 2);
-
-      // then
       expect(finishedSpy).to.have.been.calledOnce;
-      expect(errorSpy).to.have.been.calledOnce;
-      expect(api.deploy).to.have.been.calledOnce;
-      expect(api.startInstance).to.have.been.calledOnce;
-      expect(api.getProcessInstance).to.have.been.calledTwice;
-      expect(api.getProcessInstanceVariables).to.have.been.calledOnce;
-      expect(api.getProcessInstanceElementInstances).to.have.been.calledOnce;
-      expect(api.getProcessInstanceIncident).to.not.have.been.called;
-
-      expect(errorSpy).to.have.been.calledWithMatch({
-        message: 'Failed to get process instance',
-        response: GET_PROCESS_INSTANCE_ERROR
+      expect(finishedSpy).to.have.been.calledWithMatch({
+        success: false,
+        reason: TASK_EXECUTION_FINISHED_REASON.ERROR,
+        error: {
+          message: 'Failed to retrieve process instance key from start instance response'
+        },
+        processInstanceKey: null,
+        lastPolledResult: null
       });
     }));
 
@@ -334,81 +459,568 @@ describe('TaskExecution', function() {
     it('should handle incident', inject(async function(elementRegistry) {
 
       // given
-      api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
-      api.startInstance.resolves({ success: true, response: DEFAULT_START_INSTANCE_RESPONSE });
-      api.getProcessInstance.resolves({ success: true, response: {
-        items: [
-          {
-            'processDefinitionId': 'Process_TaskTesting',
-            'processDefinitionName': 'Process_TaskTesting',
-            'processDefinitionVersion': 1,
-            'startDate': '2025-09-04T12:43:52.704Z',
-            'endDate': null,
-            'state': 'ACTIVE',
-            'hasIncident': true,
-            'tenantId': '<default>',
-            'processInstanceKey': '2251799813755922',
-            'processDefinitionKey': '2251799813686881'
-          }
-        ]
-      } });
-      api.getProcessInstanceIncident.resolves({ success: true, response: {
-        items: [
-          {
-            key: '2251799814592731',
-            processDefinitionKey: '2251799814239639',
-            processInstanceKey: '2251799814592711',
-            type: 'JOB_NO_RETRIES',
-            message: 'Bad gateway',
-            creationTime: '2025-08-21T14:40:55.402+0000',
-            state: 'ACTIVE',
-            jobKey: '2251799814592726',
-            tenantId: '<default>'
-          }
-        ]
-      } });
-      api.getProcessInstanceVariables.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_VARIABLES_RESPONSE });
-      api.getProcessInstanceElementInstances.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_ELEMENT_INSTANCES_RESPONSE });
+      const incidentProcessInstanceResponse = createGetProcessInstanceResponse({
+        response: createSearchProcessInstancesSDKResponse({
+          items: [ createProcessInstanceDetails({ state: 'ACTIVE', hasIncident: true, endDate: null }) ]
+        })
+      });
+
+      api.deploy.resolves(createDeployResponse());
+      api.getProcessInstance.resolves(incidentProcessInstanceResponse);
+      api.getProcessInstanceElementInstances.resolves(createGetProcessInstanceElementInstancesResponse());
+      api.getProcessInstanceIncident.resolves(createGetProcessInstanceIncidentResponse());
+      api.getProcessInstanceJobs.resolves(createEmptyGetProcessInstanceJobsResponse());
+      api.getProcessInstanceMessageSubscriptions.resolves(createEmptyGetProcessInstanceMessageSubscriptionsResponse());
+      api.getProcessInstanceUserTasks.resolves(createEmptyGetProcessInstanceUserTasksResponse());
+      api.getProcessInstanceVariables.resolves(createGetProcessInstanceVariablesResponse());
+      api.startInstance.resolves(createStartInstanceResponse());
+
+      // when
+      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'));
+
+      await clock.tickAsync(POLL_INTERVAL_MS);
+
+      // then
+      expect(finishedSpy).to.have.been.calledOnce;
+      expect(finishedSpy).to.have.been.calledWithMatch({
+        success: false,
+        reason: TASK_EXECUTION_FINISHED_REASON.INCIDENT,
+        incident: DEFAULT_INCIDENT
+      });
+    }));
+
+  });
+
+
+  describe('cancellation', function() {
+
+    describe('cancellation reasons', function() {
+
+      it('should cancel with user cancellation reason', inject(async function(elementRegistry) {
+
+        // given
+        const deferred = createDeferred();
+
+        api.deploy.resolves(createDeployResponse());
+        api.getProcessInstance.returns(deferred.promise);
+        api.startInstance.resolves(createStartInstanceResponse());
+
+        // when
+        taskExecution.executeTask(elementRegistry.get('ServiceTask_1'));
+
+        await clock.tickAsync(POLL_INTERVAL_MS);
+
+        // assume
+        expect(stateChangedSpy).to.have.been.calledWith('executing');
+        expect(api.getProcessInstance).to.have.been.calledOnce;
+
+        // when
+        taskExecution.cancelTaskExecution();
+
+        deferred.resolve(createGetProcessInstanceResponse());
+
+        await clock.tickAsync(0);
+
+        // then
+        expect(stateChangedSpy.callCount).to.equal(4);
+        expect(stateChangedSpy.getCall(0)).to.have.been.calledWith('deploying');
+        expect(stateChangedSpy.getCall(1)).to.have.been.calledWith('starting-instance');
+        expect(stateChangedSpy.getCall(2)).to.have.been.calledWith('executing');
+        expect(stateChangedSpy.getCall(3)).to.have.been.calledWith('idle');
+
+        expect(finishedSpy).to.have.been.calledOnce;
+        expect(finishedSpy).to.have.been.calledWithMatch({
+          success: false,
+          reason: TASK_EXECUTION_FINISHED_REASON.USER_CANCEL,
+          processInstanceKey: null,
+          lastPolledResult: null
+        });
+      }));
+
+
+      it('should cancel with user selection changed reason on <selection.changed>', inject(async function(elementRegistry, selection) {
+
+        // given
+        const deferred = createDeferred();
+
+        api.deploy.resolves(createDeployResponse());
+        api.getProcessInstance.returns(deferred.promise);
+        api.startInstance.resolves(createStartInstanceResponse());
+
+        taskExecution.executeTask(elementRegistry.get('ServiceTask_1'));
+
+        await clock.tickAsync(POLL_INTERVAL_MS);
+
+        // assume
+        expect(stateChangedSpy).to.have.been.calledWith('executing');
+        expect(api.getProcessInstance).to.have.been.calledOnce;
+
+        // when
+        selection.select(elementRegistry.get('StartEvent_1'));
+
+        deferred.resolve(createGetProcessInstanceResponse());
+
+        await clock.tickAsync(0);
+
+        // then
+        expect(stateChangedSpy.callCount).to.equal(4);
+        expect(stateChangedSpy.getCall(0)).to.have.been.calledWith('deploying');
+        expect(stateChangedSpy.getCall(1)).to.have.been.calledWith('starting-instance');
+        expect(stateChangedSpy.getCall(2)).to.have.been.calledWith('executing');
+        expect(stateChangedSpy.getCall(3)).to.have.been.calledWith('idle');
+
+        expect(finishedSpy).to.have.been.calledOnce;
+        expect(finishedSpy).to.have.been.calledWithMatch({
+          success: false,
+          reason: TASK_EXECUTION_FINISHED_REASON.USER_SELECTION_CHANGED,
+          processInstanceKey: null,
+          lastPolledResult: null
+        });
+      }));
+
+    });
+
+
+    describe('cancellation timing', function() {
+
+      it('should cancel during deploy', inject(async function(elementRegistry) {
+
+        // given
+        const deferred = createDeferred();
+
+        api.deploy.returns(deferred.promise);
+
+        // when
+        taskExecution.executeTask(elementRegistry.get('ServiceTask_1'));
+
+        await clock.tickAsync(0);
+
+        // assume
+        expect(api.deploy).to.have.been.calledOnce;
+        expect(stateChangedSpy).to.have.been.calledWith('deploying');
+
+        // when
+        taskExecution.cancelTaskExecution();
+
+        deferred.resolve(createDeployResponse());
+
+        await clock.tickAsync(0);
+
+        // then
+        expect(stateChangedSpy).to.have.been.calledWith('idle');
+        expect(finishedSpy).to.have.been.calledOnce;
+        expect(finishedSpy).to.have.been.calledWithMatch({
+          success: false,
+          reason: TASK_EXECUTION_FINISHED_REASON.USER_CANCEL,
+          processInstanceKey: null,
+          lastPolledResult: null
+        });
+        expect(api.startInstance).to.not.have.been.called;
+      }));
+
+
+      it('should cancel during startInstance', inject(async function(elementRegistry) {
+
+        // given
+        const deferred = createDeferred();
+
+        api.deploy.resolves(createDeployResponse());
+        api.startInstance.returns(deferred.promise);
+
+        // when
+        taskExecution.executeTask(elementRegistry.get('ServiceTask_1'));
+
+        await clock.tickAsync(0);
+
+        // assume
+        expect(api.startInstance).to.have.been.calledOnce;
+        expect(stateChangedSpy).to.have.been.calledWith('starting-instance');
+
+        // when
+        taskExecution.cancelTaskExecution();
+
+        deferred.resolve(createStartInstanceResponse());
+
+        await clock.tickAsync(0);
+
+        // then
+        expect(stateChangedSpy).to.have.been.calledWith('idle');
+        expect(finishedSpy).to.have.been.calledOnce;
+        expect(finishedSpy).to.have.been.calledWithMatch({
+          success: false,
+          reason: TASK_EXECUTION_FINISHED_REASON.USER_CANCEL,
+          processInstanceKey: null,
+          lastPolledResult: null
+        });
+        expect(api.getProcessInstance).to.not.have.been.called;
+      }));
+
+
+      it('should cancel during getProcessInstance (polling interval)', inject(async function(elementRegistry) {
+
+        // given
+        const deferred = createDeferred();
+
+        api.deploy.resolves(createDeployResponse());
+        api.getProcessInstance.returns(deferred.promise);
+        api.startInstance.resolves(createStartInstanceResponse());
+
+        // when
+        taskExecution.executeTask(elementRegistry.get('ServiceTask_1'));
+
+        await clock.tickAsync(POLL_INTERVAL_MS);
+
+        // assume
+        expect(api.getProcessInstance).to.have.been.calledOnce;
+        expect(stateChangedSpy).to.have.been.calledWith('executing');
+
+        // when
+        taskExecution.cancelTaskExecution();
+
+        deferred.resolve(createGetProcessInstanceResponse());
+
+        await clock.tickAsync(0);
+
+        // then
+        expect(stateChangedSpy).to.have.been.calledWith('idle');
+        expect(finishedSpy).to.have.been.calledOnce;
+        expect(finishedSpy).to.have.been.calledWithMatch({
+          success: false,
+          reason: TASK_EXECUTION_FINISHED_REASON.USER_CANCEL,
+          processInstanceKey: null,
+          lastPolledResult: null
+        });
+        expect(api.getProcessInstanceElementInstances).to.not.have.been.called;
+      }));
+
+
+      it('should cancel during getProcessInstanceElementInstances (polling interval)', inject(async function(elementRegistry) {
+
+        // given
+        const deferred = createDeferred();
+
+        api.deploy.resolves(createDeployResponse());
+        api.getProcessInstance.returns(createGetProcessInstanceResponse());
+        api.getProcessInstanceElementInstances.returns(deferred.promise);
+        api.getProcessInstanceJobs.resolves(createGetProcessInstanceJobsResponse());
+        api.getProcessInstanceMessageSubscriptions.resolves(createEmptyGetProcessInstanceMessageSubscriptionsResponse());
+        api.getProcessInstanceUserTasks.resolves(createEmptyGetProcessInstanceUserTasksResponse());
+        api.getProcessInstanceVariables.resolves(createGetProcessInstanceVariablesResponse());
+        api.startInstance.resolves(createStartInstanceResponse());
+
+        // when
+        taskExecution.executeTask(elementRegistry.get('ServiceTask_1'));
+
+        await clock.tickAsync(POLL_INTERVAL_MS);
+
+        // assume
+        expect(api.getProcessInstanceElementInstances).to.have.been.calledOnce;
+        expect(stateChangedSpy).to.have.been.calledWith('executing');
+
+        // when
+        taskExecution.cancelTaskExecution();
+
+        deferred.resolve(createGetProcessInstanceElementInstancesResponse());
+
+        await clock.tickAsync(0);
+
+        // then
+        expect(stateChangedSpy).to.have.been.calledWith('idle');
+        expect(finishedSpy).to.have.been.calledOnce;
+        expect(finishedSpy).to.have.been.calledWithMatch({
+          success: false,
+          reason: TASK_EXECUTION_FINISHED_REASON.USER_CANCEL,
+          processInstanceKey: null,
+          lastPolledResult: null
+        });
+      }));
+
+
+      it('should cancel during getProcessInstanceIncident (polling interval)', inject(async function(elementRegistry) {
+
+        // given
+        const deferred = createDeferred();
+
+        const incidentProcessInstanceResponse = createGetProcessInstanceResponse({
+          response: createSearchProcessInstancesSDKResponse({
+            items: [ createProcessInstanceDetails({ state: 'ACTIVE', hasIncident: true, endDate: null }) ]
+          })
+        });
+
+        api.deploy.resolves(createDeployResponse());
+        api.getProcessInstance.resolves(incidentProcessInstanceResponse);
+        api.getProcessInstanceElementInstances.resolves(createGetProcessInstanceElementInstancesResponse());
+        api.getProcessInstanceIncident.returns(deferred.promise);
+        api.getProcessInstanceJobs.resolves(createGetProcessInstanceJobsResponse());
+        api.getProcessInstanceMessageSubscriptions.resolves(createEmptyGetProcessInstanceMessageSubscriptionsResponse());
+        api.getProcessInstanceUserTasks.resolves(createEmptyGetProcessInstanceUserTasksResponse());
+        api.getProcessInstanceVariables.resolves(createGetProcessInstanceVariablesResponse());
+        api.startInstance.resolves(createStartInstanceResponse());
+
+        // when
+        taskExecution.executeTask(elementRegistry.get('ServiceTask_1'));
+
+        await clock.tickAsync(POLL_INTERVAL_MS);
+
+        // assume
+        expect(api.getProcessInstanceIncident).to.have.been.calledOnce;
+        expect(polledSpy).to.have.been.calledOnce;
+
+        // when
+        taskExecution.cancelTaskExecution();
+
+        deferred.resolve(createGetProcessInstanceIncidentResponse());
+
+        await clock.tickAsync(0);
+
+        // then
+        expect(stateChangedSpy).to.have.been.calledWith('idle');
+        expect(finishedSpy).to.have.been.calledOnce;
+        expect(finishedSpy).to.have.been.calledWithMatch({
+          success: false,
+          reason: TASK_EXECUTION_FINISHED_REASON.USER_CANCEL
+        });
+
+        const { lastPolledResult } = finishedSpy.getCall(0).args[0];
+
+        expect(lastPolledResult).to.exist;
+        expect(lastPolledResult.elementId).to.equal('ServiceTask_1');
+      }));
+
+    });
+
+
+    it('should not cancel if idle', async function() {
+
+      // when
+      taskExecution.cancelTaskExecution();
+
+      await clock.tickAsync(500);
+
+      // then
+      expect(finishedSpy).to.not.have.been.called;
+    });
+
+  });
+
+
+  describe('stale execution', function() {
+
+    it('should ignore stale getProcessInstance response after cancel', inject(async function(elementRegistry) {
+
+      // given
+      const deferred = createDeferred();
+
+      api.deploy.resolves(createDeployResponse());
+      api.startInstance.resolves(createStartInstanceResponse());
+      api.getProcessInstance.returns(deferred.promise);
+      api.getProcessInstanceElementInstances.resolves(createGetProcessInstanceElementInstancesResponse());
+      api.getProcessInstanceJobs.resolves(createGetProcessInstanceJobsResponse());
+      api.getProcessInstanceMessageSubscriptions.resolves(createEmptyGetProcessInstanceMessageSubscriptionsResponse());
+      api.getProcessInstanceUserTasks.resolves(createEmptyGetProcessInstanceUserTasksResponse());
+      api.getProcessInstanceVariables.resolves(createGetProcessInstanceVariablesResponse());
+
+      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'));
+
+      await clock.tickAsync(POLL_INTERVAL_MS);
+
+      // assume
+      expect(api.getProcessInstance).to.have.been.calledOnce;
+
+      // when
+      taskExecution.cancelTaskExecution();
+
+      deferred.resolve(createGetProcessInstanceResponse());
+
+      await clock.tickAsync(0);
+
+      // then - stale response should not trigger polled event
+      expect(polledSpy).to.not.have.been.called;
+
+      // finished should be called exactly once (from cancel, not from stale completion)
+      expect(finishedSpy).to.have.been.calledOnce;
+      expect(finishedSpy).to.have.been.calledWithMatch({
+        success: false,
+        reason: TASK_EXECUTION_FINISHED_REASON.USER_CANCEL
+      });
+    }));
+
+
+    it('should ignore stale Promise.all response after cancel', inject(async function(elementRegistry) {
+
+      // given
+      const deferred = createDeferred();
+
+      api.deploy.resolves(createDeployResponse());
+      api.startInstance.resolves(createStartInstanceResponse());
+      api.getProcessInstance.resolves(createGetProcessInstanceResponse());
+      api.getProcessInstanceElementInstances.returns(deferred.promise);
+      api.getProcessInstanceJobs.resolves(createGetProcessInstanceJobsResponse());
+      api.getProcessInstanceMessageSubscriptions.resolves(createEmptyGetProcessInstanceMessageSubscriptionsResponse());
+      api.getProcessInstanceUserTasks.resolves(createEmptyGetProcessInstanceUserTasksResponse());
+      api.getProcessInstanceVariables.resolves(createGetProcessInstanceVariablesResponse());
+
+      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'));
+
+      await clock.tickAsync(POLL_INTERVAL_MS);
+
+      // assume - getProcessInstance resolved, Promise.all in-flight
+      expect(api.getProcessInstanceElementInstances).to.have.been.calledOnce;
+
+      // when
+      taskExecution.cancelTaskExecution();
+
+      deferred.resolve(createGetProcessInstanceElementInstancesResponse());
+
+      await clock.tickAsync(0);
+
+      // then - stale Promise.all response should not trigger polled event
+      expect(polledSpy).to.not.have.been.called;
+
+      expect(finishedSpy).to.have.been.calledOnce;
+      expect(finishedSpy).to.have.been.calledWithMatch({
+        success: false,
+        reason: TASK_EXECUTION_FINISHED_REASON.USER_CANCEL
+      });
+    }));
+
+
+    it('should ignore stale response when new execution starts', inject(async function(elementRegistry) {
+
+      // given
+      const deferred = createDeferred();
+
+      api.deploy.resolves(createDeployResponse());
+      api.startInstance.resolves(createStartInstanceResponse());
+      api.getProcessInstance.returns(deferred.promise);
+      api.getProcessInstanceElementInstances.resolves(createGetProcessInstanceElementInstancesResponse());
+      api.getProcessInstanceJobs.resolves(createGetProcessInstanceJobsResponse());
+      api.getProcessInstanceMessageSubscriptions.resolves(createEmptyGetProcessInstanceMessageSubscriptionsResponse());
+      api.getProcessInstanceUserTasks.resolves(createEmptyGetProcessInstanceUserTasksResponse());
+      api.getProcessInstanceVariables.resolves(createGetProcessInstanceVariablesResponse());
+
+      // start execution A
+      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'));
+
+      await clock.tickAsync(POLL_INTERVAL_MS);
+
+      // assume - execution A's getProcessInstance is in-flight
+      expect(api.getProcessInstance).to.have.been.calledOnce;
+
+      // reset spies so we can observe execution B cleanly
+      finishedSpy.resetHistory();
+      stateChangedSpy.resetHistory();
+      polledSpy.resetHistory();
+
+      // when - start execution B (supersedes A)
+      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'));
+
+      // resolve execution A's deferred
+      deferred.resolve(createGetProcessInstanceResponse());
+
+      await clock.tickAsync(0);
+
+      // then - execution A's stale response should not trigger polled
+      expect(polledSpy).to.not.have.been.called;
+
+      // execution B should be in deploying state
+      expect(stateChangedSpy).to.have.been.calledWith('deploying');
+    }));
+
+
+    it('should ignore stale getProcessInstanceIncident response after cancel', inject(async function(elementRegistry) {
+
+      // given
+      const deferred = createDeferred();
+
+      const incidentProcessInstanceResponse = createGetProcessInstanceResponse({
+        response: createSearchProcessInstancesSDKResponse({
+          items: [ createProcessInstanceDetails({ state: 'ACTIVE', hasIncident: true, endDate: null }) ]
+        })
+      });
+
+      api.deploy.resolves(createDeployResponse());
+      api.startInstance.resolves(createStartInstanceResponse());
+      api.getProcessInstance.resolves(incidentProcessInstanceResponse);
+      api.getProcessInstanceElementInstances.resolves(createGetProcessInstanceElementInstancesResponse());
+      api.getProcessInstanceIncident.returns(deferred.promise);
+      api.getProcessInstanceJobs.resolves(createGetProcessInstanceJobsResponse());
+      api.getProcessInstanceMessageSubscriptions.resolves(createEmptyGetProcessInstanceMessageSubscriptionsResponse());
+      api.getProcessInstanceUserTasks.resolves(createEmptyGetProcessInstanceUserTasksResponse());
+      api.getProcessInstanceVariables.resolves(createGetProcessInstanceVariablesResponse());
+
+      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'));
+
+      await clock.tickAsync(POLL_INTERVAL_MS);
+
+      // assume - polled event fired, incident fetch is in-flight
+      expect(polledSpy).to.have.been.calledOnce;
+      expect(api.getProcessInstanceIncident).to.have.been.calledOnce;
+
+      // when
+      taskExecution.cancelTaskExecution();
+
+      deferred.resolve(createGetProcessInstanceIncidentResponse());
+
+      await clock.tickAsync(0);
+
+      // then - should not emit finished with incident reason (only with cancel reason)
+      expect(finishedSpy).to.have.been.calledOnce;
+      expect(finishedSpy).to.have.been.calledWithMatch({
+        success: false,
+        reason: TASK_EXECUTION_FINISHED_REASON.USER_CANCEL
+      });
+    }));
+
+  });
+
+
+  describe('termination', function() {
+
+    it('should finish with termination reason if process instance and task are both terminated', inject(async function(elementRegistry) {
+
+      // given
+      const deployResponse = createDeployResponse();
+      const terminatedProcessInstanceResponse = createGetProcessInstanceResponse({
+        response: createSearchProcessInstancesSDKResponse({
+          items: [ createProcessInstanceDetails({ state: 'TERMINATED' }) ]
+        })
+      });
+      const terminatedElementInstancesResponse = createGetProcessInstanceElementInstancesResponse({
+        response: createSearchElementInstancesSDKResponse({
+          items: [ createElementInstanceDetails({ state: 'TERMINATED' }) ]
+        })
+      });
+      const getProcessInstanceJobsResponse = createGetProcessInstanceJobsResponse();
+      const getProcessInstanceMessageSubscriptionsResponse = createEmptyGetProcessInstanceMessageSubscriptionsResponse();
+      const getProcessInstanceUserTasksResponse = createEmptyGetProcessInstanceUserTasksResponse();
+      const getProcessInstanceVariablesResponse = createGetProcessInstanceVariablesResponse();
+      const startInstanceResponse = createStartInstanceResponse();
+
+      api.deploy.resolves(deployResponse);
+      api.getProcessInstance.resolves(terminatedProcessInstanceResponse);
+      api.getProcessInstanceElementInstances.resolves(terminatedElementInstancesResponse);
+      api.getProcessInstanceJobs.resolves(getProcessInstanceJobsResponse);
+      api.getProcessInstanceMessageSubscriptions.resolves(getProcessInstanceMessageSubscriptionsResponse);
+      api.getProcessInstanceUserTasks.resolves(getProcessInstanceUserTasksResponse);
+      api.getProcessInstanceVariables.resolves(getProcessInstanceVariablesResponse);
+      api.startInstance.resolves(startInstanceResponse);
 
       // when
       taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
 
-      await clock.tickAsync(1500);
+      await clock.tickAsync(POLL_INTERVAL_MS);
 
       // then
       expect(finishedSpy).to.have.been.calledOnce;
-      expect(errorSpy).to.not.have.been.called;
-      expect(api.deploy).to.have.been.calledOnce;
-      expect(api.startInstance).to.have.been.calledOnce;
-      expect(api.getProcessInstance).to.have.been.calledOnce;
-      expect(api.getProcessInstanceVariables).to.have.been.calledOnce;
-      expect(api.getProcessInstanceElementInstances).to.have.been.calledOnce;
-      expect(api.getProcessInstanceIncident).to.have.been.calledOnce;
-
       expect(finishedSpy).to.have.been.calledWithMatch({
-        'success': false,
-        'variables': {
-          '2251799813755923': {
-            'name': 'foo',
-            'value': 'bar',
-            'scope': 'PROCESS'
-          },
-          '2251799813755924': {
-            'name': 'baz',
-            'value': 42,
-            'scope': 'PROCESS'
-          }
-        },
-        'incident': {
-          key: '2251799814592731',
-          processDefinitionKey: '2251799814239639',
-          processInstanceKey: '2251799814592711',
-          type: 'JOB_NO_RETRIES',
-          message: 'Bad gateway',
-          creationTime: '2025-08-21T14:40:55.402+0000',
-          state: 'ACTIVE',
-          jobKey: '2251799814592726',
-          tenantId: '<default>'
+        success: false,
+        reason: TASK_EXECUTION_FINISHED_REASON.TERMINATED,
+        processInstanceKey: DEFAULT_PROCESS_INSTANCE_KEY,
+        lastPolledResult: {
+          elementInstancesResponse: terminatedElementInstancesResponse,
+          processInstanceResponse: terminatedProcessInstanceResponse,
+          variablesResponse: getProcessInstanceVariablesResponse
         }
       });
     }));
@@ -416,117 +1028,18 @@ describe('TaskExecution', function() {
   });
 
 
-  describe('cancelling', function() {
-
-    it('should cancel running task execution', inject(async function(elementRegistry) {
-
-      // given
-      api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
-      api.startInstance.resolves({ success: true, response: DEFAULT_START_INSTANCE_RESPONSE });
-      api.getProcessInstance.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_RESPONSE });
-
-      // when
-      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
-
-      await clock.tickAsync(500);
-
-      taskExecution.cancelTaskExecution();
-
-      await clock.tickAsync(500);
-
-      // then
-      expect(finishedSpy).to.not.have.been.called;
-      expect(errorSpy).to.not.have.been.called;
-      expect(api.deploy).to.have.been.calledOnce;
-      expect(api.startInstance).to.have.been.calledOnce;
-      expect(api.getProcessInstance).to.not.have.been.called;
-      expect(api.getProcessInstanceVariables).to.not.have.been.called;
-      expect(api.getProcessInstanceIncident).to.not.have.been.called;
-    }));
-
-
-    it('should cancel on <selection.changed>', inject(async function(elementRegistry, selection) {
-
-      // given
-      api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
-      api.startInstance.resolves({ success: true, response: DEFAULT_START_INSTANCE_RESPONSE });
-      api.getProcessInstance.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_RESPONSE });
-
-      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
-
-      await clock.tickAsync(500);
-
-      // when
-      const task = elementRegistry.get('StartEvent_1');
-
-      selection.select(task);
-
-      await clock.tickAsync(500);
-
-      // then
-      expect(finishedSpy).to.not.have.been.called;
-      expect(errorSpy).to.not.have.been.called;
-      expect(api.deploy).to.have.been.calledOnce;
-      expect(api.startInstance).to.have.been.calledOnce;
-      expect(api.getProcessInstance).to.not.have.been.called;
-      expect(api.getProcessInstanceVariables).to.not.have.been.called;
-      expect(api.getProcessInstanceIncident).to.not.have.been.called;
-    }));
-
-
-    it('should handle canceling after starting instance', inject(async function(elementRegistry) {
-
-      // given
-      api.deploy.resolves({ success: true, response: DEFAULT_DEPLOY_RESPONSE });
-      api.startInstance.resolves({ success: true, response: DEFAULT_START_INSTANCE_RESPONSE });
-      api.getProcessInstance.resolves({ success: true, response: DEFAULT_GET_PROCESS_INSTANCE_RESPONSE });
-
-      // when
-      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
-
-      await clock.tickAsync(500);
-
-      // assume
-      expect(statusChangeSpy).to.have.been.calledWith('executing');
-      expect(api.startInstance).to.have.been.calledOnce;
-
-      // when
-      taskExecution.cancelTaskExecution();
-
-      // then
-      expect(statusChangeSpy).to.have.been.calledWith('idle');
-      expect(finishedSpy).to.not.have.been.called;
-      expect(api.getProcessInstanceVariables).to.not.have.been.called;
-      expect(api.getProcessInstanceIncident).to.not.have.been.called;
-    }));
-
-
-    it('should noop when canceling without running task execution', async function() {
-
-      // when
-      taskExecution.cancelTaskExecution();
-
-      await clock.tickAsync(500);
-
-      // then
-      expect(finishedSpy).to.not.have.been.called;
-    });
-
-  });
-
-
-  describe('getProcessDefinitionKey', function() {
+  describe('#getProcessDefinitionKey', function() {
 
     it('should get process definition key from deploy response', function() {
 
       // when
       const processDefinitionKey = getProcessDefinitionKey(
-        DEFAULT_DEPLOY_RESPONSE,
-        'Process_TaskTesting'
+        createDeployResourcesSDKResponse(),
+        'Process_1'
       );
 
       // then
-      expect(processDefinitionKey).to.equal('2251799813686881');
+      expect(processDefinitionKey).to.equal(DEFAULT_PROCESS_DEFINITION_KEY);
     });
 
 
@@ -534,8 +1047,8 @@ describe('TaskExecution', function() {
 
       // when
       const processDefinitionKey = getProcessDefinitionKey(
-        DEFAULT_DEPLOY_RESPONSE,
-        'Foo_Process'
+        createDeployResourcesSDKResponse(),
+        'Process_2'
       );
 
       // then
@@ -547,61 +1060,11 @@ describe('TaskExecution', function() {
 
       // when
       const processDefinitionKey = getProcessDefinitionKey(
-        {
-          ...DEFAULT_DEPLOY_RESPONSE,
-          deployments: [
-            {
-              'decisionDefinition': {
-                'decisionDefinitionId': 'Decision_1',
-                'version': 1,
-                'name': 'Decision 1',
-                'tenantId': '<default>',
-                'decisionRequirementsId': 'Definitions_1',
-                'decisionDefinitionKey': '2251799821491857',
-                'decisionRequirementsKey': '2251799821491856'
-              },
-              'decision': {
-                'decisionDefinitionId': 'Decision_1',
-                'version': 1,
-                'name': 'Decision 1',
-                'tenantId': '<default>',
-                'decisionRequirementsId': 'Definitions_1',
-                'decisionDefinitionKey': '2251799821491857',
-                'decisionRequirementsKey': '2251799821491856',
-                'decisionId': 'Decision_1',
-                'dmnDecisionId': 'Decision_1',
-                'dmnDecisionName': 'Decision 1',
-                'dmnDecisionRequirementsId': 'Definitions_1',
-                'decisionKey': '2251799821491857'
-              }
-            },
-            {
-              'decisionRequirements': {
-                'decisionRequirementsId': 'Definitions_1',
-                'version': 1,
-                'decisionRequirementsName': 'DRD',
-                'tenantId': '<default>',
-                'resourceName': 'decision.dmn',
-                'decisionRequirementsKey': '2251799821491856',
-                'dmnDecisionRequirementsId': 'Definitions_1',
-                'dmnDecisionRequirementsName': 'DRD'
-              }
-            }
-          ],
-          processes: [],
-          decisions: [
-            {
-              'decisionDefinitionId': 'Decision_1',
-              'version': 1,
-              'name': 'Decision 1',
-              'tenantId': '<default>',
-              'decisionRequirementsId': 'Definitions_1',
-              'decisionDefinitionKey': '2251799821491857',
-              'decisionRequirementsKey': '2251799821491856'
-            }
-          ]
-        },
-        'Process_TaskTesting'
+        createDeployResourcesSDKResponse({
+          deployments: [],
+          processes: []
+        }),
+        'Process_1'
       );
 
       // then
@@ -611,192 +1074,75 @@ describe('TaskExecution', function() {
   });
 
 
-  describe('#getVariables', function() {
+  describe('#getIncident', function() {
 
-    it('should get variables with scope', function() {
+    it('should get incident from response', function() {
 
       // given
-      const getVariablesResponseItems = [
-        {
-          variableKey: 1,
-          name: 'localFoo',
-          value: 'bar',
-          scopeKey: '1'
-        },
-        {
-          variableKey: 2,
-          name: 'localBaz',
-          value: 42,
-          scopeKey: '1'
-        },
-        {
-          variableKey: 3,
-          name: 'processFoo',
-          value: true,
-          scopeKey: '1'
-        },
-        {
-          variableKey: 4,
-          name: 'processFoo',
-          value: true,
-          scopeKey: '2'
-        },
-        {
-          variableKey: 5,
-          name: 'otherLocalFoo',
-          value: 'baz',
-          scopeKey: '3'
-        }
-      ];
-
-      const getElementInstancesResponseItems = [
-        {
-          elementId: 'ServiceTask_1',
-          elementInstanceKey: '1'
-        }
-      ];
+      const response = createSearchIncidentSDKResponse();
 
       // when
-      const variables = getVariables(
-        getVariablesResponseItems,
-        getElementInstancesResponseItems,
-        {
-          processInstanceKey: '2'
-        },
-        'ServiceTask_1'
-      );
+      const incident = getIncident(response);
 
       // then
-      expect(variables).to.eql({
-        1: { name: 'localFoo', value: 'bar', scope: SCOPES.LOCAL },
-        2: { name: 'localBaz', value: 42, scope: SCOPES.LOCAL },
-        3: { name: 'processFoo', value: true, scope: SCOPES.LOCAL },
-        4: { name: 'processFoo', value: true, scope: SCOPES.PROCESS },
-        5: { name: 'otherLocalFoo', value: 'baz', scope: null }
+      expect(incident).to.exist;
+      expect(incident.incidentKey).to.equal(DEFAULT_INCIDENT_KEY);
+    });
+
+
+    it('should return null if no incident found', function() {
+
+      // given
+      const response = createSearchIncidentSDKResponse({
+        items: []
       });
+
+      // when
+      const incident = getIncident(response);
+
+      // then
+      expect(incident).to.be.null;
     });
 
   });
 
+
+  describe('#getElementInstance', function() {
+
+    it('should get element instance from response', inject(async function(elementRegistry) {
+
+      // given
+      const element = elementRegistry.get('ServiceTask_1');
+
+      const response = createSearchElementInstancesSDKResponse();
+
+      // when
+      const elementInstance = getElementInstance(response, element);
+
+      // then
+      expect(elementInstance).to.exist;
+      expect(elementInstance.elementId).to.equal('ServiceTask_1');
+    }));
+
+
+    it('should return null if element instance not found', inject(async function(elementRegistry) {
+
+      // given
+      const element = elementRegistry.get('ServiceTask_1');
+
+      const response = createSearchElementInstancesSDKResponse({
+        items: [
+          createElementInstanceDetails({ elementId: 'ServiceTask_2' })
+        ]
+      });
+
+      // when
+      const elementInstance = getElementInstance(response, element);
+
+      // then
+      expect(elementInstance).to.be.null;
+    }));
+
+  });
+
 });
-
-const DEFAULT_DEPLOY_RESPONSE = {
-  'deploymentKey': '2251799813755914',
-  'tenantId': '<default>',
-  'deployments': [
-    {
-      'processDefinition': {
-        'processDefinitionId': 'Process_TaskTesting',
-        'processDefinitionVersion': 1,
-        'resourceName': 'diagram.bpmn',
-        'tenantId': '<default>',
-        'processDefinitionKey': '2251799813686881'
-      }
-    }
-  ],
-  'processes': [
-    {
-      'processDefinitionId': 'Process_TaskTesting',
-      'processDefinitionVersion': 1,
-      'resourceName': 'diagram.bpmn',
-      'tenantId': '<default>',
-      'processDefinitionKey': '2251799813686881'
-    }
-  ],
-  'decisions': [],
-  'forms': [],
-  'decisionRequirements': []
-};
-
-const DEPLOY_ERROR = 'Response code 400 (Bad Request) (POST https://lpp-1.zeebe.dev.ultrawombat.com/859915fd-36c3-4a8c-b19e-5fb1e21dade9/v2/deployments). {"type":"about:blank","title":"INVALID_ARGUMENT","status":400,"detail":"Command \'CREATE\' rejected with code \'INVALID_ARGUMENT\': Expected to deploy new resources, but encountered the following errors:\\n\'diagram.bpmn\': - Element: Process_TaskTesting\\n    - ERROR: Must have at least one start event\\n","instance":"/859915fd-36c3-4a8c-b19e-5fb1e21dade9/v2/deployments"}. Enhanced stack trace available as error.source.';
-
-const DEFAULT_START_INSTANCE_RESPONSE = {
-  'processDefinitionId': 'Process_TaskTesting',
-  'processDefinitionVersion': 1,
-  'tenantId': '<default>',
-  'variables': {},
-  'processDefinitionKey': '2251799813686881',
-  'processInstanceKey': '2251799813755922',
-  'tags': []
-};
-
-const START_INSTANCE_ERROR = 'Response code 400 (Bad Request) (POST https://lpp-1.zeebe.dev.ultrawombat.com/859915fd-36c3-4a8c-b19e-5fb1e21dade9/v2/process-instances). {"type":"about:blank","title":"Bad Request","status":400,"detail":"Request property [runtimeInstructions.null] cannot be parsed","instance":"/859915fd-36c3-4a8c-b19e-5fb1e21dade9/v2/process-instances"}. Enhanced stack trace available as error.source.';
-
-const DEFAULT_GET_PROCESS_INSTANCE_RESPONSE = {
-  'items': [
-    {
-      'processDefinitionId': 'Process_TaskTesting',
-      'processDefinitionName': 'Process_TaskTesting',
-      'processDefinitionVersion': 1,
-      'startDate': '2025-09-04T12:43:52.704Z',
-      'endDate': '2025-09-04T12:43:52.704Z',
-      'state': 'TERMINATED',
-      'hasIncident': false,
-      'tenantId': '<default>',
-      'processInstanceKey': '2251799813755922',
-      'processDefinitionKey': '2251799813686881'
-    }
-  ],
-  'page': {
-    'totalItems': 1,
-    'hasMoreTotalItems': false,
-    'startCursor': 'WzIyNTE3OTk4MTM3NTU5MjJd',
-    'endCursor': 'WzIyNTE3OTk4MTM3NTU5MjJd'
-  }
-};
-
-const GET_PROCESS_INSTANCE_ERROR = 'FOO';
-
-const DEFAULT_GET_PROCESS_INSTANCE_VARIABLES_RESPONSE = {
-  'items': [
-    {
-      'value': 'bar',
-      'isTruncated': false,
-      'name': 'foo',
-      'tenantId': '<default>',
-      'variableKey': '2251799813755923',
-      'scopeKey': '2251799813755922',
-      'processInstanceKey': '2251799813755922'
-    },
-    {
-      'value': '42',
-      'isTruncated': false,
-      'name': 'baz',
-      'tenantId': '<default>',
-      'variableKey': '2251799813755924',
-      'scopeKey': '2251799813755922',
-      'processInstanceKey': '2251799813755922'
-    }
-  ],
-  'page': {
-    'totalItems': 2,
-    'hasMoreTotalItems': false,
-    'startCursor': 'WzIyNTE3OTk4MTM3NTU5MjNd',
-    'endCursor': 'WzIyNTE3OTk4MTM3NTU5NDVd'
-  }
-};
-
-const DEFAULT_GET_PROCESS_INSTANCE_ELEMENT_INSTANCES_RESPONSE = {
-  'items': [
-    {
-      'processDefinitionId': 'Process_TaskTesting',
-      'startDate': '2025-10-16T13:08:56.455Z',
-      'endDate': '2025-10-16T13:08:56.455Z',
-      'elementId': 'ServiceTask_2',
-      'elementName': 'Inputs',
-      'type': 'SCRIPT_TASK',
-      'state': 'COMPLETED',
-      'hasIncident': false,
-      'tenantId': '<default>',
-      'elementInstanceKey': '2251799817092569',
-      'processInstanceKey': '2251799817092566',
-      'processDefinitionKey': '2251799817066246'
-    }
-  ],
-  'page': {
-    'totalItems': 1,
-    'hasMoreTotalItems': false,
-    'startCursor': 'WzIyNTE3OTk4MTcwOTI1Njld',
-    'endCursor': 'WzIyNTE3OTk4MTcwOTI1Njld'
-  }
-};

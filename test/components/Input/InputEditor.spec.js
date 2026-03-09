@@ -3,13 +3,13 @@ import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { bootstrapModeler, getModeler, inject } from '../../util/Util';
+import { bootstrapModeler, getModeler, inject } from '../../helpers/modeler';
 
 import InputEditor, { PLACEHOLDER_TEXT, INVALID_JSON_ERROR } from '../../../lib/components/Input/InputEditor';
 
 import diagramXML from '../../fixtures/InputEditor.bpmn';
 
-import { SCOPES } from '../../../lib/TaskExecution';
+import { SCOPES } from '../../../lib/utils/variables';
 
 describe('InputEditor', function() {
 

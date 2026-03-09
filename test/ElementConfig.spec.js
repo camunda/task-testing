@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 
-import { bootstrapModeler, inject } from './util/Util';
+import { bootstrapModeler, inject } from './helpers/modeler';
 
 import { ElementConfig } from '../lib/ElementConfig';
 import { ElementVariables } from '../lib/ElementVariables';

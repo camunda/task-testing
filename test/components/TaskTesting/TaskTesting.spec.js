@@ -1,3 +1,9 @@
+/**
+ * @import {
+ *   TaskTestingAPI
+ * } from '../../../lib/types';
+ */
+
 import { render, screen, waitFor } from '@testing-library/react';
 
 import { CloudElementTemplatesPropertiesProviderModule } from 'bpmn-js-element-templates';
@@ -8,16 +14,30 @@ import {
   ZeebePropertiesProviderModule
 } from 'bpmn-js-properties-panel';
 
-import { bootstrapModeler, inject, getModeler } from '../../util/Util';
+import { bootstrapModeler, inject, getModeler } from '../../helpers/modeler';
+import {
+  createDeployResponse,
+  createElementInstanceDetails,
+  createGetProcessInstanceElementInstancesResponse,
+  createGetProcessInstanceIncidentResponse,
+  createGetProcessInstanceJobsResponse,
+  createGetProcessInstanceMessageSubscriptionsResponse,
+  createGetProcessInstanceResponse,
+  createGetProcessInstanceUserTasksResponse,
+  createGetProcessInstanceVariablesResponse,
+  createProcessInstanceDetails,
+  createStartInstanceResponse
+} from '../../helpers/responses';
 
 import TaskTesting from '../../../lib/components/TaskTesting/TaskTesting';
 
 import {
   SINGLE_TASK_SELECTION_REQUIRED_MESSAGE,
-  AD_HOC_SUBPROCESS_TASK_UNSUPPORTED_MESSAGE
+  AD_HOC_SUBPROCESS_MESSAGE
 } from '../../../lib/hooks/useSelectedElement';
 
 import { DEFAULT_CONFIG } from '../../../lib/ElementConfig';
+import { TASK_EXECUTION_FINISHED_REASON, POLL_INTERVAL_MS } from '../../../lib/TaskExecution';
 
 import diagramXML from '../../fixtures/diagram.bpmn';
 import templates from '../../fixtures/elementTemplates.json';
@@ -48,35 +68,7 @@ describe('TaskTesting', function() {
   }));
 
 
-  it('should show task type and name (generic)', inject(async function(elementRegistry, selection) {
-
-    // given
-    renderTaskTesting();
-
-    // when
-    selection.select(elementRegistry.get('ServiceTask_1'));
-
-    // then
-    await screen.findByText('Script Task');
-    await screen.findByText('No inputs');
-  }));
-
-
-  it('should show task type and name (element template)', inject(async function(elementRegistry, selection) {
-
-    // given
-    renderTaskTesting();
-
-    // when
-    selection.select(elementRegistry.get('ServiceTask_3'));
-
-    // then
-    await screen.findByText('REST Outbound Connector');
-    await screen.findByText('REST');
-  }));
-
-
-  it('should display unsupported message for a task in ad-hoc subprocess', inject(
+  it('should not support a task in ad-hoc subprocess', inject(
     async function(elementRegistry, selection) {
 
       // given
@@ -86,12 +78,12 @@ describe('TaskTesting', function() {
       selection.select(elementRegistry.get('AdHocSubProcessTask'));
 
       // then
-      await screen.findByText(AD_HOC_SUBPROCESS_TASK_UNSUPPORTED_MESSAGE);
+      await screen.findByText(AD_HOC_SUBPROCESS_MESSAGE);
     })
   );
 
 
-  it('should display unsupported message for a task in a collapsed ad-hoc subprocess', inject(
+  it('should not support a task in a collapsed ad-hoc subprocess', inject(
     async function(elementRegistry, selection, canvas) {
 
       // given
@@ -102,32 +94,19 @@ describe('TaskTesting', function() {
       selection.select(elementRegistry.get('CollapsedAdHocSubProcessTask'));
 
       // then
-      await screen.findByText(AD_HOC_SUBPROCESS_TASK_UNSUPPORTED_MESSAGE);
+      await screen.findByText(AD_HOC_SUBPROCESS_MESSAGE);
     })
   );
 
 
-  describe('_View in Operate_ button', function() {
+  describe('Operate link', function() {
 
-    it('should show during task execution', inject(async function(elementRegistry, selection) {
+    it('should show during execution if operateBaseUrl provided', inject(async function(elementRegistry, selection) {
 
       // given
       const api = {
-        deploy: sinon.spy(() => Promise.resolve({
-          success: true,
-          response: {
-            deployments: [
-              {
-                processDefinition: {
-                  processDefinitionId: 'Process_TaskTesting',
-                  processDefinitionKey: '123'
-                }
-              }
-            ]
-          }
-        })),
-        startInstance: sinon.spy(() => Promise.resolve({ success: true, response: { processInstanceKey: '123' } })),
-        getInstance: sinon.spy(() => Promise.resolve({ success: true, response: {} })),
+        deploy: sinon.spy(() => Promise.resolve(createDeployResponse())),
+        startInstance: sinon.spy(() => Promise.resolve(createStartInstanceResponse())),
       };
 
       renderTaskTesting({
@@ -140,16 +119,41 @@ describe('TaskTesting', function() {
       selection.select(elementRegistry.get('ServiceTask_3'));
 
       const button = await screen.findByTestId('test-task-btn');
+
       button.click();
 
       // then
-      await waitFor(() => {
-        expect(api.startInstance).to.have.been.called;
+      await screen.findByText('Open in Operate');
+    }));
+
+
+    it('should show after task execution', inject(async function(elementRegistry, selection) {
+
+      // given
+      renderTaskTesting({
+        isConnectionConfigured: true,
+        operateBaseUrl: 'https://camunda.com',
+        config: {
+          input: {},
+          output: {
+            ServiceTask_3: {
+              success: true,
+              variables: {},
+              operateUrl: 'https://camunda.com/operate/1'
+            }
+          }
+        }
       });
 
-      await screen.findByText('View in Operate');
+      // when
+      selection.select(elementRegistry.get('ServiceTask_3'));
 
-      expect(api.getInstance).to.have.not.been.called;
+      const outputHeader = await screen.findByText('Result');
+
+      outputHeader.click();
+
+      // then
+      await screen.findByText('Open in Operate');
     }));
 
 
@@ -157,7 +161,7 @@ describe('TaskTesting', function() {
 
       // given
       const api = {
-        deploy: sinon.spy(() => Promise.resolve({ success: false, error: 'foo' })),
+        deploy: sinon.spy(() => Promise.resolve(createDeployResponse({ success: false })))
       };
 
       renderTaskTesting({
@@ -170,6 +174,7 @@ describe('TaskTesting', function() {
       selection.select(elementRegistry.get('ServiceTask_3'));
 
       const button = await screen.findByTestId('test-task-btn');
+
       button.click();
 
       // then
@@ -177,12 +182,477 @@ describe('TaskTesting', function() {
         expect(api.deploy).to.have.been.called;
       });
 
-      expect(screen.queryByText('View in Operate')).to.not.exist;
+      const outputHeader = await screen.findByText('Result');
+
+      outputHeader.click();
+
+      expect(screen.queryByText('Open in Operate')).to.not.exist;
     }));
+
   });
 
 
-  describe('_Test task_ button', function() {
+  describe('header state', function() {
+
+    describe('no connection configured', function() {
+
+      it('should show error header state', inject(async function(elementRegistry, selection) {
+
+        // given
+        renderTaskTesting({
+          isConnectionConfigured: false
+        });
+
+        // when
+        selection.select(elementRegistry.get('ServiceTask_1'));
+
+        // then
+        await waitFor(async () => {
+          expect(document.querySelector('.task-testing__container--header-error')).to.exist;
+        });
+
+        const statusText = document.querySelector('.task-testing__header-status-text');
+
+        expect(statusText).to.exist;
+        expect(statusText.textContent).to.equal('Connection required');
+
+        const statusIcon = document.querySelector('.task-testing__status-icon--error');
+
+        expect(statusIcon).to.exist;
+
+        const button = await screen.findByTestId('test-task-btn');
+
+        expect(button.classList.contains('cds--btn--secondary')).to.be.true;
+      }));
+
+
+      it('should not start execution when clicking "Run test"', inject(async function(elementRegistry, selection) {
+
+        // given
+        const deploySpy = sinon.spy(() => new Promise(() => {}));
+
+        renderTaskTesting({
+          isConnectionConfigured: false,
+          api: {
+            deploy: deploySpy
+          }
+        });
+
+        // when
+        selection.select(elementRegistry.get('ServiceTask_3'));
+
+        const button = await screen.findByTestId('test-task-btn');
+
+        await waitFor(() => {
+          expect(document.querySelector('.task-testing__container--header-error')).to.exist;
+        });
+
+        button.click();
+
+        // then
+        await waitFor(() => {
+          expect(deploySpy).not.to.have.been.called;
+        });
+      }));
+
+    });
+
+
+    describe('input error', function() {
+
+      it('should show error header state', inject(async function(elementRegistry, selection) {
+
+        // given
+        renderTaskTesting({
+          isConnectionConfigured: true,
+          config: {
+            input: { ServiceTask_3: '{' },
+            output: {}
+          }
+        });
+
+        // when
+        selection.select(elementRegistry.get('ServiceTask_3'));
+
+        // then
+        await waitFor(() => {
+          expect(document.querySelector('.task-testing__container--header-error')).to.exist;
+        });
+
+        const statusText = document.querySelector('.task-testing__header-status-text');
+
+        expect(statusText).to.exist;
+        expect(statusText.textContent).to.equal('Input error');
+
+        const statusIcon = document.querySelector('.task-testing__status-icon--error');
+
+        expect(statusIcon).to.exist;
+
+        const button = await screen.findByTestId('test-task-btn');
+
+        expect(button.classList.contains('cds--btn--secondary')).to.be.true;
+      }));
+
+
+      it('should not start execution when clicking "Run test"', inject(async function(elementRegistry, selection) {
+
+        // given
+        const deploySpy = sinon.spy(() => new Promise(() => {}));
+
+        renderTaskTesting({
+          isConnectionConfigured: true,
+          config: {
+            input: { ServiceTask_3: '{' },
+            output: {}
+          },
+          api: {
+            deploy: deploySpy
+          }
+        });
+
+        // when
+        selection.select(elementRegistry.get('ServiceTask_3'));
+
+        const button = await screen.findByTestId('test-task-btn');
+
+        await waitFor(() => {
+          expect(document.querySelector('.task-testing__container--header-error')).to.exist;
+        });
+
+        button.click();
+
+        // then
+        await waitFor(() => {
+          expect(deploySpy).not.to.have.been.called;
+        });
+      }));
+
+    });
+
+  });
+
+
+  describe('event callbacks', function() {
+
+    it('should call onTaskExecutionStarted when task execution starts', inject(async function(elementRegistry, selection) {
+
+      // given
+      const onTaskExecutionStarted = sinon.spy();
+
+      const api = {
+        deploy: sinon.spy(() => new Promise(() => {})),
+      };
+
+      renderTaskTesting({
+        isConnectionConfigured: true,
+        onTaskExecutionStarted,
+        api
+      });
+
+      // when
+      selection.select(elementRegistry.get('ServiceTask_3'));
+
+      const button = await screen.findByTestId('test-task-btn');
+
+      button.click();
+
+      // then
+      await waitFor(() => {
+        expect(onTaskExecutionStarted).to.have.been.calledOnce;
+      });
+
+      expect(onTaskExecutionStarted).to.have.been.calledOnce;
+      expect(onTaskExecutionStarted).to.have.been.calledWithMatch(elementRegistry.get('ServiceTask_3'));
+    }));
+
+
+    it('should call onTaskExecutionFinished with error when deployment fails', inject(async function(elementRegistry, selection) {
+
+      // given
+      const onTaskExecutionFinished = sinon.spy();
+
+      const api = {
+        deploy: sinon.spy(() => Promise.resolve(createDeployResponse({ success: false, error: 'Deployment failed' }))),
+      };
+
+      renderTaskTesting({
+        isConnectionConfigured: true,
+        onTaskExecutionFinished,
+        api
+      });
+
+      // when
+      selection.select(elementRegistry.get('ServiceTask_3'));
+
+      const button = await screen.findByTestId('test-task-btn');
+
+      button.click();
+
+      // then
+      await waitFor(() => {
+        expect(api.deploy).to.have.been.called;
+      });
+
+      await waitFor(() => {
+        expect(onTaskExecutionFinished).to.have.been.calledOnce;
+      });
+
+      expect(onTaskExecutionFinished).to.have.been.calledWithMatch(elementRegistry.get('ServiceTask_3'), {
+        success: false,
+        reason: TASK_EXECUTION_FINISHED_REASON.ERROR,
+        error: {
+          message: 'Failed to deploy process definition',
+          response: 'Deployment failed'
+        }
+      });
+    }));
+
+
+    it('should call onTaskExecutionFinished with error when start instance fails', inject(async function(elementRegistry, selection) {
+
+      // given
+      const onTaskExecutionFinished = sinon.spy();
+
+      const api = {
+        deploy: sinon.spy(() => Promise.resolve(createDeployResponse())),
+        startInstance: sinon.spy(() => Promise.resolve(createStartInstanceResponse({ success: false, error: 'Start instance failed' }))),
+      };
+
+      renderTaskTesting({
+        isConnectionConfigured: true,
+        onTaskExecutionFinished,
+        api
+      });
+
+      // when
+      selection.select(elementRegistry.get('ServiceTask_3'));
+
+      const button = await screen.findByTestId('test-task-btn');
+
+      button.click();
+
+      // then
+      await waitFor(() => {
+        expect(api.startInstance).to.have.been.called;
+      });
+
+      await waitFor(() => {
+        expect(onTaskExecutionFinished).to.have.been.calledOnce;
+      });
+
+      expect(onTaskExecutionFinished).to.have.been.calledWithMatch(elementRegistry.get('ServiceTask_3'), {
+        success: false,
+        reason: TASK_EXECUTION_FINISHED_REASON.ERROR,
+        error: {
+          message: 'Failed to start process instance',
+          response: 'Start instance failed'
+        }
+      });
+    }));
+
+
+    it('should call onTaskExecutionFinished when task execution finishes with success', inject(async function(elementRegistry, selection) {
+
+      // given
+      const clock = sinon.useFakeTimers({ shouldAdvanceTime: true });
+
+      const onTaskExecutionFinished = sinon.spy();
+
+      const api = {
+        deploy: sinon.spy(() => Promise.resolve(createDeployResponse())),
+        getProcessInstance: sinon.spy(() => Promise.resolve(createGetProcessInstanceResponse({
+          response: {
+            items: [ createProcessInstanceDetails({ state: 'TERMINATED' }) ]
+          }
+        }))),
+        getProcessInstanceElementInstances: sinon.spy(() => Promise.resolve(createGetProcessInstanceElementInstancesResponse({
+          response: {
+            items: [ createElementInstanceDetails({ elementId: 'ServiceTask_3', state: 'COMPLETED' }) ]
+          }
+        }))),
+        getProcessInstanceIncident: sinon.spy(() => Promise.resolve(createGetProcessInstanceIncidentResponse())),
+        getProcessInstanceJobs: sinon.spy(() => Promise.resolve(createGetProcessInstanceJobsResponse())),
+        getProcessInstanceMessageSubscriptions: sinon.spy(() => Promise.resolve(createGetProcessInstanceMessageSubscriptionsResponse())),
+        getProcessInstanceUserTasks: sinon.spy(() => Promise.resolve(createGetProcessInstanceUserTasksResponse())),
+        getProcessInstanceVariables: sinon.spy(() => Promise.resolve(createGetProcessInstanceVariablesResponse())),
+        startInstance: sinon.spy(() => Promise.resolve(createStartInstanceResponse()))
+      };
+
+      renderTaskTesting({
+        isConnectionConfigured: true,
+        operateBaseUrl: 'https://camunda.com',
+        onTaskExecutionFinished,
+        api
+      });
+
+      // when
+      selection.select(elementRegistry.get('ServiceTask_3'));
+
+      const button = await screen.findByTestId('test-task-btn');
+
+      button.click();
+
+      // then
+      await clock.tickAsync(POLL_INTERVAL_MS);
+
+      expect(onTaskExecutionFinished).to.have.been.calledOnce;
+      expect(onTaskExecutionFinished).to.have.been.calledWithMatch(elementRegistry.get('ServiceTask_3'), {
+        success: true
+      });
+
+      clock.restore();
+    }));
+
+
+    it('should call onTaskExecutionFinished when task execution finishes with incident', inject(async function(elementRegistry, selection) {
+
+      // given
+      const clock = sinon.useFakeTimers({ shouldAdvanceTime: true });
+
+      const onTaskExecutionFinished = sinon.spy();
+
+      const api = {
+        deploy: sinon.spy(() => Promise.resolve(createDeployResponse())),
+        getProcessInstance: sinon.spy(() => Promise.resolve(createGetProcessInstanceResponse({
+          response: {
+            items: [ createProcessInstanceDetails({ state: 'ACTIVE', hasIncident: true }) ]
+          }
+        }))),
+        getProcessInstanceElementInstances: sinon.spy(() => Promise.resolve(createGetProcessInstanceElementInstancesResponse())),
+        getProcessInstanceIncident: sinon.spy(() => Promise.resolve(createGetProcessInstanceIncidentResponse({
+          response: {
+            items: [ createGetProcessInstanceIncidentResponse({
+              elementId: 'ServiceTask_3',
+              errorMessage: 'No retries left',
+              errorType: 'JOB_NO_RETRIES'
+            }) ]
+          }
+        }))),
+        getProcessInstanceJobs: sinon.spy(() => Promise.resolve(createGetProcessInstanceJobsResponse())),
+        getProcessInstanceMessageSubscriptions: sinon.spy(() => Promise.resolve(createGetProcessInstanceMessageSubscriptionsResponse())),
+        getProcessInstanceUserTasks: sinon.spy(() => Promise.resolve(createGetProcessInstanceUserTasksResponse())),
+        getProcessInstanceVariables: sinon.spy(() => Promise.resolve(createGetProcessInstanceVariablesResponse())),
+        startInstance: sinon.spy(() => Promise.resolve(createStartInstanceResponse()))
+      };
+
+      renderTaskTesting({
+        isConnectionConfigured: true,
+        operateBaseUrl: 'https://camunda.com',
+        onTaskExecutionFinished,
+        api
+      });
+
+      // when
+      selection.select(elementRegistry.get('ServiceTask_3'));
+
+      const button = await screen.findByTestId('test-task-btn');
+
+      button.click();
+
+      // then
+      await clock.tickAsync(POLL_INTERVAL_MS);
+
+      expect(onTaskExecutionFinished).to.have.been.calledOnce;
+      expect(onTaskExecutionFinished).to.have.been.calledWithMatch(elementRegistry.get('ServiceTask_3'), {
+        success: false,
+        reason: TASK_EXECUTION_FINISHED_REASON.INCIDENT,
+        incident: {
+          errorMessage: 'No retries left',
+          errorType: 'JOB_NO_RETRIES'
+        }
+      });
+
+      clock.restore();
+    }));
+
+
+    it('should call onTaskExecutionFinished with reason "user.selectionChanged" when selection changes during task execution', inject(async function(elementRegistry, selection) {
+
+      // given
+      const onTaskExecutionFinished = sinon.spy();
+
+      const api = {
+        deploy: sinon.spy(() => new Promise(() => {})),
+      };
+
+      renderTaskTesting({
+        isConnectionConfigured: true,
+        onTaskExecutionFinished,
+        api
+      });
+
+      selection.select(elementRegistry.get('ServiceTask_3'));
+
+      const button = await screen.findByTestId('test-task-btn');
+
+      button.click();
+
+      await waitFor(() => {
+        expect(api.deploy).to.have.been.called;
+      });
+
+      // when
+      selection.select(elementRegistry.get('ServiceTask_1'));
+
+      // then
+      await waitFor(() => {
+        expect(onTaskExecutionFinished).to.have.been.calledOnce;
+      });
+
+      expect(onTaskExecutionFinished).to.have.been.calledWithMatch(elementRegistry.get('ServiceTask_3'), {
+        success: false,
+        reason: TASK_EXECUTION_FINISHED_REASON.USER_SELECTION_CHANGED
+      });
+    }));
+
+
+    it('should call onTaskExecutionFinished with reason "user.cancel" when task execution is manually canceled by the user', inject(async function(elementRegistry, selection) {
+
+      // given
+      const onTaskExecutionFinished = sinon.spy();
+
+      const api = {
+        deploy: sinon.spy(() => new Promise(() => {})),
+      };
+
+      renderTaskTesting({
+        isConnectionConfigured: true,
+        onTaskExecutionFinished,
+        api
+      });
+
+      selection.select(elementRegistry.get('ServiceTask_3'));
+
+      const button = await screen.findByTestId('test-task-btn');
+
+      button.click();
+
+      await waitFor(() => {
+        expect(api.deploy).to.have.been.called;
+      });
+
+      await waitFor(() => {
+        expect(button.textContent).to.equal('Stop test');
+      });
+
+      // when
+      button.click();
+
+      // then
+      await waitFor(() => {
+        expect(onTaskExecutionFinished).to.have.been.calledOnce;
+      });
+
+      expect(onTaskExecutionFinished).to.have.been.calledWithMatch(elementRegistry.get('ServiceTask_3'), {
+        success: false,
+        reason: TASK_EXECUTION_FINISHED_REASON.USER_CANCEL
+      });
+    }));
+
+  });
+
+
+  describe('Test button', function() {
 
     it('should start execution when connection configured and onTestTask not provided',
       inject(async function(elementRegistry, selection) {
@@ -342,7 +812,7 @@ describe('TaskTesting', function() {
         // when
         let button = await screen.findByTestId('test-task-btn');
 
-        expect(button.textContent).to.equal('Test task');
+        expect(button.textContent).to.equal('Run test');
 
         button.click();
 
@@ -355,14 +825,14 @@ describe('TaskTesting', function() {
         button = await screen.findByTestId('test-task-btn');
 
         await waitFor(() => {
-          expect(button.textContent).to.equal('Cancel');
+          expect(button.textContent).to.equal('Stop test');
         });
 
         button.click();
 
         // then
         await waitFor(() => {
-          expect(button.textContent).to.equal('Test task');
+          expect(button.textContent).to.equal('Run test');
         });
       }));
 
@@ -421,13 +891,17 @@ describe('TaskTesting', function() {
 
 });
 
+/** @type {TaskTestingAPI} */
 const DEFAULT_API = {
   deploy: () => {},
-  startInstance: () => {},
-  getInstance: () => {},
-  getProcessInstanceVariables: () => {},
+  getProcessInstance: () => {},
   getProcessInstanceElementInstances: () => {},
-  getProcessInstanceIncident: () => {}
+  getProcessInstanceIncident: () => {},
+  getProcessInstanceJobs: () => {},
+  getProcessInstanceMessageSubscriptions: () => {},
+  getProcessInstanceUserTasks: () => {},
+  getProcessInstanceVariables: () => {},
+  startInstance: () => {}
 };
 
 function renderTaskTesting(props = {}) {
@@ -447,8 +921,7 @@ function renderTaskTesting(props = {}) {
     operateBaseUrl,
     documentationUrl,
     onTaskExecutionStarted = () => {},
-    onTaskExecutionFinished = () => {},
-    onTaskExecutionInterrupted = () => {}
+    onTaskExecutionFinished = () => {}
   } = props;
 
   return render(<TaskTesting
@@ -466,6 +939,5 @@ function renderTaskTesting(props = {}) {
     documentationUrl={ documentationUrl }
     onTaskExecutionStarted={ onTaskExecutionStarted }
     onTaskExecutionFinished={ onTaskExecutionFinished }
-    onTaskExecutionInterrupted={ onTaskExecutionInterrupted }
   />);
 }
