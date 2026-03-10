@@ -195,7 +195,9 @@ function getAutocompletionInfo(value, description) {
   const htmlString = renderToStaticMarkup(
     <div className="info">
       <span>{ description }</span>
-      {value !== undefined && <pre>{typeof value === 'object' ? JSON.stringify(value, null, 2) : value}</pre>}
+      {/* TODO(@jarekdanielak): Disabled until bug is fixed in variable resolver
+      https://github.com/bpmn-io/variable-resolver/issues/82
+      {value !== undefined && <pre>{typeof value === 'object' ? JSON.stringify(value, null, 2) : value}</pre>} */}
     </div>
   );
 

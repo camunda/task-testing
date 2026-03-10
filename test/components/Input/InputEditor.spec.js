@@ -46,8 +46,9 @@ describe('InputEditor', function() {
     expect(container.textContent).to.match(/"baz": 1337/i);
   });
 
-
-  describe('autocompletion', function() {
+  // TODO(@jarekdanielak): Disabled until bug is fixed in variable resolver
+  // https://github.com/bpmn-io/variable-resolver/issues/82
+  describe.skip('autocompletion', function() {
 
     it('should show for resolved variables', inject(async function(elementRegistry, injector) {
 
