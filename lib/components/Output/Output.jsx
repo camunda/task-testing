@@ -218,7 +218,7 @@ const HeaderLinks = (props) => {
 
         if (tooltip) {
           return (
-            <Tooltip className="show-tooltip" key={ index } label={ tooltip } align="bottom-start">
+            <Tooltip className="has-tooltip" key={ index } label={ tooltip } align="bottom-start">
               { headerLink }
             </Tooltip>
           );
@@ -427,7 +427,7 @@ function ResultBanner({
         detailsExpanded && output?.error && (
           <div className="output__banner-details">
             <div className="output__banner-error">
-              <Tooltip className="show-tooltip" label={ <span>Details about the error that occurred during task execution</span> } align="bottom-start">
+              <Tooltip className="has-tooltip" label={ <span>Details about the error that occurred during task execution</span> } align="bottom-start">
                 <span className="output__banner-error-heading">Error details</span>
               </Tooltip>
               <div className="output__banner-details-content">
@@ -467,7 +467,7 @@ function ResultBanner({
       { detailsExpanded && incidentDetails && (
         <div className="output__banner-details">
           <div className="output__banner-incident">
-            <Tooltip className="show-tooltip" label={ <span>Details about the incident that occurred during task execution <Link
+            <Tooltip className="has-tooltip" label={ <span>Details about the incident that occurred during task execution <Link
               href="https://docs.camunda.io/docs/components/concepts/incidents/"
               target="_blank"
               rel="noopener noreferrer"
@@ -584,7 +584,7 @@ function CollapsibleSection({ title, tooltip, defaultOpen = true, isExecuting = 
             : <ChevronRight size={ 16 } className="output__chevron" />
         }
         { tooltip ? (
-          <Tooltip className="show-tooltip" label={ tooltip } align="bottom-start">
+          <Tooltip className="has-tooltip" label={ tooltip } align="bottom-start">
             <span className="output__collapsible-title">{ title }</span>
           </Tooltip>
         ) : (

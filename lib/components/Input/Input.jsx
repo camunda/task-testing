@@ -23,7 +23,7 @@ export default function Input({
     <div className="input">
       <div className="input__header">
         <div className="input__header--title">
-          <Tooltip className="show-tooltip" label={ <span>Variables the process instance will be started with. <Link
+          <Tooltip className="has-tooltip" label={ <span>Variables the process instance will be started with. <Link
             href="https://docs.camunda.io/docs/components/concepts/variables/"
             target="_blank"
             rel="noopener noreferrer"
