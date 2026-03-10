@@ -19,19 +19,19 @@
   --color-interactive: #0f62fe;
 
   // Info
-  --color-info: #0043CE;
-  --color-info-bg: #EDF5FF;
-  --color-info-border: #0043CE4D;
+  --color-info: #0043ce;
+  --color-info-bg: #edf5ff;
+  --color-info-border: #0043ce4d;
 
   // Success
-  --color-success: #24A148;
-  --color-success-bg: #DEFBE6;
-  --color-success-border: #24A1484D;
+  --color-success: #24a148;
+  --color-success-bg: #defbe6;
+  --color-success-border: #24a1484d;
 
   // Error
-  --color-error: #DA1E28;
-  --color-error-bg: #FFF1F1;
-  --color-error-border: #DA1E284D;
+  --color-error: #da1e28;
+  --color-error-bg: #fff1f1;
+  --color-error-border: #da1e284d;
 
   // Warning
   --color-warning: #f1c21b;
@@ -40,8 +40,8 @@
 
   // Canceled
   --color-canceled: var(--color-text-secondary);
-  --color-canceled-bg: #F4F4F4;
-  --color-canceled-border: #E0E0E0;
+  --color-canceled-bg: #f4f4f4;
+  --color-canceled-border: #e0e0e0;
 
   display: flex;
   flex-direction: column;
@@ -84,7 +84,6 @@
 
   .task-testing-tabs__list {
     display: flex;
-    gap: 0;
     border-bottom: 1px solid var(--color-border-strong);
     background: var(--color-bg-muted);
     flex-shrink: 0;
@@ -676,7 +675,6 @@
       padding: 0 0 0 2px;
       display: flex;
       flex-direction: column;
-      gap: 0;
       position: relative;
     }
 
@@ -896,25 +894,7 @@
       margin-top: 5px;
     }
 
-    .code__editor-copy-button {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      z-index: 10;
-      block-size: 24px;
-      inline-size: 24px;
-      padding-block-start: 0;
-      padding-inline-end: 0;
-      min-block-size: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-
-      svg {
-        fill: var(--color-text-secondary);
-      }
-    }
-
+    .code__editor-copy-button,
     .code__editor-clear-button {
       position: absolute;
       top: 5px;
