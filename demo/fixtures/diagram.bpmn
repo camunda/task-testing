@@ -283,7 +283,7 @@
       <bpmn:outgoing>Flow_0f2v3oj</bpmn:outgoing>
       <bpmn:adHocSubProcess id="AdHocSubProcess_2" name="AdHoc">
         <bpmn:extensionElements>
-          <zeebe:adHoc activeElementsCollection="=[&#34;ScriptTask_1&#34;]" outputCollection="haikus" outputElement="={&#10;  &#34;haiku&#34;: haiku&#10;}" />
+          <zeebe:adHoc activeElementsCollection="=[&#34;ScriptTask_2&#34;]" outputCollection="haikus" outputElement="={&#10;  &#34;haiku&#34;: haiku&#10;}" />
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_0ek248u</bpmn:incoming>
         <bpmn:outgoing>Flow_0xcmxua</bpmn:outgoing>
