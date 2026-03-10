@@ -4,24 +4,19 @@
   --color-text-primary: #161616;
   --color-text-secondary: #525252;
   --color-text-disabled: #8d8d8d;
-  --color-text-helper: #a8a8a8;
   --color-text-placeholder: hsl(225, 10%, 35%);
 
   // Backgrounds
   --color-bg: #fff;
-  --color-bg-subtle: #f9f9f9;
   --color-bg-light: #f4f4f4;
   --color-bg-muted: hsl(225, 10%, 95%);
-  --color-bg-overlay: rgba(0, 0, 0, 0.05);
 
   // Borders
-  --color-border-subtle: #e0e0e0;
-  --color-border-light: #e8e8e8;
+  --color-border-light: #e0e0e0;
   --color-border-strong: hsl(225, 10%, 75%);
 
   // Interactive
   --color-interactive: #0f62fe;
-  --color-interactive-icon: #0043ce;
 
   // Info
   --color-info: #0043CE;
@@ -40,7 +35,6 @@
 
   // Warning
   --color-warning: #f1c21b;
-  --color-warning-text: #8e6a00;
   --color-warning-bg: #fdf6dd;
   --color-warning-border: #e0a520;
 
@@ -138,7 +132,7 @@
     gap: 12px;
     width: 100%;
     padding: 12px;
-    border-bottom: 1px solid var(--color-border-subtle);
+    border-bottom: 1px solid var(--color-border-light);
 
     /** Prevent IBM Carbon tooltips for `hasIconOnly` buttons */
     .cds--popover {
@@ -152,11 +146,6 @@
       min-width: 0;
       flex: 1;
 
-      .task-testing__status-icon--ready {
-        fill: var(--color-interactive-icon);
-        flex-shrink: 0;
-      }
-
       .task-testing__status-icon--success {
         fill: var(--color-success);
         flex-shrink: 0;
@@ -164,11 +153,6 @@
 
       .task-testing__status-icon--error {
         fill: var(--color-error);
-        flex-shrink: 0;
-      }
-
-      .task-testing__status-icon--executing {
-        fill: var(--color-interactive-icon);
         flex-shrink: 0;
       }
 
@@ -712,7 +696,7 @@
         width: 7px;
         height: 7px;
         border-radius: 50%;
-        background-color: var(--color-border-subtle);
+        background-color: var(--color-border-light);
         z-index: 1;
       }
 
@@ -724,7 +708,7 @@
         top: 20px;
         bottom: -4px;
         width: 1px;
-        background-color: var(--color-border-subtle);
+        background-color: var(--color-border-light);
       }
 
       &:last-child::after {
