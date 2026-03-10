@@ -857,33 +857,22 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--color-border-strong);
-    border-radius: 2px;
-    background-color: var(--color-bg-light);
 
-    .code__editor-codemirror-error-overlay {
-      display: none;
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 1;
-      outline: 1px solid var(--color-error);
-      outline-offset: -1px;
-      pointer-events: none;
-    }
+    &.code__editor--error {
+      .code__editor-codemirror {
+        border-color: var(--color-error);
+        background-color: var(--color-error-bg);
+      }
 
-    &.code__editor--error .code__editor-codemirror-error-overlay {
-      display: block;
+      .cm-gutter {
+        background-color: var(--color-error-bg);
+      }
     }
 
     .code__editor-codemirror {
-       position: relative;
-
-      .cm-editor {
-        background-color: var(--cds-layer, var(--color-bg-light));
-      }
+      border: 1px solid var(--color-border-strong);
+      border-radius: 2px;
+      background-color: var(--color-bg-light);
 
       .cm-scroller {
         overflow: visible !important;
@@ -922,8 +911,8 @@
 
     .code__editor-copy-button {
       position: absolute;
-      top: 4px;
-      right: 4px;
+      top: 5px;
+      right: 5px;
       z-index: 10;
       block-size: 24px;
       inline-size: 24px;
@@ -941,8 +930,8 @@
 
     .code__editor-clear-button {
       position: absolute;
-      top: 4px;
-      right: 4px;
+      top: 5px;
+      right: 5px;
       z-index: 10;
       block-size: 24px;
       inline-size: 24px;
