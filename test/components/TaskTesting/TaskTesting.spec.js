@@ -334,6 +334,13 @@ describe('TaskTesting', function() {
 
   describe('event callbacks', function() {
 
+    let clock;
+
+    afterEach(function() {
+      clock?.restore();
+      clock = null;
+    });
+
     it('should call onTaskExecutionStarted when task execution starts', inject(async function(elementRegistry, selection) {
 
       // given
@@ -454,7 +461,7 @@ describe('TaskTesting', function() {
     it('should call onTaskExecutionFinished when task execution finishes with success', inject(async function(elementRegistry, selection) {
 
       // given
-      const clock = sinon.useFakeTimers({ shouldAdvanceTime: true });
+      clock = getClock();
 
       const onTaskExecutionFinished = sinon.spy();
 
@@ -499,15 +506,13 @@ describe('TaskTesting', function() {
       expect(onTaskExecutionFinished).to.have.been.calledWithMatch(elementRegistry.get('ServiceTask_3'), {
         success: true
       });
-
-      clock.restore();
     }));
 
 
     it('should call onTaskExecutionFinished when task execution finishes with incident', inject(async function(elementRegistry, selection) {
 
       // given
-      const clock = sinon.useFakeTimers({ shouldAdvanceTime: true });
+      clock = getClock();
 
       const onTaskExecutionFinished = sinon.spy();
 
@@ -561,8 +566,6 @@ describe('TaskTesting', function() {
           errorType: 'JOB_NO_RETRIES'
         }
       });
-
-      clock.restore();
     }));
 
 
@@ -940,4 +943,10 @@ function renderTaskTesting(props = {}) {
     onTaskExecutionStarted={ onTaskExecutionStarted }
     onTaskExecutionFinished={ onTaskExecutionFinished }
   />);
+}
+
+function getClock() {
+
+  // Only fake setTimeout/setInterval, leave requestAnimationFrame for React
+  return sinon.useFakeTimers({ shouldAdvanceTime: true, toFake: [ 'setTimeout', 'setInterval' ] });
 }
