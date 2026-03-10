@@ -140,6 +140,11 @@
     padding: 12px;
     border-bottom: 1px solid var(--color-border-subtle);
 
+    /** Prevent IBM Carbon tooltips for `hasIconOnly` buttons */
+    .cds--popover {
+      display: none;
+    }
+
     .task-testing__header-status {
       display: flex;
       align-items: center;
@@ -200,8 +205,6 @@
     .btn-execute {
       width: 140px;
     }
-
-
 
     .cds--btn .cds--inline-loading {
       inline-size: initial;
@@ -948,7 +951,7 @@
     }
   }
 
-  .show-tooltip {
+  .has-tooltip {
     text-decoration: underline;
     text-decoration-style: dotted;
     text-underline-offset: 2px;
