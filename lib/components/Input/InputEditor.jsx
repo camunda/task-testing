@@ -183,7 +183,6 @@ export default function InputEditor({
       hasIconOnly
       onClick={ onClear } />
     <div className="code__editor-codemirror">
-      <div className="code__editor-codemirror-error-overlay"></div>
       <div ref={ ref } className="code__editor-codemirror-inner"></div>
     </div>
     { error && <div className="code__editor-error">{ error }</div> }
