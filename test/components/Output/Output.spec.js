@@ -27,7 +27,7 @@ describe('Output', function() {
 
     // then
     expect(queryByText(/Result will appear here after you run the test/i)).to.exist;
-    expect(queryByText(/Test passed/i)).to.not.exist;
+    expect(queryByText(/Test completed/i)).to.not.exist;
     expect(queryByText(/Running test/i)).to.not.exist;
   });
 
@@ -58,7 +58,7 @@ describe('Output', function() {
     const { queryByText } = renderWithProps({ output });
 
     // then
-    expect(queryByText(/Test passed/i)).to.exist;
+    expect(queryByText(/Test completed/i)).to.exist;
   });
 
 
