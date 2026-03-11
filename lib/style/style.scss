@@ -168,8 +168,9 @@
       .task-testing__header-status-text {
         font-size: 14px;
         white-space: nowrap;
-        overflow: hidden;
+        overflow: clip visible;
         text-overflow: ellipsis;
+        min-width: 0;
       }
     }
 
@@ -356,8 +357,9 @@
       .output__banner-text {
         font-weight: 600;
         white-space: nowrap;
-        overflow: hidden;
+        overflow: clip visible;
         text-overflow: ellipsis;
+        min-width: 0;
       }
 
       .output__banner-timing {
@@ -423,8 +425,9 @@
         color: var(--color-text-secondary);
         white-space: nowrap;
         width: 30%;
-        overflow: hidden;
+        overflow: clip visible;
         text-overflow: ellipsis;
+        min-width: 0;
       }
 
       .output__banner-details-value {
@@ -632,16 +635,18 @@
       color: var(--color-text-secondary);
       white-space: nowrap;
       width: 30%;
-      overflow: hidden;
+      overflow: clip visible;
       text-overflow: ellipsis;
+      min-width: 0;
     }
 
     .execution-log__details-value {
       color: var(--color-text-primary);
       font-family: 'IBM Plex Mono', monospace;
       width: 70%;
-      overflow: hidden;
+      overflow: clip visible;
       text-overflow: ellipsis;
+      min-width: 0;
     }
 
     @container (max-width: 380px) {
@@ -763,8 +768,9 @@
 
     .execution-log__label {
       white-space: nowrap;
-      overflow: hidden;
+      overflow: clip visible;
       text-overflow: ellipsis;
+      min-width: 0;
     }
 
     .execution-log__label-row {
@@ -784,8 +790,9 @@
     .execution-log__secondary-label {
       color: var(--color-text-secondary);
       white-space: nowrap;
-      overflow: hidden;
+      overflow: clip visible;
       text-overflow: ellipsis;
+      min-width: 0;
       border-radius: 4px;
       background-color: var(--color-bg-light);
       padding: 2px 4px;
