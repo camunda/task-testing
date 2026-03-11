@@ -8,6 +8,7 @@ ___Note:__ Yet to be released changes appear here._
 
 ## 3.0.0
 
+* `FEAT`: support testing ad-hoc subprocess children ([#79](https://github.com/camunda/task-testing/pull/79))
 * `FEAT`: show execution log in the task testing panel tracking process execution step by step ([#81](https://github.com/camunda/task-testing/pull/81))
 * `FEAT`: persist execution log ([#81](https://github.com/camunda/task-testing/pull/81))
 * `FEAT`: show CTA for active jobs, message subscriptions, and user tasks ([#81](https://github.com/camunda/task-testing/pull/81))
