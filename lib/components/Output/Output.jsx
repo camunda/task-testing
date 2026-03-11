@@ -364,7 +364,7 @@ function ResultBanner({
       }
 
       if (output.success) {
-        return 'Test passed';
+        return 'Test completed';
       }
 
       if (output.terminated) {
