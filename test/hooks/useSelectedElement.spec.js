@@ -85,4 +85,24 @@ describe('useSelectedElement', function() {
     expect(selectedElement).to.exist;
     expect(message).to.be.null;
   }));
+
+
+  it('should return element if ad-hoc child task is selected', inject(function(elementRegistry, injector, selection) {
+
+    // given
+    const { result } = renderHook(() => useSelectedElement(injector));
+
+    const element = elementRegistry.get('AdHocChild_1');
+
+    // when
+    act(() => {
+      selection.select(element);
+    });
+
+    const [ selectedElement, message ] = result.current;
+
+    // then
+    expect(selectedElement).to.exist;
+    expect(message).to.be.null;
+  }));
 });
