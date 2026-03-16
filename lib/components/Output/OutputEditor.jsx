@@ -66,16 +66,18 @@ export default function OutputEditor({ value }) {
   }, [ editorView, value ]);
 
   return <div className="code__editor">
-    <Button
-      className="code__editor-copy-button"
-      renderIcon={ Copy }
-      iconDescription="Copy to clipboard"
-      size="sm"
-      kind="ghost"
-      hasIconOnly
-      onClick={ () => {
-        navigator.clipboard.writeText(value);
-      } } />
+    <div className="code__editor-buttons">
+      <Button
+        renderIcon={ Copy }
+        iconDescription="Copy to clipboard"
+        size="sm"
+        kind="ghost"
+        hasIconOnly
+        tooltipPosition="left"
+        onClick={ () => {
+          navigator.clipboard.writeText(value);
+        } } />
+    </div>
     <div className="code__editor-codemirror">
       <div ref={ ref } className="code__editor-codemirror-inner"></div>
     </div>

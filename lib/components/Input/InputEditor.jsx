@@ -174,14 +174,16 @@ export default function InputEditor({
   }, [ editorView, value ]);
 
   return <div className={ classNames('code__editor', { 'code__editor--error': error }) }>
-    <Button
-      className="code__editor-clear-button"
-      renderIcon={ Erase }
-      iconDescription="Clear editor"
-      size="sm"
-      kind="ghost"
-      hasIconOnly
-      onClick={ onClear } />
+    <div className="code__editor-buttons">
+      <Button
+        renderIcon={ Erase }
+        iconDescription="Clear editor"
+        size="sm"
+        kind="ghost"
+        hasIconOnly
+        tooltipPosition="left"
+        onClick={ onClear } />
+    </div>
     <div className="code__editor-codemirror">
       <div ref={ ref } className="code__editor-codemirror-inner"></div>
     </div>
