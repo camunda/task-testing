@@ -214,7 +214,6 @@ function App() {
             injector={ injector }
             isConnectionConfigured={ isConnectionConfigured }
             configureConnectionBannerTitle="No cluster selected"
-            configureConnectionBannerDescription="Select a Camunda 8.8 cluster to enable task testing."
             configureConnectionLabel="Select cluster"
             onConfigureConnection={ onConfigureConnection }
             onTestTask={ onTestTask }

@@ -33,7 +33,6 @@ function App() {
 | `config` | `Config` | no | Input/output configuration for elements |
 | `onConfigChanged` | `(config: Config) => void` | no | Called when the configuration changes |
 | `configureConnectionBannerTitle` | `string` | no | Title for the connection banner (default: `'Connection required'`) |
-| `configureConnectionBannerDescription` | `string` | no | Description for the connection banner (default: `'Configure a connection to start testing.'`) |
 | `configureConnectionLabel` | `string` | no | Label for the configure connection button (default: `'Configure'`) |
 | `onConfigureConnection` | `Function` | no | Called when the user clicks the configure connection button |
 | `onTestTask` | `() => boolean \| Promise<boolean>` | no | Called when the user clicks _Test task_. Return `true` to proceed, `false` to abort |

@@ -914,7 +914,6 @@ function renderTaskTesting(props = {}) {
     api = DEFAULT_API,
     isConnectionConfigured,
     configureConnectionBannerTitle = 'Connection required',
-    configureConnectionBannerDescription = 'Configure a connection to start testing.',
     configureConnectionLabel = 'Configure',
     onConfigureConnection,
     onTestTask,
@@ -931,7 +930,6 @@ function renderTaskTesting(props = {}) {
     api={ api }
     isConnectionConfigured={ isConnectionConfigured }
     configureConnectionBannerTitle={ configureConnectionBannerTitle }
-    configureConnectionBannerDescription={ configureConnectionBannerDescription }
     configureConnectionLabel={ configureConnectionLabel }
     onConfigureConnection={ onConfigureConnection }
     onTestTask={ onTestTask }
