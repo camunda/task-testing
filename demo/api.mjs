@@ -107,33 +107,30 @@ export function createApi(client) {
       }));
     },
 
-    searchJobs(processInstanceKey, elementId) {
+    searchJobs(processInstanceKey) {
       return safe(client.searchJobs({
         filter: {
-          processInstanceKey,
-          ...(elementId && { elementId })
+          processInstanceKey
         }
       }, {
         consistency: { waitUpToMs }
       }));
     },
 
-    searchUserTasks(processInstanceKey, elementId) {
+    searchUserTasks(processInstanceKey) {
       return safe(client.searchUserTasks({
         filter: {
-          processInstanceKey,
-          ...(elementId && { elementId })
+          processInstanceKey
         }
       }, {
         consistency: { waitUpToMs }
       }));
     },
 
-    searchMessageSubscriptions(processInstanceKey, elementId) {
+    searchMessageSubscriptions(processInstanceKey) {
       return safe(client.searchMessageSubscriptions({
         filter: {
-          processInstanceKey,
-          ...(elementId && { elementId })
+          processInstanceKey
         }
       }, {
         consistency: { waitUpToMs }

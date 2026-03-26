@@ -123,8 +123,7 @@ app.get('/api/getProcessInstanceJobs/:processInstanceKey', async (req, res) => {
   }
 
   const { processInstanceKey } = req.params;
-  const { elementId } = req.query;
-  const result = await api.searchJobs(processInstanceKey, elementId);
+  const result = await api.searchJobs(processInstanceKey);
   res.json(result);
 });
 
@@ -134,8 +133,7 @@ app.get('/api/getProcessInstanceUserTasks/:processInstanceKey', async (req, res)
   }
 
   const { processInstanceKey } = req.params;
-  const { elementId } = req.query;
-  const result = await api.searchUserTasks(processInstanceKey, elementId);
+  const result = await api.searchUserTasks(processInstanceKey);
   res.json(result);
 });
 
@@ -145,8 +143,7 @@ app.get('/api/getProcessInstanceMessageSubscriptions/:processInstanceKey', async
   }
 
   const { processInstanceKey } = req.params;
-  const { elementId } = req.query;
-  const result = await api.searchMessageSubscriptions(processInstanceKey, elementId);
+  const result = await api.searchMessageSubscriptions(processInstanceKey);
   res.json(result);
 });
 
