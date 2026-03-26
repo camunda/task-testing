@@ -129,18 +129,18 @@ function App() {
       .then(response => response.json());
   }, []);
 
-  const getProcessInstanceJobs = useCallback(async (processInstanceKey, elementId) => {
-    return fetch(`/api/getProcessInstanceJobs/${processInstanceKey}?elementId=${elementId}`)
+  const getProcessInstanceJobs = useCallback(async (processInstanceKey) => {
+    return fetch(`/api/getProcessInstanceJobs/${processInstanceKey}`)
       .then(response => response.json());
   }, []);
 
-  const getProcessInstanceUserTasks = useCallback(async (processInstanceKey, elementId) => {
-    return fetch(`/api/getProcessInstanceUserTasks/${processInstanceKey}?elementId=${elementId}`)
+  const getProcessInstanceUserTasks = useCallback(async (processInstanceKey) => {
+    return fetch(`/api/getProcessInstanceUserTasks/${processInstanceKey}`)
       .then(response => response.json());
   }, []);
 
-  const getProcessInstanceMessageSubscriptions = useCallback(async (processInstanceKey, elementId) => {
-    return fetch(`/api/getProcessInstanceMessageSubscriptions/${processInstanceKey}?elementId=${elementId}`)
+  const getProcessInstanceMessageSubscriptions = useCallback(async (processInstanceKey) => {
+    return fetch(`/api/getProcessInstanceMessageSubscriptions/${processInstanceKey}`)
       .then(response => response.json());
   }, []);
 

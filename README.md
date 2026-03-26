@@ -53,9 +53,9 @@ The `api` prop must implement the following methods. Each method should return a
 | `getProcessInstance(processInstanceKey)` | Search for a process instance |
 | `getProcessInstanceElementInstances(processInstanceKey)` | Search element instances |
 | `getProcessInstanceIncident(processInstanceKey)` | Search incidents |
-| `getProcessInstanceJobs(processInstanceKey, elementId)` | Search jobs |
-| `getProcessInstanceMessageSubscriptions(processInstanceKey, elementId)` | Search message subscriptions |
-| `getProcessInstanceUserTasks(processInstanceKey, elementId)` | Search user tasks |
+| `getProcessInstanceJobs(processInstanceKey)` | Search jobs |
+| `getProcessInstanceMessageSubscriptions(processInstanceKey)` | Search message subscriptions |
+| `getProcessInstanceUserTasks(processInstanceKey)` | Search user tasks |
 | `getProcessInstanceVariables(processInstanceKey)` | Search variables |
 
 #### `onTaskExecutionFinished` result

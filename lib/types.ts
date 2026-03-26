@@ -104,9 +104,9 @@ export type TaskExecutionApi = {
   getProcessInstance: (processInstanceKey: string) => Promise<GetProcessInstanceResponse>;
   getProcessInstanceElementInstances: (processInstanceKey: string) => Promise<GetProcessInstanceElementInstancesResponse>;
   getProcessInstanceIncident: (processInstanceKey: string) => Promise<GetProcessInstanceIncidentsResponse>;
-  getProcessInstanceJobs: (processInstanceKey: string, elementId: string) => Promise<GetProcessInstanceJobsResponse>;
-  getProcessInstanceMessageSubscriptions: (processInstanceKey: string, elementId: string) => Promise<GetProcessInstanceMessageSubscriptionsResponse>;
-  getProcessInstanceUserTasks: (processInstanceKey: string, elementId: string) => Promise<GetProcessInstanceUserTasksResponse>;
+  getProcessInstanceJobs: (processInstanceKey: string) => Promise<GetProcessInstanceJobsResponse>;
+  getProcessInstanceMessageSubscriptions: (processInstanceKey: string) => Promise<GetProcessInstanceMessageSubscriptionsResponse>;
+  getProcessInstanceUserTasks: (processInstanceKey: string) => Promise<GetProcessInstanceUserTasksResponse>;
   getProcessInstanceVariables: (processInstanceKey: string) => Promise<GetProcessInstanceVariablesResponse>;
   startInstance: (processDefinitionKey: string, elementId: string, variables: { [key: string]: any }) => Promise<StartInstanceResponse>;
 };
