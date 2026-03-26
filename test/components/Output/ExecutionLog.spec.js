@@ -976,6 +976,111 @@ describe('ExecutionLog', function() {
       expect(activeEntries).to.have.length(3);
     });
 
+
+    it('should NOT show active entry for job that has a completed entry', function() {
+
+      // given
+      const entries = [
+        createJobEntry(createJobDetails({ jobKey: '42' }), createMockTimestamp(), { state: 'CREATED' }),
+        createJobEntry(createJobDetails({ jobKey: '42' }), createMockTimestamp(ONE_SECOND_MS), { state: 'COMPLETED' })
+      ];
+
+      // when
+      const { container } = renderExecutionLog({ entries, isTaskExecuting: true });
+
+      // then
+      const activeEntries = container.querySelectorAll('.execution-log__entry-wrapper--active');
+      expect(activeEntries).to.have.length(0);
+    });
+
+
+    it('should NOT show active entry for job that has a failed entry', function() {
+
+      // given
+      const entries = [
+        createJobEntry(createJobDetails({ jobKey: '42' }), createMockTimestamp(), { state: 'CREATED' }),
+        createJobEntry(createJobDetails({ jobKey: '42' }), createMockTimestamp(ONE_SECOND_MS), { state: 'FAILED' })
+      ];
+
+      // when
+      const { container } = renderExecutionLog({ entries, isTaskExecuting: true });
+
+      // then
+      const activeEntries = container.querySelectorAll('.execution-log__entry-wrapper--active');
+      expect(activeEntries).to.have.length(0);
+    });
+
+
+    it('should NOT show active entry for user task that has a completed entry', function() {
+
+      // given
+      const entries = [
+        createUserTaskEntry({ state: 'CREATED', userTaskKey: '7', name: 'Foo' }),
+        createUserTaskEntry({ state: 'COMPLETED', userTaskKey: '7', name: 'Foo' })
+      ];
+
+      // when
+      const { container } = renderExecutionLog({ entries, isTaskExecuting: true });
+
+      // then
+      const activeEntries = container.querySelectorAll('.execution-log__entry-wrapper--active');
+      expect(activeEntries).to.have.length(0);
+    });
+
+
+    it('should NOT show active entry for message subscription that has been correlated', function() {
+
+      // given
+      const entries = [
+        createMessageSubscriptionEntry({
+          messageName: 'Foo',
+          messageSubscriptionKey: '3',
+          messageSubscriptionState: 'CREATED'
+        }),
+        createMessageSubscriptionEntry({
+          messageName: 'Foo',
+          messageSubscriptionKey: '3',
+          messageSubscriptionState: 'CORRELATED'
+        })
+      ];
+
+      // when
+      const { container } = renderExecutionLog({ entries, isTaskExecuting: true });
+
+      // then
+      const activeEntries = container.querySelectorAll('.execution-log__entry-wrapper--active');
+      expect(activeEntries).to.have.length(0);
+    });
+
+
+    it('should only show active entries for items still pending when mixed with completed', function() {
+
+      // given — job completed, user task still pending, message subscription correlated
+      const entries = [
+        createJobEntry(createJobDetails({ jobKey: '1' }), createMockTimestamp(), { state: 'CREATED' }),
+        createJobEntry(createJobDetails({ jobKey: '1' }), createMockTimestamp(ONE_SECOND_MS), { state: 'COMPLETED' }),
+        createUserTaskEntry({ state: 'CREATED', userTaskKey: '2', name: 'Pending Task' }),
+        createMessageSubscriptionEntry({
+          messageName: 'Msg',
+          messageSubscriptionKey: '3',
+          messageSubscriptionState: 'CREATED'
+        }),
+        createMessageSubscriptionEntry({
+          messageName: 'Msg',
+          messageSubscriptionKey: '3',
+          messageSubscriptionState: 'CORRELATED'
+        })
+      ];
+
+      // when
+      const { container } = renderExecutionLog({ entries, isTaskExecuting: true });
+
+      // then — only user task should be active
+      const activeEntries = container.querySelectorAll('.execution-log__entry-wrapper--active');
+      expect(activeEntries).to.have.length(1);
+      expect(activeEntries[0].textContent).to.include('Waiting for user task to be completed');
+    });
+
   });
 
 
