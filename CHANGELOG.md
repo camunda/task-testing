@@ -6,6 +6,14 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+## 4.0.0
+
+* `FIX`: show CTAs for child elements inside subprocesses ([#92](https://github.com/camunda/task-testing/pull/92))
+
+### Breaking Changes
+
+* `TaskExecutionApi` methods `getProcessInstanceJobs`, `getProcessInstanceUserTasks`, and `getProcessInstanceMessageSubscriptions` no longer accept an `elementId` parameter. The process instance is already scoped to the selected element via `startInstructions` and `TERMINATE_PROCESS_INSTANCE`, making the `elementId` filter redundant for simple tasks and broken for subprocesses.
+
 ## 3.0.0
 
 * `FEAT`: support testing ad-hoc subprocess children ([#79](https://github.com/camunda/task-testing/pull/79))
