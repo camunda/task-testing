@@ -334,24 +334,53 @@ function getEntryDuration(entry) {
 function getActiveEntries(entries, isTaskExecuting) {
   if (!isTaskExecuting) return [];
 
+  const completedJobKeys = new Set();
+  const completedUserTaskKeys = new Set();
+  const completedMessageSubKeys = new Set();
+
+  for (const entry of entries) {
+    if (entry.type === EXECUTION_LOG_ENTRY_TYPE.JOB && entry.data.state !== JOB_STATES.CREATED && entry.data.jobKey) {
+      completedJobKeys.add(entry.data.jobKey);
+    } else if (entry.type === EXECUTION_LOG_ENTRY_TYPE.USER_TASK && entry.data.state !== USER_TASK_STATES.CREATED && entry.data.userTaskKey) {
+      completedUserTaskKeys.add(entry.data.userTaskKey);
+    } else if (entry.type === EXECUTION_LOG_ENTRY_TYPE.MESSAGE_SUBSCRIPTION && entry.data.messageSubscriptionState !== 'CREATED' && entry.data.messageSubscriptionKey) {
+      completedMessageSubKeys.add(entry.data.messageSubscriptionKey);
+    }
+  }
+
   const activeEntries = [];
 
   for (const entry of entries) {
-    if (entry.type === EXECUTION_LOG_ENTRY_TYPE.JOB && entry.data.state === JOB_STATES.CREATED) {
+    if (entry.type === EXECUTION_LOG_ENTRY_TYPE.JOB
+      && entry.data.state === JOB_STATES.CREATED
+      && entry.data.jobKey
+      && !completedJobKeys.has(entry.data.jobKey)) {
+
       activeEntries.push({
         label: 'Waiting for job to be completed',
         secondaryLabel: entry.data.type
       });
-    } else if (entry.type === EXECUTION_LOG_ENTRY_TYPE.USER_TASK && entry.data.state === USER_TASK_STATES.CREATED) {
+
+    } else if (entry.type === EXECUTION_LOG_ENTRY_TYPE.USER_TASK
+      && entry.data.state === USER_TASK_STATES.CREATED
+      && entry.data.userTaskKey
+      && !completedUserTaskKeys.has(entry.data.userTaskKey)) {
+
       activeEntries.push({
         label: 'Waiting for user task to be completed',
         secondaryLabel: entry.data.name || entry.data.elementId
       });
-    } else if (entry.type === EXECUTION_LOG_ENTRY_TYPE.MESSAGE_SUBSCRIPTION && entry.data.messageSubscriptionState === 'CREATED') {
+
+    } else if (entry.type === EXECUTION_LOG_ENTRY_TYPE.MESSAGE_SUBSCRIPTION
+      && entry.data.messageSubscriptionState === 'CREATED'
+      && entry.data.messageSubscriptionKey
+      && !completedMessageSubKeys.has(entry.data.messageSubscriptionKey)) {
+
       activeEntries.push({
         label: 'Waiting for message to be correlated',
         secondaryLabel: entry.data.messageName
       });
+
     }
   }
 
