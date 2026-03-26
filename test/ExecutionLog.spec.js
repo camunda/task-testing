@@ -1,7 +1,9 @@
 import ExecutionLog, {
   EXECUTION_LOG_ENTRY_STATUS,
   EXECUTION_LOG_ENTRY_TYPE,
-  formatElementType
+  areRelated,
+  formatElementType,
+  getEntryOrder
 } from '../lib/ExecutionLog';
 
 import { TASK_EXECUTION_FINISHED_REASON } from '../lib/TaskExecution';
@@ -834,6 +836,686 @@ describe('ExecutionLog', function() {
           'job:COMPLETED',
           'element-instance:COMPLETED'
         ]);
+      });
+
+
+      it('should place deployed before instance-started at same timestamp', function() {
+
+        // given
+        const timestamp = createMockTimestamp();
+
+        // when
+        executionLog.setDeployResponse(createDeployResponse(), timestamp);
+        executionLog.setStartInstanceResponse(createStartInstanceResponse(), timestamp);
+
+        // then
+        const entries = executionLog.getEntries();
+        const types = entries.map(e => e.status || e.type);
+
+        expect(types).to.deep.equal([
+          'deployed',
+          'instance-started'
+        ]);
+      });
+
+
+      it('should place instance-started before job and element-instance entries at same timestamp', function() {
+
+        // given
+        const timestamp = createMockTimestamp();
+
+        const job = createJobDetails({
+          state: 'CREATED',
+          creationTime: createMockDate()
+        });
+
+        const elementInstance = createElementInstanceDetails({
+          state: 'ACTIVE',
+          startDate: createMockDate()
+        });
+
+        // when
+        executionLog.setStartInstanceResponse(createStartInstanceResponse(), timestamp);
+        executionLog.setPolledResult(createPolledResult({
+          jobsResponse: createGetProcessInstanceJobsResponse({
+            response: { items: [ job ] }
+          }),
+          elementInstancesResponse: createGetProcessInstanceElementInstancesResponse({
+            response: { items: [ elementInstance ] }
+          })
+        }), timestamp);
+
+        // then
+        const entries = executionLog.getEntries();
+        const types = entries.map(e => e.status || `${e.type}:${e.data?.state}`);
+
+        expect(types[0]).to.equal('instance-started');
+        expect(types).to.include('job:CREATED');
+        expect(types).to.include('element-instance:ACTIVE');
+        expect(types.indexOf('instance-started')).to.be.lessThan(types.indexOf('job:CREATED'));
+        expect(types.indexOf('instance-started')).to.be.lessThan(types.indexOf('element-instance:ACTIVE'));
+      });
+
+
+      it('should place element-instance ACTIVE before job CREATED at same timestamp', function() {
+
+        // given
+        const timestamp = createMockTimestamp();
+        const startDate = createMockDate();
+
+        const job = createJobDetails({
+          state: 'CREATED',
+          creationTime: startDate
+        });
+
+        const elementInstance = createElementInstanceDetails({
+          state: 'ACTIVE',
+          startDate
+        });
+
+        // when
+        executionLog.setPolledResult(createPolledResult({
+          jobsResponse: createGetProcessInstanceJobsResponse({
+            response: { items: [ job ] }
+          }),
+          elementInstancesResponse: createGetProcessInstanceElementInstancesResponse({
+            response: { items: [ elementInstance ] }
+          })
+        }), timestamp);
+
+        // then
+        const entries = executionLog.getEntries();
+        const types = entries.map(e => `${e.type}:${e.data?.state}`);
+
+        expect(types.indexOf('element-instance:ACTIVE')).to.be.lessThan(types.indexOf('job:CREATED'));
+      });
+
+
+      it('should place element-instance ACTIVE before user-task CREATED at same timestamp', function() {
+
+        // given
+        const timestamp = createMockTimestamp();
+        const startDate = createMockDate();
+
+        const userTask = createUserTaskDetails({
+          elementId: 'UserTask_1',
+          state: 'CREATED',
+          creationDate: startDate
+        });
+
+        const elementInstance = createElementInstanceDetails({
+          elementId: 'UserTask_1',
+          state: 'ACTIVE',
+          startDate
+        });
+
+        // when
+        executionLog.setPolledResult(createPolledResult({
+          userTasksResponse: createGetProcessInstanceUserTasksResponse({
+            response: { items: [ userTask ] }
+          }),
+          elementInstancesResponse: createGetProcessInstanceElementInstancesResponse({
+            response: { items: [ elementInstance ] }
+          })
+        }), timestamp);
+
+        // then
+        const entries = executionLog.getEntries();
+        const types = entries.map(e => `${e.type}:${e.data?.state}`);
+
+        expect(types.indexOf('element-instance:ACTIVE')).to.be.lessThan(types.indexOf('user-task:CREATED'));
+      });
+
+
+      it('should place element-instance ACTIVE before message-subscription CREATED at same timestamp', function() {
+
+        // given
+        const timestamp = createMockTimestamp();
+        const startDate = createMockDate();
+
+        const subscription = createMessageSubscriptionDetails({
+          messageSubscriptionState: 'CREATED'
+        });
+
+        const elementInstance = createElementInstanceDetails({
+          state: 'ACTIVE',
+          startDate
+        });
+
+        // when
+        executionLog.setPolledResult(createPolledResult({
+          messageSubscriptionsResponse: createGetProcessInstanceMessageSubscriptionsResponse({
+            response: { items: [ subscription ] }
+          }),
+          elementInstancesResponse: createGetProcessInstanceElementInstancesResponse({
+            response: { items: [ elementInstance ] }
+          })
+        }), timestamp);
+
+        // then
+        const entries = executionLog.getEntries();
+        const types = entries.map(e =>
+          e.type === 'message-subscription'
+            ? `${e.type}:${e.data?.messageSubscriptionState}`
+            : `${e.type}:${e.data?.state}`
+        );
+
+        expect(types.indexOf('element-instance:ACTIVE')).to.be.lessThan(
+          types.indexOf('message-subscription:CREATED')
+        );
+      });
+
+
+      it('should place job CREATED before job COMPLETED at same timestamp', function() {
+
+        // given
+        const timestamp = createMockTimestamp();
+        const time = createMockDate();
+
+        const job = createJobDetails({
+          state: 'COMPLETED',
+          creationTime: time,
+          endTime: time
+        });
+
+        // when
+        executionLog.setPolledResult(createPolledResult({
+          jobsResponse: createGetProcessInstanceJobsResponse({
+            response: { items: [ job ] }
+          })
+        }), timestamp);
+
+        // then
+        const entries = executionLog.getEntries();
+        const jobEntries = entries.filter(e => e.type === 'job');
+
+        expect(jobEntries).to.have.length(2);
+        expect(jobEntries[0].data.state).to.equal('CREATED');
+        expect(jobEntries[1].data.state).to.equal('COMPLETED');
+      });
+
+
+      it('should place message-subscription CREATED before CORRELATED at same timestamp', function() {
+
+        // given
+        const timestamp = createMockTimestamp();
+
+        const subscription = createMessageSubscriptionDetails({
+          messageSubscriptionState: 'CORRELATED'
+        });
+
+        const elementInstance = createElementInstanceDetails({
+          state: 'COMPLETED',
+          startDate: createMockDate(),
+          endDate: createMockDate()
+        });
+
+        // when
+        executionLog.setPolledResult(createPolledResult({
+          messageSubscriptionsResponse: createGetProcessInstanceMessageSubscriptionsResponse({
+            response: { items: [ subscription ] }
+          }),
+          elementInstancesResponse: createGetProcessInstanceElementInstancesResponse({
+            response: { items: [ elementInstance ] }
+          })
+        }), timestamp);
+
+        // then
+        const entries = executionLog.getEntries();
+        const msgEntries = entries.filter(e => e.type === 'message-subscription');
+
+        expect(msgEntries).to.have.length(2);
+        expect(msgEntries[0].data.messageSubscriptionState).to.equal('CREATED');
+        expect(msgEntries[1].data.messageSubscriptionState).to.equal('CORRELATED');
+      });
+
+
+      it('should place message-subscription CORRELATED before element-instance COMPLETED at same timestamp', function() {
+
+        // given
+        const timestamp = createMockTimestamp();
+        const endDate = createMockDate(ONE_SECOND_MS);
+
+        const subscription = createMessageSubscriptionDetails({
+          messageSubscriptionState: 'CORRELATED'
+        });
+
+        const elementInstance = createElementInstanceDetails({
+          state: 'COMPLETED',
+          startDate: createMockDate(),
+          endDate
+        });
+
+        // when
+        executionLog.setPolledResult(createPolledResult({
+          messageSubscriptionsResponse: createGetProcessInstanceMessageSubscriptionsResponse({
+            response: { items: [ subscription ] }
+          }),
+          elementInstancesResponse: createGetProcessInstanceElementInstancesResponse({
+            response: { items: [ elementInstance ] }
+          })
+        }), timestamp);
+
+        // then
+        const entries = executionLog.getEntries();
+        const types = entries.map(e =>
+          e.type === 'message-subscription'
+            ? `${e.type}:${e.data?.messageSubscriptionState}`
+            : `${e.type}:${e.data?.state}`
+        );
+
+        expect(types.indexOf('message-subscription:CORRELATED')).to.be.lessThan(
+          types.indexOf('element-instance:COMPLETED')
+        );
+      });
+
+
+      it('should place user-task COMPLETED before element-instance COMPLETED at same timestamp', function() {
+
+        // given
+        const timestamp = createMockTimestamp();
+        const endDate = createMockDate(ONE_SECOND_MS);
+
+        const userTask = createUserTaskDetails({
+          elementId: 'UserTask_1',
+          state: 'COMPLETED',
+          creationDate: createMockDate(),
+          completionDate: endDate
+        });
+
+        const elementInstance = createElementInstanceDetails({
+          elementId: 'UserTask_1',
+          state: 'COMPLETED',
+          startDate: createMockDate(),
+          endDate
+        });
+
+        // when
+        executionLog.setPolledResult(createPolledResult({
+          userTasksResponse: createGetProcessInstanceUserTasksResponse({
+            response: { items: [ userTask ] }
+          }),
+          elementInstancesResponse: createGetProcessInstanceElementInstancesResponse({
+            response: { items: [ elementInstance ] }
+          })
+        }), timestamp);
+
+        // then
+        const entries = executionLog.getEntries();
+        const types = entries.map(e => `${e.type}:${e.data?.state}`);
+
+        expect(types.indexOf('user-task:COMPLETED')).to.be.lessThan(
+          types.indexOf('element-instance:COMPLETED')
+        );
+      });
+
+
+      it('should place job completed before element-instance completed at same timestamp', function() {
+
+        // given
+        const timestamp = createMockTimestamp();
+        const endTime = createMockDate(ONE_SECOND_MS);
+
+        const job = createJobDetails({
+          state: 'COMPLETED',
+          creationTime: createMockDate(),
+          endTime
+        });
+
+        const elementInstance = createElementInstanceDetails({
+          state: 'COMPLETED',
+          startDate: createMockDate(),
+          endDate: endTime
+        });
+
+        // when
+        executionLog.setPolledResult(createPolledResult({
+          jobsResponse: createGetProcessInstanceJobsResponse({
+            response: { items: [ job ] }
+          }),
+          elementInstancesResponse: createGetProcessInstanceElementInstancesResponse({
+            response: { items: [ elementInstance ] }
+          })
+        }), timestamp);
+
+        // then
+        const entries = executionLog.getEntries();
+        const types = entries.map(e => e.status || `${e.type}:${e.data?.state}`);
+
+        const jobCompletedIdx = types.indexOf('job:COMPLETED');
+        const eiCompletedIdx = types.indexOf('element-instance:COMPLETED');
+
+        expect(jobCompletedIdx).to.be.greaterThan(-1);
+        expect(eiCompletedIdx).to.be.greaterThan(-1);
+        expect(jobCompletedIdx).to.be.lessThan(eiCompletedIdx);
+      });
+
+
+      it('should NOT reorder unrelated entries at the same timestamp', function() {
+
+        // given - two jobs from different elements sharing the same end timestamp
+        const timestamp = createMockTimestamp();
+        const endTime = createMockDate(ONE_SECOND_MS);
+
+        const jobA = createJobDetails({
+          jobKey: 'job-a',
+          elementId: 'ServiceTask_A',
+          state: 'COMPLETED',
+          creationTime: createMockDate(),
+          endTime
+        });
+
+        const jobB = createJobDetails({
+          jobKey: 'job-b',
+          elementId: 'ServiceTask_B',
+          state: 'CREATED',
+          creationTime: endTime
+        });
+
+        // when
+        executionLog.setPolledResult(createPolledResult({
+          jobsResponse: createGetProcessInstanceJobsResponse({
+            response: { items: [ jobA, jobB ] }
+          })
+        }), timestamp);
+
+        // then — job A COMPLETED (at endTime) and job B CREATED (at endTime)
+        //  share the same timestamp but are unrelated, so insertion order is
+        //  preserved (job A COMPLETED before job B CREATED).
+        const entries = executionLog.getEntries();
+        const atEndTime = entries
+          .filter(e => e.timestamp === new Date(endTime).getTime())
+          .map(e => `${e.data?.elementId}:${e.data?.state}`);
+
+        expect(atEndTime.indexOf('ServiceTask_A:COMPLETED')).to.be.lessThan(
+          atEndTime.indexOf('ServiceTask_B:CREATED')
+        );
+      });
+
+
+      it('should place start execution listener COMPLETED before regular job CREATED at same timestamp', function() {
+
+        // given
+        const timestamp = createMockTimestamp();
+        const time = createMockDate();
+
+        const listenerJob = createJobDetails({
+          jobKey: 'listener-1',
+          elementId: 'ServiceTask_1',
+          state: 'COMPLETED',
+          kind: 'EXECUTION_LISTENER',
+          listenerEventType: 'START',
+          creationTime: time,
+          endTime: time
+        });
+
+        const regularJob = createJobDetails({
+          jobKey: 'regular-1',
+          elementId: 'ServiceTask_1',
+          state: 'CREATED',
+          kind: 'BPMN_ELEMENT',
+          listenerEventType: 'UNSPECIFIED',
+          creationTime: time
+        });
+
+        // when
+        executionLog.setPolledResult(createPolledResult({
+          jobsResponse: createGetProcessInstanceJobsResponse({
+            response: { items: [ regularJob, listenerJob ] }
+          })
+        }), timestamp);
+
+        // then
+        const entries = executionLog.getEntries();
+        const jobEntries = entries
+          .filter(e => e.type === 'job' && e.timestamp === new Date(time).getTime())
+          .map(e => `${e.data?.kind}:${e.data?.listenerEventType}:${e.data?.state}`);
+
+        const listenerCompleted = jobEntries.indexOf('EXECUTION_LISTENER:START:COMPLETED');
+        const regularCreated = jobEntries.indexOf('BPMN_ELEMENT:UNSPECIFIED:CREATED');
+
+        expect(listenerCompleted).to.be.greaterThan(-1);
+        expect(regularCreated).to.be.greaterThan(-1);
+        expect(listenerCompleted).to.be.lessThan(regularCreated);
+      });
+
+
+      it('should place regular job COMPLETED before end execution listener CREATED at same timestamp', function() {
+
+        // given
+        const timestamp = createMockTimestamp();
+        const time = createMockDate();
+
+        const regularJob = createJobDetails({
+          jobKey: 'regular-1',
+          elementId: 'ServiceTask_1',
+          state: 'COMPLETED',
+          kind: 'BPMN_ELEMENT',
+          listenerEventType: 'UNSPECIFIED',
+          creationTime: time,
+          endTime: time
+        });
+
+        const listenerJob = createJobDetails({
+          jobKey: 'listener-1',
+          elementId: 'ServiceTask_1',
+          state: 'COMPLETED',
+          kind: 'EXECUTION_LISTENER',
+          listenerEventType: 'END',
+          creationTime: time,
+          endTime: time
+        });
+
+        // when
+        executionLog.setPolledResult(createPolledResult({
+          jobsResponse: createGetProcessInstanceJobsResponse({
+            response: { items: [ listenerJob, regularJob ] }
+          })
+        }), timestamp);
+
+        // then
+        const entries = executionLog.getEntries();
+        const jobEntries = entries
+          .filter(e => e.type === 'job' && e.timestamp === new Date(time).getTime())
+          .map(e => `${e.data?.kind}:${e.data?.listenerEventType}:${e.data?.state}`);
+
+        const regularCompleted = jobEntries.indexOf('BPMN_ELEMENT:UNSPECIFIED:COMPLETED');
+        const endListenerCreated = jobEntries.indexOf('EXECUTION_LISTENER:END:CREATED');
+
+        expect(regularCompleted).to.be.greaterThan(-1);
+        expect(endListenerCreated).to.be.greaterThan(-1);
+        expect(regularCompleted).to.be.lessThan(endListenerCreated);
+      });
+
+    });
+
+
+    describe('getEntryOrder', function() {
+
+      it('should return 0 for deployed status', function() {
+        expect(getEntryOrder({
+          type: EXECUTION_LOG_ENTRY_TYPE.STATUS,
+          status: EXECUTION_LOG_ENTRY_STATUS.DEPLOYED,
+          timestamp: 0
+        })).to.equal(0);
+      });
+
+
+      it('should return 1 for instance-started status', function() {
+        expect(getEntryOrder({
+          type: EXECUTION_LOG_ENTRY_TYPE.STATUS,
+          status: EXECUTION_LOG_ENTRY_STATUS.INSTANCE_STARTED,
+          timestamp: 0
+        })).to.equal(1);
+      });
+
+
+      it('should return 2 for active element instances', function() {
+        expect(getEntryOrder({
+          type: EXECUTION_LOG_ENTRY_TYPE.ELEMENT_INSTANCE,
+          data: { state: 'ACTIVE' },
+          timestamp: 0
+        })).to.equal(2);
+      });
+
+
+      it('should return 3 for start execution listener job CREATED', function() {
+        expect(getEntryOrder({
+          type: EXECUTION_LOG_ENTRY_TYPE.JOB,
+          data: { state: 'CREATED', kind: 'EXECUTION_LISTENER', listenerEventType: 'START' },
+          timestamp: 0
+        })).to.equal(3);
+      });
+
+
+      it('should return 4 for start execution listener job COMPLETED', function() {
+        expect(getEntryOrder({
+          type: EXECUTION_LOG_ENTRY_TYPE.JOB,
+          data: { state: 'COMPLETED', kind: 'EXECUTION_LISTENER', listenerEventType: 'START' },
+          timestamp: 0
+        })).to.equal(4);
+      });
+
+
+      it('should return 5 for regular job CREATED', function() {
+        expect(getEntryOrder({
+          type: EXECUTION_LOG_ENTRY_TYPE.JOB,
+          data: { state: 'CREATED', kind: 'BPMN_ELEMENT' },
+          timestamp: 0
+        })).to.equal(5);
+      });
+
+
+      it('should return 5 for user-task CREATED', function() {
+        expect(getEntryOrder({
+          type: EXECUTION_LOG_ENTRY_TYPE.USER_TASK,
+          data: { state: 'CREATED' },
+          timestamp: 0
+        })).to.equal(5);
+      });
+
+
+      it('should return 5 for message-subscription CREATED', function() {
+        expect(getEntryOrder({
+          type: EXECUTION_LOG_ENTRY_TYPE.MESSAGE_SUBSCRIPTION,
+          data: { messageSubscriptionState: 'CREATED' },
+          timestamp: 0
+        })).to.equal(5);
+      });
+
+
+      it('should return 6 for regular job COMPLETED', function() {
+        expect(getEntryOrder({
+          type: EXECUTION_LOG_ENTRY_TYPE.JOB,
+          data: { state: 'COMPLETED', kind: 'BPMN_ELEMENT' },
+          timestamp: 0
+        })).to.equal(6);
+      });
+
+
+      it('should return 6 for user-task COMPLETED', function() {
+        expect(getEntryOrder({
+          type: EXECUTION_LOG_ENTRY_TYPE.USER_TASK,
+          data: { state: 'COMPLETED' },
+          timestamp: 0
+        })).to.equal(6);
+      });
+
+
+      it('should return 6 for message-subscription CORRELATED', function() {
+        expect(getEntryOrder({
+          type: EXECUTION_LOG_ENTRY_TYPE.MESSAGE_SUBSCRIPTION,
+          data: { messageSubscriptionState: 'CORRELATED' },
+          timestamp: 0
+        })).to.equal(6);
+      });
+
+
+      it('should return 10 for other status entries', function() {
+        expect(getEntryOrder({
+          type: EXECUTION_LOG_ENTRY_TYPE.STATUS,
+          status: EXECUTION_LOG_ENTRY_STATUS.COMPLETED,
+          timestamp: 0
+        })).to.equal(10);
+      });
+
+
+      it('should return 7 for end execution listener job CREATED', function() {
+        expect(getEntryOrder({
+          type: EXECUTION_LOG_ENTRY_TYPE.JOB,
+          data: { state: 'CREATED', kind: 'EXECUTION_LISTENER', listenerEventType: 'END' },
+          timestamp: 0
+        })).to.equal(7);
+      });
+
+
+      it('should return 8 for end execution listener job COMPLETED', function() {
+        expect(getEntryOrder({
+          type: EXECUTION_LOG_ENTRY_TYPE.JOB,
+          data: { state: 'COMPLETED', kind: 'EXECUTION_LISTENER', listenerEventType: 'END' },
+          timestamp: 0
+        })).to.equal(8);
+      });
+
+
+      it('should return 9 for completed element instances', function() {
+        expect(getEntryOrder({
+          type: EXECUTION_LOG_ENTRY_TYPE.ELEMENT_INSTANCE,
+          data: { state: 'COMPLETED' },
+          timestamp: 0
+        })).to.equal(9);
+      });
+
+    });
+
+
+    describe('areRelated', function() {
+
+      it('should return true for entries sharing the same elementId', function() {
+        const a = { type: EXECUTION_LOG_ENTRY_TYPE.ELEMENT_INSTANCE, data: { elementId: 'Task_1', state: 'ACTIVE' }, timestamp: 0 };
+        const b = { type: EXECUTION_LOG_ENTRY_TYPE.JOB, data: { elementId: 'Task_1', state: 'CREATED' }, timestamp: 0 };
+
+        expect(areRelated(a, b)).to.be.true;
+      });
+
+
+      it('should return false for entries with different elementIds', function() {
+        const a = { type: EXECUTION_LOG_ENTRY_TYPE.JOB, data: { elementId: 'Task_A', state: 'COMPLETED' }, timestamp: 0 };
+        const b = { type: EXECUTION_LOG_ENTRY_TYPE.JOB, data: { elementId: 'Task_B', state: 'CREATED' }, timestamp: 0 };
+
+        expect(areRelated(a, b)).to.be.false;
+      });
+
+
+      it('should return true for same-type job entries sharing jobKey', function() {
+        const a = { type: EXECUTION_LOG_ENTRY_TYPE.JOB, data: { jobKey: '42', state: 'CREATED' }, timestamp: 0 };
+        const b = { type: EXECUTION_LOG_ENTRY_TYPE.JOB, data: { jobKey: '42', state: 'COMPLETED' }, timestamp: 0 };
+
+        expect(areRelated(a, b)).to.be.true;
+      });
+
+
+      it('should return true for same-type user-task entries sharing userTaskKey', function() {
+        const a = { type: EXECUTION_LOG_ENTRY_TYPE.USER_TASK, data: { userTaskKey: '7', state: 'CREATED' }, timestamp: 0 };
+        const b = { type: EXECUTION_LOG_ENTRY_TYPE.USER_TASK, data: { userTaskKey: '7', state: 'COMPLETED' }, timestamp: 0 };
+
+        expect(areRelated(a, b)).to.be.true;
+      });
+
+
+      it('should return true for same-type message-subscription entries sharing messageSubscriptionKey', function() {
+        const a = { type: EXECUTION_LOG_ENTRY_TYPE.MESSAGE_SUBSCRIPTION, data: { messageSubscriptionKey: '3', messageSubscriptionState: 'CREATED' }, timestamp: 0 };
+        const b = { type: EXECUTION_LOG_ENTRY_TYPE.MESSAGE_SUBSCRIPTION, data: { messageSubscriptionKey: '3', messageSubscriptionState: 'CORRELATED' }, timestamp: 0 };
+
+        expect(areRelated(a, b)).to.be.true;
+      });
+
+
+      it('should return false for entries without elementId or matching keys', function() {
+        const a = { type: EXECUTION_LOG_ENTRY_TYPE.USER_TASK, data: { userTaskKey: '1', state: 'CREATED' }, timestamp: 0 };
+        const b = { type: EXECUTION_LOG_ENTRY_TYPE.ELEMENT_INSTANCE, data: { state: 'ACTIVE' }, timestamp: 0 };
+
+        expect(areRelated(a, b)).to.be.false;
       });
 
     });

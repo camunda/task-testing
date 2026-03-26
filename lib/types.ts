@@ -236,6 +236,7 @@ export type ExecutionLogJobData = {
 export type ExecutionLogUserTaskData = {
   state: string;
   name?: string;
+  elementId?: string;
   userTaskKey?: string;
   creationDate?: string;
   completionDate?: string;
