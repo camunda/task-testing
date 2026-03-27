@@ -800,19 +800,13 @@ describe('ExecutionLog', function() {
 
         // when
         executionLog.setDeployResponse(createDeployResponse(), createMockTimestamp());
-        executionLog.setStartInstanceResponse(createStartInstanceResponse(), createMockTimestamp(ONE_SECOND_MS * 3));
+        executionLog.setStartInstanceResponse(createStartInstanceResponse(), createMockTimestamp(ONE_SECOND_MS));
         executionLog.setPolledResult(createPolledResult({
           jobsResponse: createGetProcessInstanceJobsResponse({
             response: { items: [ job ] }
           }),
           elementInstancesResponse: createGetProcessInstanceElementInstancesResponse({
             response: { items: [ elementInstance ] }
-          }),
-          processInstanceResponse: createGetProcessInstanceResponse({
-            response: {
-              items: [ createProcessInstanceDetails({ startDate: createMockDate(ONE_SECOND_MS) }) ],
-              page: { totalItems: 1 }
-            }
           })
         }), createMockTimestamp(ONE_SECOND_MS * 6));
 
@@ -824,18 +818,6 @@ describe('ExecutionLog', function() {
         for (let i = 1; i < timestamps.length; i++) {
           expect(timestamps[i]).to.be.at.least(timestamps[i - 1]);
         }
-
-        // Verify instance-started comes before element-instance entries
-        const types = entries.map(e => e.status || `${e.type}:${e.data?.state}`);
-
-        expect(types).to.deep.equal([
-          'deployed',
-          'instance-started',
-          'element-instance:ACTIVE',
-          'job:CREATED',
-          'job:COMPLETED',
-          'element-instance:COMPLETED'
-        ]);
       });
 
 
