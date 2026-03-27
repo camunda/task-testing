@@ -7,8 +7,9 @@ import 'camunda-bpmn-js/dist/assets/camunda-cloud-modeler.css';
 
 import TaskTesting from '../lib';
 
-import diagram from './fixtures/diagram.bpmn';
-import form from './fixtures/form.form';
+import diagram1 from './fixtures/diagram_1.bpmn';
+import diagram2 from './fixtures/diagram_2.bpmn';
+import form1 from './fixtures/form_1.form';
 import connectorTemplates from './fixtures/connectorTemplates.json';
 import defaultConfig from './fixtures/config';
 
@@ -57,7 +58,7 @@ function App() {
 
   useEffect(() => {
     async function importXml() {
-      await modeler.importXML(diagram);
+      await modeler.importXML(diagram1);
 
       modeler.get('canvas').zoom('fit-viewport');
     }
@@ -76,11 +77,11 @@ function App() {
   const deploy = useCallback(async () => {
     const { xml } = await modeler.saveXML();
 
-    const resources = [ { name: 'diagram.bpmn', content: xml } ];
-
-    if (form) {
-      resources.push({ name: 'form.form', content: form });
-    }
+    const resources = [
+      { name: 'diagram_1.bpmn', content: xml },
+      { name: 'diagram_2.bpmn', content: diagram2 },
+      { name: 'form.form', content: form1 }
+    ];
 
     const response = await fetch('/api/deploy', {
       method: 'POST',
