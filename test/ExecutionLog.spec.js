@@ -1,7 +1,10 @@
 import ExecutionLog, {
   EXECUTION_LOG_ENTRY_STATUS,
   EXECUTION_LOG_ENTRY_TYPE,
-  areRelated,
+  ENTRY_ORDER,
+  areEntriesRelated,
+  compareEntryOrders,
+  compareEntryTimestamps,
   formatElementType,
   getEntryOrder
 } from '../lib/ExecutionLog';
@@ -879,6 +882,47 @@ describe('ExecutionLog', function() {
       });
 
 
+      it('should place instance-started before user-task CREATED even when user-task has earlier timestamp', function() {
+
+        // given — the user-task creationDate is *before* the instance-started
+        // timestamp, which can happen due to engine timestamp jitter.
+        const instanceStartedTimestamp = createMockTimestamp(ONE_SECOND_MS * 2);
+
+        const userTask = createUserTaskDetails({
+          elementId: 'UserTask_1',
+          state: 'CREATED',
+          creationDate: createMockDate(ONE_SECOND_MS)
+        });
+
+        const elementInstance = createElementInstanceDetails({
+          elementId: 'UserTask_1',
+          state: 'ACTIVE',
+          startDate: createMockDate(ONE_SECOND_MS)
+        });
+
+        // when
+        executionLog.setStartInstanceResponse(
+          createStartInstanceResponse(), instanceStartedTimestamp
+        );
+        executionLog.setPolledResult(createPolledResult({
+          userTasksResponse: createGetProcessInstanceUserTasksResponse({
+            response: { items: [ userTask ] }
+          }),
+          elementInstancesResponse: createGetProcessInstanceElementInstancesResponse({
+            response: { items: [ elementInstance ] }
+          })
+        }), createMockTimestamp(ONE_SECOND_MS * 3));
+
+        // then
+        const entries = executionLog.getEntries();
+        const types = entries.map(e => e.status || `${e.type}:${e.data?.state}`);
+
+        expect(types.indexOf('instance-started')).to.be.lessThan(
+          types.indexOf('user-task:CREATED')
+        );
+      });
+
+
       it('should place element-instance ACTIVE before job CREATED at same timestamp', function() {
 
         // given
@@ -1314,150 +1358,150 @@ describe('ExecutionLog', function() {
 
     describe('getEntryOrder', function() {
 
-      it('should return 0 for deployed status', function() {
+      it('should return ENTRY_ORDER.DEPLOYED for deployed status', function() {
         expect(getEntryOrder({
           type: EXECUTION_LOG_ENTRY_TYPE.STATUS,
           status: EXECUTION_LOG_ENTRY_STATUS.DEPLOYED,
           timestamp: 0
-        })).to.equal(0);
+        })).to.equal(ENTRY_ORDER.DEPLOYED);
       });
 
 
-      it('should return 1 for instance-started status', function() {
+      it('should return ENTRY_ORDER.INSTANCE_STARTED for instance-started status', function() {
         expect(getEntryOrder({
           type: EXECUTION_LOG_ENTRY_TYPE.STATUS,
           status: EXECUTION_LOG_ENTRY_STATUS.INSTANCE_STARTED,
           timestamp: 0
-        })).to.equal(1);
+        })).to.equal(ENTRY_ORDER.INSTANCE_STARTED);
       });
 
 
-      it('should return 2 for active element instances', function() {
+      it('should return ENTRY_ORDER.ELEMENT_ACTIVE for active element instances', function() {
         expect(getEntryOrder({
           type: EXECUTION_LOG_ENTRY_TYPE.ELEMENT_INSTANCE,
           data: { state: 'ACTIVE' },
           timestamp: 0
-        })).to.equal(2);
+        })).to.equal(ENTRY_ORDER.ELEMENT_ACTIVE);
       });
 
 
-      it('should return 3 for start execution listener job CREATED', function() {
+      it('should return ENTRY_ORDER.START_LISTENER_CREATED for start execution listener job CREATED', function() {
         expect(getEntryOrder({
           type: EXECUTION_LOG_ENTRY_TYPE.JOB,
           data: { state: 'CREATED', kind: 'EXECUTION_LISTENER', listenerEventType: 'START' },
           timestamp: 0
-        })).to.equal(3);
+        })).to.equal(ENTRY_ORDER.START_LISTENER_CREATED);
       });
 
 
-      it('should return 4 for start execution listener job COMPLETED', function() {
+      it('should return ENTRY_ORDER.START_LISTENER_TERMINAL for start execution listener job COMPLETED', function() {
         expect(getEntryOrder({
           type: EXECUTION_LOG_ENTRY_TYPE.JOB,
           data: { state: 'COMPLETED', kind: 'EXECUTION_LISTENER', listenerEventType: 'START' },
           timestamp: 0
-        })).to.equal(4);
+        })).to.equal(ENTRY_ORDER.START_LISTENER_TERMINAL);
       });
 
 
-      it('should return 5 for regular job CREATED', function() {
+      it('should return ENTRY_ORDER.WORK_CREATED for regular job CREATED', function() {
         expect(getEntryOrder({
           type: EXECUTION_LOG_ENTRY_TYPE.JOB,
           data: { state: 'CREATED', kind: 'BPMN_ELEMENT' },
           timestamp: 0
-        })).to.equal(5);
+        })).to.equal(ENTRY_ORDER.WORK_CREATED);
       });
 
 
-      it('should return 5 for user-task CREATED', function() {
+      it('should return ENTRY_ORDER.WORK_CREATED for user-task CREATED', function() {
         expect(getEntryOrder({
           type: EXECUTION_LOG_ENTRY_TYPE.USER_TASK,
           data: { state: 'CREATED' },
           timestamp: 0
-        })).to.equal(5);
+        })).to.equal(ENTRY_ORDER.WORK_CREATED);
       });
 
 
-      it('should return 5 for message-subscription CREATED', function() {
+      it('should return ENTRY_ORDER.WORK_CREATED for message-subscription CREATED', function() {
         expect(getEntryOrder({
           type: EXECUTION_LOG_ENTRY_TYPE.MESSAGE_SUBSCRIPTION,
           data: { messageSubscriptionState: 'CREATED' },
           timestamp: 0
-        })).to.equal(5);
+        })).to.equal(ENTRY_ORDER.WORK_CREATED);
       });
 
 
-      it('should return 6 for regular job COMPLETED', function() {
+      it('should return ENTRY_ORDER.WORK_TERMINAL for regular job COMPLETED', function() {
         expect(getEntryOrder({
           type: EXECUTION_LOG_ENTRY_TYPE.JOB,
           data: { state: 'COMPLETED', kind: 'BPMN_ELEMENT' },
           timestamp: 0
-        })).to.equal(6);
+        })).to.equal(ENTRY_ORDER.WORK_TERMINAL);
       });
 
 
-      it('should return 6 for user-task COMPLETED', function() {
+      it('should return ENTRY_ORDER.WORK_TERMINAL for user-task COMPLETED', function() {
         expect(getEntryOrder({
           type: EXECUTION_LOG_ENTRY_TYPE.USER_TASK,
           data: { state: 'COMPLETED' },
           timestamp: 0
-        })).to.equal(6);
+        })).to.equal(ENTRY_ORDER.WORK_TERMINAL);
       });
 
 
-      it('should return 6 for message-subscription CORRELATED', function() {
+      it('should return ENTRY_ORDER.WORK_TERMINAL for message-subscription CORRELATED', function() {
         expect(getEntryOrder({
           type: EXECUTION_LOG_ENTRY_TYPE.MESSAGE_SUBSCRIPTION,
           data: { messageSubscriptionState: 'CORRELATED' },
           timestamp: 0
-        })).to.equal(6);
+        })).to.equal(ENTRY_ORDER.WORK_TERMINAL);
       });
 
 
-      it('should return 10 for other status entries', function() {
+      it('should return ENTRY_ORDER.STATUS_TERMINAL for other status entries', function() {
         expect(getEntryOrder({
           type: EXECUTION_LOG_ENTRY_TYPE.STATUS,
           status: EXECUTION_LOG_ENTRY_STATUS.COMPLETED,
           timestamp: 0
-        })).to.equal(10);
+        })).to.equal(ENTRY_ORDER.STATUS_TERMINAL);
       });
 
 
-      it('should return 7 for end execution listener job CREATED', function() {
+      it('should return ENTRY_ORDER.END_LISTENER_CREATED for end execution listener job CREATED', function() {
         expect(getEntryOrder({
           type: EXECUTION_LOG_ENTRY_TYPE.JOB,
           data: { state: 'CREATED', kind: 'EXECUTION_LISTENER', listenerEventType: 'END' },
           timestamp: 0
-        })).to.equal(7);
+        })).to.equal(ENTRY_ORDER.END_LISTENER_CREATED);
       });
 
 
-      it('should return 8 for end execution listener job COMPLETED', function() {
+      it('should return ENTRY_ORDER.END_LISTENER_TERMINAL for end execution listener job COMPLETED', function() {
         expect(getEntryOrder({
           type: EXECUTION_LOG_ENTRY_TYPE.JOB,
           data: { state: 'COMPLETED', kind: 'EXECUTION_LISTENER', listenerEventType: 'END' },
           timestamp: 0
-        })).to.equal(8);
+        })).to.equal(ENTRY_ORDER.END_LISTENER_TERMINAL);
       });
 
 
-      it('should return 9 for completed element instances', function() {
+      it('should return ENTRY_ORDER.ELEMENT_TERMINAL for completed element instances', function() {
         expect(getEntryOrder({
           type: EXECUTION_LOG_ENTRY_TYPE.ELEMENT_INSTANCE,
           data: { state: 'COMPLETED' },
           timestamp: 0
-        })).to.equal(9);
+        })).to.equal(ENTRY_ORDER.ELEMENT_TERMINAL);
       });
 
     });
 
 
-    describe('areRelated', function() {
+    describe('areEntriesRelated', function() {
 
       it('should return true for entries sharing the same elementId', function() {
         const a = { type: EXECUTION_LOG_ENTRY_TYPE.ELEMENT_INSTANCE, data: { elementId: 'Task_1', state: 'ACTIVE' }, timestamp: 0 };
         const b = { type: EXECUTION_LOG_ENTRY_TYPE.JOB, data: { elementId: 'Task_1', state: 'CREATED' }, timestamp: 0 };
 
-        expect(areRelated(a, b)).to.be.true;
+        expect(areEntriesRelated(a, b)).to.be.true;
       });
 
 
@@ -1465,7 +1509,7 @@ describe('ExecutionLog', function() {
         const a = { type: EXECUTION_LOG_ENTRY_TYPE.JOB, data: { elementId: 'Task_A', state: 'COMPLETED' }, timestamp: 0 };
         const b = { type: EXECUTION_LOG_ENTRY_TYPE.JOB, data: { elementId: 'Task_B', state: 'CREATED' }, timestamp: 0 };
 
-        expect(areRelated(a, b)).to.be.false;
+        expect(areEntriesRelated(a, b)).to.be.false;
       });
 
 
@@ -1473,7 +1517,7 @@ describe('ExecutionLog', function() {
         const a = { type: EXECUTION_LOG_ENTRY_TYPE.JOB, data: { jobKey: '42', state: 'CREATED' }, timestamp: 0 };
         const b = { type: EXECUTION_LOG_ENTRY_TYPE.JOB, data: { jobKey: '42', state: 'COMPLETED' }, timestamp: 0 };
 
-        expect(areRelated(a, b)).to.be.true;
+        expect(areEntriesRelated(a, b)).to.be.true;
       });
 
 
@@ -1481,7 +1525,7 @@ describe('ExecutionLog', function() {
         const a = { type: EXECUTION_LOG_ENTRY_TYPE.USER_TASK, data: { userTaskKey: '7', state: 'CREATED' }, timestamp: 0 };
         const b = { type: EXECUTION_LOG_ENTRY_TYPE.USER_TASK, data: { userTaskKey: '7', state: 'COMPLETED' }, timestamp: 0 };
 
-        expect(areRelated(a, b)).to.be.true;
+        expect(areEntriesRelated(a, b)).to.be.true;
       });
 
 
@@ -1489,7 +1533,7 @@ describe('ExecutionLog', function() {
         const a = { type: EXECUTION_LOG_ENTRY_TYPE.MESSAGE_SUBSCRIPTION, data: { messageSubscriptionKey: '3', messageSubscriptionState: 'CREATED' }, timestamp: 0 };
         const b = { type: EXECUTION_LOG_ENTRY_TYPE.MESSAGE_SUBSCRIPTION, data: { messageSubscriptionKey: '3', messageSubscriptionState: 'CORRELATED' }, timestamp: 0 };
 
-        expect(areRelated(a, b)).to.be.true;
+        expect(areEntriesRelated(a, b)).to.be.true;
       });
 
 
@@ -1497,7 +1541,47 @@ describe('ExecutionLog', function() {
         const a = { type: EXECUTION_LOG_ENTRY_TYPE.USER_TASK, data: { userTaskKey: '1', state: 'CREATED' }, timestamp: 0 };
         const b = { type: EXECUTION_LOG_ENTRY_TYPE.ELEMENT_INSTANCE, data: { state: 'ACTIVE' }, timestamp: 0 };
 
-        expect(areRelated(a, b)).to.be.false;
+        expect(areEntriesRelated(a, b)).to.be.false;
+      });
+
+    });
+
+
+    describe('compareEntryTimestamps', function() {
+
+      it('should return negative when a is earlier', function() {
+        const a = { timestamp: 100 };
+        const b = { timestamp: 200 };
+
+        expect(compareEntryTimestamps(a, b)).to.be.below(0);
+      });
+
+
+      it('should return positive when a is later', function() {
+        const a = { timestamp: 300 };
+        const b = { timestamp: 100 };
+
+        expect(compareEntryTimestamps(a, b)).to.be.above(0);
+      });
+
+
+      it('should return 0 for equal timestamps', function() {
+        const a = { timestamp: 100 };
+        const b = { timestamp: 100 };
+
+        expect(compareEntryTimestamps(a, b)).to.equal(0);
+      });
+
+    });
+
+
+    describe('compareEntryOrders', function() {
+
+      it('should order entries by order', function() {
+        const a = { type: EXECUTION_LOG_ENTRY_TYPE.ELEMENT_INSTANCE, data: { elementId: 'Task_1', state: 'ACTIVE' }, timestamp: 0 };
+        const b = { type: EXECUTION_LOG_ENTRY_TYPE.JOB, data: { elementId: 'Task_1', state: 'CREATED', kind: 'BPMN_ELEMENT' }, timestamp: 0 };
+
+        expect(compareEntryOrders(a, b)).to.be.below(0);
       });
 
     });
