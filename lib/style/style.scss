@@ -273,6 +273,16 @@
       border-radius: 4px;
       margin: 12px 12px 0;
 
+      .cds--inline-loading__animation {
+        margin-inline-end: 2px;
+
+        .cds--loading--small {
+          block-size: 14px;
+          inline-size: 14px;
+          line-height: 14px;
+        }
+      }
+
       &.output__banner--success {
         background-color: var(--color-success-bg);
         border: 1px solid var(--color-success-border);
@@ -362,6 +372,18 @@
         min-width: 0;
       }
 
+      .output__banner-tag {
+        color: var(--color-text-secondary);
+        white-space: nowrap;
+        overflow: clip visible;
+        text-overflow: ellipsis;
+        min-width: 0;
+        border-radius: 4px;
+        background-color: var(--color-bg-light);
+        padding: 2px 4px;
+        font-size: 12px;
+      }
+
       .output__banner-timing {
         color: var(--color-text-secondary);
         white-space: nowrap;
@@ -393,6 +415,11 @@
         .output__banner-details-content {
           margin: 0;
           color: var(--color-text-secondary);
+          font-size: 14px;
+        }
+
+        .output__banner-details-link {
+          margin-top: 6px;
         }
       }
 
