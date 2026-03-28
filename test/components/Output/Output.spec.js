@@ -9,12 +9,21 @@ import React from 'react';
 
 import { render } from '@testing-library/react';
 
-import Output from '../../../lib/components/Output/Output';
+import Output, { getWaitingContext } from '../../../lib/components/Output/Output';
+
+import {
+  createJobEntry,
+  EXECUTION_LOG_ENTRY_TYPE
+} from '../../../lib/ExecutionLog';
 
 import { SCOPES } from '../../../lib/utils/variables';
 import { PluginContext, usePluginsProviderValue } from '../../../lib/components/shared/plugins';
 import { pickVariables } from '../../../lib/utils/variables';
-import { createIncidentDetails } from '../../helpers/responses';
+import {
+  createIncidentDetails,
+  createJobDetails,
+  createMockTimestamp
+} from '../../helpers/responses';
 
 describe('Output', function() {
 
@@ -416,6 +425,286 @@ describe('Output', function() {
 
 });
 
+
+describe('getWaitingContext', function() {
+
+  it('should return null for empty entries', function() {
+    expect(getWaitingContext([], null, null)).to.be.null;
+    expect(getWaitingContext(undefined, null, null)).to.be.null;
+  });
+
+
+  it('should return job context for pending job', function() {
+
+    // given
+    const entries = [
+      createJobEntry(createJobDetails(), createMockTimestamp(), {
+        state: 'CREATED',
+        type: 'io.camunda:http-json:1'
+      })
+    ];
+
+    // when
+    const context = getWaitingContext(entries, null, 'https://operate.example.com');
+
+    // then
+    expect(context).to.exist;
+    expect(context.title).to.equal('Waiting for job completion');
+    expect(context.description).to.exist;
+    expect(context.linkUrl).to.equal('https://operate.example.com');
+    expect(context.linkLabel).to.equal('Open in Operate');
+  });
+
+
+  it('should return null for completed job', function() {
+
+    // given
+    const entries = [
+      createJobEntry(createJobDetails(), createMockTimestamp(), {
+        state: 'COMPLETED',
+        type: 'io.camunda:http-json:1'
+      })
+    ];
+
+    // when
+    const context = getWaitingContext(entries, null, 'https://operate.example.com');
+
+    // then
+    expect(context).to.be.null;
+  });
+
+
+  it('should return null for failed job', function() {
+
+    // given
+    const entries = [
+      createJobEntry(createJobDetails(), createMockTimestamp(), {
+        state: 'FAILED',
+        type: 'io.camunda:http-json:1'
+      })
+    ];
+
+    // when
+    const context = getWaitingContext(entries, null, 'https://operate.example.com');
+
+    // then
+    expect(context).to.be.null;
+  });
+
+
+  it('should skip CREATED job when a FAILED entry exists for the same jobKey', function() {
+
+    // given
+    const entries = [
+      createJobEntry(createJobDetails(), createMockTimestamp(), {
+        state: 'CREATED',
+        type: 'io.camunda:http-json:1',
+        jobKey: '100'
+      }),
+      createJobEntry(createJobDetails(), createMockTimestamp(), {
+        state: 'FAILED',
+        type: 'io.camunda:http-json:1',
+        jobKey: '100'
+      })
+    ];
+
+    // when
+    const context = getWaitingContext(entries, null, 'https://operate.example.com');
+
+    // then
+    expect(context).to.be.null;
+  });
+
+
+  it('should skip job with CREATED entry when a COMPLETED entry exists for the same jobKey', function() {
+
+    // given
+    const entries = [
+      createJobEntry(createJobDetails(), createMockTimestamp(), {
+        state: 'CREATED',
+        type: 'io.camunda:listener-job:1',
+        jobKey: '100'
+      }),
+      createJobEntry(createJobDetails(), createMockTimestamp(), {
+        state: 'COMPLETED',
+        type: 'io.camunda:listener-job:1',
+        jobKey: '100'
+      }),
+      createJobEntry(createJobDetails(), createMockTimestamp(), {
+        state: 'CREATED',
+        type: 'io.camunda:http-json:1',
+        jobKey: '200'
+      })
+    ];
+
+    // when
+    const context = getWaitingContext(entries, null, 'https://operate.example.com');
+
+    // then
+    expect(context).to.exist;
+    expect(context.title).to.equal('Waiting for job completion');
+    expect(context.description).to.exist;
+  });
+
+
+  it('should return null when all jobs have matching COMPLETED entries', function() {
+
+    // given
+    const entries = [
+      createJobEntry(createJobDetails(), createMockTimestamp(), {
+        state: 'CREATED',
+        type: 'io.camunda:listener-job:1',
+        jobKey: '100'
+      }),
+      createJobEntry(createJobDetails(), createMockTimestamp(), {
+        state: 'COMPLETED',
+        type: 'io.camunda:listener-job:1',
+        jobKey: '100'
+      })
+    ];
+
+    // when
+    const context = getWaitingContext(entries, null, 'https://operate.example.com');
+
+    // then
+    expect(context).to.be.null;
+  });
+
+
+  it('should return job context without link when no operateUrl', function() {
+
+    // given
+    const entries = [
+      createJobEntry(createJobDetails(), createMockTimestamp(), {
+        state: 'CREATED',
+        type: 'io.camunda:http-json:1'
+      })
+    ];
+
+    // when
+    const context = getWaitingContext(entries, null, null);
+
+    // then
+    expect(context).to.exist;
+    expect(context.linkUrl).to.be.null;
+  });
+
+
+  it('should return message subscription context', function() {
+
+    // given
+    const entries = [
+      createMessageSubscriptionEntry({
+        messageSubscriptionState: 'CREATED'
+      })
+    ];
+
+    // when
+    const context = getWaitingContext(entries, null, 'https://operate.example.com');
+
+    // then
+    expect(context).to.exist;
+    expect(context.title).to.equal('Waiting for message correlation');
+    expect(context.description).to.exist;
+    expect(context.linkUrl).to.equal('https://operate.example.com');
+    expect(context.linkLabel).to.equal('Open in Operate');
+  });
+
+
+  it('should return null for correlated message', function() {
+
+    // given
+    const entries = [
+      createMessageSubscriptionEntry({
+        messageSubscriptionState: 'CORRELATED'
+      })
+    ];
+
+    // when
+    const context = getWaitingContext(entries, null, 'https://operate.example.com');
+
+    // then
+    expect(context).to.be.null;
+  });
+
+
+  it('should return user task context', function() {
+
+    // given
+    const entries = [
+      createUserTaskEntry({
+        state: 'CREATED',
+        userTaskKey: '1'
+      })
+    ];
+
+    // when
+    const context = getWaitingContext(entries, 'https://tasklist.example.com', null);
+
+    // then
+    expect(context).to.exist;
+    expect(context.title).to.equal('Waiting for user task completion');
+    expect(context.description).to.exist;
+    expect(context.linkUrl).to.equal('https://tasklist.example.com/1');
+    expect(context.linkLabel).to.equal('Open in Tasklist');
+  });
+
+
+  it('should return null for completed user task', function() {
+
+    // given
+    const entries = [
+      createUserTaskEntry({
+        state: 'COMPLETED'
+      })
+    ];
+
+    // when
+    const context = getWaitingContext(entries, 'https://tasklist.example.com', null);
+
+    // then
+    expect(context).to.be.null;
+  });
+
+
+  it('should return user task context without link when no tasklistBaseUrl', function() {
+
+    // given
+    const entries = [
+      createUserTaskEntry({
+        state: 'CREATED',
+        userTaskKey: '1'
+      })
+    ];
+
+    // when
+    const context = getWaitingContext(entries, null, null);
+
+    // then
+    expect(context).to.exist;
+    expect(context.linkUrl).to.be.null;
+  });
+
+
+  it('should prioritize user task over message and job', function() {
+
+    // given
+    const entries = [
+      createJobEntry(createJobDetails(), createMockTimestamp(), { state: 'CREATED' }),
+      createMessageSubscriptionEntry({ messageSubscriptionState: 'CREATED' }),
+      createUserTaskEntry({ state: 'CREATED', userTaskKey: '1' })
+    ];
+
+    // when
+    const context = getWaitingContext(entries, null, null);
+
+    // then
+    expect(context.title).to.equal('Waiting for user task completion');
+  });
+
+});
+
+
 function renderWithProps(props = {}) {
   const {
     element,
@@ -458,3 +747,30 @@ const Wrapper = (props) => {
     </PluginContext.Provider>
   );
 };
+
+function createUserTaskEntry(data, timestamp = 0) {
+  return {
+    type: EXECUTION_LOG_ENTRY_TYPE.USER_TASK,
+    data: {
+      state: 'CREATED',
+      name: 'Foo',
+      userTaskKey: '1',
+      ...data
+    },
+    timestamp
+  };
+}
+
+function createMessageSubscriptionEntry(data, timestamp = 0) {
+  return {
+    type: EXECUTION_LOG_ENTRY_TYPE.MESSAGE_SUBSCRIPTION,
+    data: {
+      messageName: 'Message_1',
+      elementId: 'Event_1',
+      messageSubscriptionState: 'CREATED',
+      messageSubscriptionKey: '1',
+      ...data
+    },
+    timestamp
+  };
+}

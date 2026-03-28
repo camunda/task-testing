@@ -8,13 +8,8 @@ import React, { useState } from 'react';
 
 import {
   ChevronRight,
-  ChevronDown,
-  Email,
-  Launch,
-  TaskComplete
+  ChevronDown
 } from '@carbon/icons-react';
-
-import { Link } from '@carbon/react';
 
 import classNames from 'classnames';
 
@@ -23,8 +18,6 @@ import {
   EXECUTION_LOG_ENTRY_TYPE,
   formatElementType,
 } from '../../ExecutionLog';
-
-import { getTasklistUrl } from '../../utils/getTasklistUrl';
 
 const STATUS_LABELS = {
   deploying: 'Deploying process',
@@ -390,11 +383,9 @@ function getActiveEntries(entries, isTaskExecuting) {
 /**
  * @param {Object} props
  * @param {ExecutionLogEntry[]} props.entries
- * @param {string} [props.tasklistBaseUrl]
- * @param {string|null} [props.currentOperateUrl]
  * @param {boolean} [props.isTaskExecuting]
  */
-export function ExecutionLog({ entries, tasklistBaseUrl, currentOperateUrl, isTaskExecuting }) {
+export function ExecutionLog({ entries, isTaskExecuting }) {
   if (!entries.length) {
     return (
       <div className="execution-log">
@@ -435,21 +426,6 @@ export function ExecutionLog({ entries, tasklistBaseUrl, currentOperateUrl, isTa
           </li>
         )) }
       </ol>
-      <JobCallToAction
-        entries={ entries }
-        currentOperateUrl={ currentOperateUrl }
-        isTaskExecuting={ isTaskExecuting }
-      />
-      <MessageSubscriptionCallToAction
-        entries={ entries }
-        currentOperateUrl={ currentOperateUrl }
-        isTaskExecuting={ isTaskExecuting }
-      />
-      <UserTaskCallToAction
-        entries={ entries }
-        tasklistBaseUrl={ tasklistBaseUrl }
-        isTaskExecuting={ isTaskExecuting }
-      />
     </div>
   );
 }
@@ -577,118 +553,5 @@ function LogEntry({ entry }) {
         ) }
       </div>
     </li>
-  );
-}
-
-function JobCallToAction({ entries, currentOperateUrl, isTaskExecuting }) {
-  if (!isTaskExecuting) {
-    return null;
-  }
-
-  const hasPendingExecutionListenerJob = entries.some(
-    entry => entry.type === EXECUTION_LOG_ENTRY_TYPE.JOB
-      && entry.data.state !== 'COMPLETED'
-  );
-
-  if (!hasPendingExecutionListenerJob) {
-    return null;
-  }
-
-  return (
-    <div className="execution-log__cta">
-      <div className="execution-log__cta-header">
-        <Email size={ 16 } />
-        <span className="execution-log__cta-title">Waiting for job completion</span>
-      </div>
-      <p className="execution-log__cta-description">
-        Ensure the corresponding job is completed to continue the test execution.
-      </p>
-      { currentOperateUrl && (
-        <Link
-          className="execution-log__cta-link"
-          href={ currentOperateUrl }
-          target="_blank"
-          renderIcon={ Launch }
-        >
-          Open in Operate
-        </Link>
-      ) }
-    </div>
-  );
-}
-
-function MessageSubscriptionCallToAction({ entries, currentOperateUrl, isTaskExecuting }) {
-  if (!isTaskExecuting) {
-    return null;
-  }
-
-  const hasActiveSubscription = entries.some(
-    entry => entry.type === EXECUTION_LOG_ENTRY_TYPE.MESSAGE_SUBSCRIPTION
-      && entry.data.messageSubscriptionState === 'CREATED'
-  );
-
-  if (!hasActiveSubscription) {
-    return null;
-  }
-
-  return (
-    <div className="execution-log__cta">
-      <div className="execution-log__cta-header">
-        <Email size={ 16 } />
-        <span className="execution-log__cta-title">Waiting for message correlation</span>
-      </div>
-      <p className="execution-log__cta-description">
-        Ensure the required message is correlated to continue the test execution.
-      </p>
-      { currentOperateUrl && (
-        <Link
-          className="execution-log__cta-link"
-          href={ currentOperateUrl }
-          target="_blank"
-          renderIcon={ Launch }
-        >
-          Open in Operate
-        </Link>
-      ) }
-    </div>
-  );
-}
-
-function UserTaskCallToAction({ entries, tasklistBaseUrl, isTaskExecuting }) {
-  if (!isTaskExecuting) {
-    return null;
-  }
-
-  const userTask = entries.find(
-    entry => entry.type === EXECUTION_LOG_ENTRY_TYPE.USER_TASK
-      && entry.data.state === USER_TASK_STATES.CREATED
-  );
-
-  if (!userTask) {
-    return null;
-  }
-
-  const tasklistUrl = getTasklistUrl(tasklistBaseUrl, userTask.data.userTaskKey);
-
-  return (
-    <div className="execution-log__cta">
-      <div className="execution-log__cta-header">
-        <TaskComplete size={ 16 } />
-        <span className="execution-log__cta-title">Waiting for user task completion</span>
-      </div>
-      <p className="execution-log__cta-description">
-        Complete the user task to continue the test execution.
-      </p>
-      { tasklistUrl && (
-        <Link
-          className="execution-log__cta-link"
-          href={ tasklistUrl }
-          target="_blank"
-          renderIcon={ Launch }
-        >
-          Open in Tasklist
-        </Link>
-      ) }
-    </div>
   );
 }

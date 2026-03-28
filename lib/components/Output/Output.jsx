@@ -6,6 +6,9 @@
  * @import {
  *   ElementOutput,
  *   ExecutionLogEntry,
+ *   ExecutionLogJobEntry,
+ *   ExecutionLogUserTaskEntry,
+ *   ExecutionLogMessageSubscriptionEntry,
  *   TaskExecutionState
  * } from '../../types';
  */
@@ -35,6 +38,8 @@ import { ExecutionLog } from './ExecutionLog';
 import { PluginContext } from '../shared/plugins';
 import Tooltip from '../shared/Tooltip';
 import { SCOPES, pickVariables } from '../../utils/variables';
+import { EXECUTION_LOG_ENTRY_TYPE } from '../../ExecutionLog';
+import { getTasklistUrl } from '../../utils/getTasklistUrl';
 
 /**
  * @param {Object} props
@@ -108,7 +113,11 @@ export default function Output({
   return (
     <div className="output">
       {
-        isTaskExecuting && <ExecutingBanner currentOperateUrl={ currentOperateUrl } />
+        isTaskExecuting && <ExecutingBanner
+          currentOperateUrl={ currentOperateUrl }
+          entries={ executionLog }
+          tasklistBaseUrl={ tasklistBaseUrl }
+        />
       }
       { !isTaskExecuting && output && (
         <ResultBanner
@@ -131,8 +140,6 @@ export default function Output({
             { executionLog?.length > 0 ? (
               <ExecutionLog
                 entries={ executionLog }
-                tasklistBaseUrl={ tasklistBaseUrl }
-                currentOperateUrl={ currentOperateUrl }
                 isTaskExecuting={ isTaskExecuting }
               />
             ) : (
@@ -319,13 +326,114 @@ function EmptyState() {
   );
 }
 
-function ExecutingBanner({ currentOperateUrl }) {
+/**
+ * Get the waiting context describing what the execution is currently blocked on.
+ * Returns null if nothing is being waited on.
+ *
+ * @param {ExecutionLogEntry[]} [entries]
+ * @param {string} [tasklistBaseUrl]
+ * @param {string|null} [currentOperateUrl]
+ *
+ * @returns {{ title: string, description: React.ReactNode, linkUrl: string|null, linkLabel: string } | null}
+ */
+export function getWaitingContext(entries, tasklistBaseUrl, currentOperateUrl) {
+  if (!entries || !entries.length) {
+    return null;
+  }
+
+  const terminalUserTaskKeys = new Set(
+    /** @type {ExecutionLogUserTaskEntry[]} */ (entries
+      .filter(entry => entry.type === EXECUTION_LOG_ENTRY_TYPE.USER_TASK
+        && entry.data.state !== 'CREATED'))
+      .map(entry => entry.data.userTaskKey)
+  );
+
+  const pendingUserTask = /** @type {ExecutionLogUserTaskEntry|undefined} */ (entries.find(
+    entry => entry.type === EXECUTION_LOG_ENTRY_TYPE.USER_TASK
+      && entry.data.state === 'CREATED'
+      && !terminalUserTaskKeys.has(entry.data.userTaskKey)
+  ));
+
+  if (pendingUserTask) {
+    const name = pendingUserTask.data.name || pendingUserTask.data.elementId;
+    const tasklistUrl = getTasklistUrl(tasklistBaseUrl || '', pendingUserTask.data.userTaskKey || '');
+
+    return {
+      title: 'Waiting for user task completion',
+      description: name
+        ? <>Complete the <span className="output__banner-tag">{ name }</span> user task to continue the test execution.</>
+        : 'Complete the user task to continue the test execution.',
+      linkUrl: tasklistUrl || null,
+      linkLabel: 'Open in Tasklist'
+    };
+  }
+
+  const correlatedSubscriptionKeys = new Set(
+    /** @type {ExecutionLogMessageSubscriptionEntry[]} */ (entries
+      .filter(entry => entry.type === EXECUTION_LOG_ENTRY_TYPE.MESSAGE_SUBSCRIPTION
+        && entry.data.messageSubscriptionState !== 'CREATED'))
+      .map(entry => entry.data.messageSubscriptionKey)
+  );
+
+  const activeSubscription = /** @type {ExecutionLogMessageSubscriptionEntry|undefined} */ (entries.find(
+    entry => entry.type === EXECUTION_LOG_ENTRY_TYPE.MESSAGE_SUBSCRIPTION
+      && entry.data.messageSubscriptionState === 'CREATED'
+      && !correlatedSubscriptionKeys.has(entry.data.messageSubscriptionKey)
+  ));
+
+  if (activeSubscription) {
+    const messageName = activeSubscription.data.messageName;
+
+    return {
+      title: 'Waiting for message correlation',
+      description: messageName
+        ? <>Ensure the <span className="output__banner-tag">{ messageName }</span> message is correlated to continue the test execution.</>
+        : 'Ensure the required message is correlated to continue the test execution.',
+      linkUrl: currentOperateUrl || null,
+      linkLabel: 'Open in Operate'
+    };
+  }
+
+  const terminalJobKeys = new Set(
+    /** @type {ExecutionLogJobEntry[]} */ (entries
+      .filter(entry => entry.type === EXECUTION_LOG_ENTRY_TYPE.JOB
+        && entry.data.state !== 'CREATED'))
+      .map(entry => entry.data.jobKey)
+  );
+
+  const pendingJob = /** @type {ExecutionLogJobEntry|undefined} */ (entries.find(
+    entry => entry.type === EXECUTION_LOG_ENTRY_TYPE.JOB
+      && entry.data.state === 'CREATED'
+      && !terminalJobKeys.has(entry.data.jobKey)
+  ));
+
+  if (pendingJob) {
+    const jobType = pendingJob.data.type;
+
+    return {
+      title: 'Waiting for job completion',
+      description: jobType
+        ? <>Ensure the <span className="output__banner-tag">{ jobType }</span> job is completed to continue the test execution.</>
+        : 'Ensure the corresponding job is completed to continue the test execution.',
+      linkUrl: currentOperateUrl || null,
+      linkLabel: 'Open in Operate'
+    };
+  }
+
+  return null;
+}
+
+function ExecutingBanner({ currentOperateUrl, entries, tasklistBaseUrl }) {
+  const waitingContext = getWaitingContext(entries, tasklistBaseUrl, currentOperateUrl);
+
   return (
     <div className="output__banner output__banner--executing">
       <div className="output__banner-header">
         <div className="output__banner-main">
           <InlineLoading className="output__banner-loader" />
-          <span className="output__banner-text">Running test...</span>
+          <span className="output__banner-text">
+            { waitingContext ? waitingContext.title : 'Running test...' }
+          </span>
         </div>
         { currentOperateUrl && (
           <Link
@@ -338,6 +446,23 @@ function ExecutingBanner({ currentOperateUrl }) {
           </Link>
         ) }
       </div>
+      { waitingContext && (
+        <div className="output__banner-details">
+          { waitingContext.description && (
+            <p className="output__banner-details-content">{ waitingContext.description }</p>
+          ) }
+          { waitingContext.linkUrl && waitingContext.linkUrl !== currentOperateUrl && (
+            <Link
+              className="output__banner-details-link"
+              href={ waitingContext.linkUrl }
+              target="_blank"
+              renderIcon={ Launch }
+            >
+              { waitingContext.linkLabel }
+            </Link>
+          ) }
+        </div>
+      ) }
     </div>
   );
 }
