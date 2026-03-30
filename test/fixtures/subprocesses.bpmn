@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0ne93ld" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.45.0-dev" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.9.0">
+  <bpmn:process id="Process_1" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="StartEvent_1">
+      <bpmn:outgoing>Flow_16e7ve4</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:subProcess id="SubProcess_1" name="SubProcess_1">
+      <bpmn:incoming>Flow_16e7ve4</bpmn:incoming>
+      <bpmn:outgoing>Flow_1ig8wce</bpmn:outgoing>
+      <bpmn:startEvent id="StartEvent_2" name="StartEvent_2">
+        <bpmn:outgoing>Flow_1farui8</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:subProcess id="SubProcess_2" name="SubProcess_2">
+        <bpmn:incoming>Flow_1farui8</bpmn:incoming>
+        <bpmn:outgoing>Flow_1330ko8</bpmn:outgoing>
+        <bpmn:startEvent id="StartEvent_3" name="StartEvent_3">
+          <bpmn:outgoing>Flow_143pihd</bpmn:outgoing>
+        </bpmn:startEvent>
+        <bpmn:task id="Task_1" name="Task_1">
+          <bpmn:incoming>Flow_143pihd</bpmn:incoming>
+          <bpmn:outgoing>Flow_10cx8ih</bpmn:outgoing>
+        </bpmn:task>
+        <bpmn:sequenceFlow id="Flow_143pihd" sourceRef="StartEvent_3" targetRef="Task_1" />
+        <bpmn:endEvent id="EndEvent_3" name="EndEvent_3">
+          <bpmn:incoming>Flow_10cx8ih</bpmn:incoming>
+        </bpmn:endEvent>
+        <bpmn:sequenceFlow id="Flow_10cx8ih" sourceRef="Task_1" targetRef="EndEvent_3" />
+      </bpmn:subProcess>
+      <bpmn:sequenceFlow id="Flow_1farui8" sourceRef="StartEvent_2" targetRef="SubProcess_2" />
+      <bpmn:endEvent id="EndEvent_2" name="EndEvent_2">
+        <bpmn:incoming>Flow_1330ko8</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_1330ko8" sourceRef="SubProcess_2" targetRef="EndEvent_2" />
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="Flow_16e7ve4" sourceRef="StartEvent_1" targetRef="SubProcess_1" />
+    <bpmn:endEvent id="EndEvent_1" name="EndEvent_1">
+      <bpmn:incoming>Flow_1ig8wce</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1ig8wce" sourceRef="SubProcess_1" targetRef="EndEvent_1" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="212" y="212" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="198" y="255" width="64" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_026axm0_di" bpmnElement="EndEvent_1">
+        <dc:Bounds x="832" y="212" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="820" y="255" width="60" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_158u84f_di" bpmnElement="SubProcess_1" isExpanded="true">
+        <dc:Bounds x="280" y="80" width="510" height="300" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1gl07d1_di" bpmnElement="StartEvent_2">
+        <dc:Bounds x="312" y="212" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="298" y="255" width="64" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1wpqixk_di" bpmnElement="EndEvent_2">
+        <dc:Bounds x="722" y="212" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="710" y="255" width="60" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_170n873_di" bpmnElement="SubProcess_2" isExpanded="true">
+        <dc:Bounds x="380" y="130" width="300" height="200" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0jbxgo2_di" bpmnElement="StartEvent_3">
+        <dc:Bounds x="410" y="212" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="396" y="255" width="64" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0gi2744_di" bpmnElement="Task_1">
+        <dc:Bounds x="480" y="190" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_13b5p9q_di" bpmnElement="EndEvent_3">
+        <dc:Bounds x="622" y="212" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="610" y="255" width="60" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_143pihd_di" bpmnElement="Flow_143pihd">
+        <di:waypoint x="446" y="230" />
+        <di:waypoint x="480" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10cx8ih_di" bpmnElement="Flow_10cx8ih">
+        <di:waypoint x="580" y="230" />
+        <di:waypoint x="622" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1farui8_di" bpmnElement="Flow_1farui8">
+        <di:waypoint x="348" y="230" />
+        <di:waypoint x="380" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1330ko8_di" bpmnElement="Flow_1330ko8">
+        <di:waypoint x="680" y="230" />
+        <di:waypoint x="722" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16e7ve4_di" bpmnElement="Flow_16e7ve4">
+        <di:waypoint x="248" y="230" />
+        <di:waypoint x="280" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ig8wce_di" bpmnElement="Flow_1ig8wce">
+        <di:waypoint x="790" y="230" />
+        <di:waypoint x="832" y="230" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

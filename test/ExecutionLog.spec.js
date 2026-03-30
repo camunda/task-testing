@@ -3,13 +3,19 @@ import ExecutionLog, {
   EXECUTION_LOG_ENTRY_TYPE,
   ENTRY_ORDER,
   areEntriesRelated,
+  compareContainmentOrder,
   compareEntryOrders,
   compareEntryTimestamps,
   formatElementType,
-  getEntryOrder
+  getEntryOrder,
+  isAncestor
 } from '../lib/ExecutionLog';
 
 import { TASK_EXECUTION_FINISHED_REASON } from '../lib/TaskExecution';
+
+import { bootstrapModeler, inject } from './helpers/modeler';
+
+import subprocessesXML from './fixtures/subprocesses.bpmn';
 
 import {
   createDeployResponse,
@@ -1351,6 +1357,201 @@ describe('ExecutionLog', function() {
         expect(regularCompleted).to.be.lessThan(endListenerCreated);
       });
 
+
+      describe('containment ordering', function() {
+
+        beforeEach(bootstrapModeler(subprocessesXML));
+
+        let executionLog;
+
+        beforeEach(inject(function(injector) {
+          executionLog = new ExecutionLog(injector);
+        }));
+
+
+        it('should place sub-process COMPLETED after child COMPLETED at same timestamp', function() {
+
+          // given
+          const timestamp = createMockTimestamp();
+          const time = createMockDate();
+
+          const subProcess = createElementInstanceDetails({
+            elementId: 'SubProcess_2',
+            elementInstanceKey: 'ei-1',
+            type: 'SUB_PROCESS',
+            state: 'COMPLETED',
+            startDate: time,
+            endDate: time
+          });
+
+          const childTask = createElementInstanceDetails({
+            elementId: 'Task_1',
+            elementInstanceKey: 'ei-2',
+            type: 'TASK',
+            state: 'COMPLETED',
+            startDate: time,
+            endDate: time
+          });
+
+          // when
+          executionLog.setPolledResult(createPolledResult({
+            elementInstancesResponse: createGetProcessInstanceElementInstancesResponse({
+              response: { items: [ subProcess, childTask ] }
+            })
+          }), timestamp);
+
+          // then
+          const entries = executionLog.getEntries();
+          const terminalEntries = entries
+            .filter(e => e.type === 'element-instance' && e.data?.state !== 'ACTIVE')
+            .map(e => e.data?.elementId);
+
+          expect(terminalEntries.indexOf('Task_1')).to.be.lessThan(
+            terminalEntries.indexOf('SubProcess_2')
+          );
+        });
+
+
+        it('should place sub-process ACTIVE before child ACTIVE at same timestamp', function() {
+
+          // given
+          const timestamp = createMockTimestamp();
+          const time = createMockDate();
+
+          const childTask = createElementInstanceDetails({
+            elementId: 'Task_1',
+            elementInstanceKey: 'ei-2',
+            type: 'TASK',
+            state: 'ACTIVE',
+            startDate: time
+          });
+
+          const subProcess = createElementInstanceDetails({
+            elementId: 'SubProcess_2',
+            elementInstanceKey: 'ei-1',
+            type: 'SUB_PROCESS',
+            state: 'ACTIVE',
+            startDate: time
+          });
+
+          // when
+          executionLog.setPolledResult(createPolledResult({
+            elementInstancesResponse: createGetProcessInstanceElementInstancesResponse({
+              response: { items: [ childTask, subProcess ] }
+            })
+          }), timestamp);
+
+          // then
+          const entries = executionLog.getEntries();
+          const activeEntries = entries
+            .filter(e => e.type === 'element-instance' && e.data?.state === 'ACTIVE')
+            .map(e => e.data?.elementId);
+
+          expect(activeEntries.indexOf('SubProcess_2')).to.be.lessThan(
+            activeEntries.indexOf('Task_1')
+          );
+        });
+
+
+        it('should order deeply nested grandchild before child before ancestor for terminal entries', function() {
+
+          // given
+          const timestamp = createMockTimestamp();
+          const time = createMockDate();
+
+          const outerSubProcess = createElementInstanceDetails({
+            elementId: 'SubProcess_1',
+            elementInstanceKey: 'ei-1',
+            type: 'SUB_PROCESS',
+            state: 'COMPLETED',
+            startDate: time,
+            endDate: time
+          });
+
+          const innerSubProcess = createElementInstanceDetails({
+            elementId: 'SubProcess_2',
+            elementInstanceKey: 'ei-2',
+            type: 'SUB_PROCESS',
+            state: 'COMPLETED',
+            startDate: time,
+            endDate: time
+          });
+
+          const task = createElementInstanceDetails({
+            elementId: 'Task_1',
+            elementInstanceKey: 'ei-3',
+            type: 'TASK',
+            state: 'COMPLETED',
+            startDate: time,
+            endDate: time
+          });
+
+          // when — items arrive in reverse causal order
+          executionLog.setPolledResult(createPolledResult({
+            elementInstancesResponse: createGetProcessInstanceElementInstancesResponse({
+              response: { items: [ outerSubProcess, innerSubProcess, task ] }
+            })
+          }), timestamp);
+
+          // then
+          const entries = executionLog.getEntries();
+          const terminalEntries = entries
+            .filter(e => e.type === 'element-instance' && e.data?.state !== 'ACTIVE')
+            .map(e => e.data?.elementId);
+
+          expect(terminalEntries).to.deep.equal([
+            'Task_1',
+            'SubProcess_2',
+            'SubProcess_1'
+          ]);
+        });
+
+
+        it('should not reorder unrelated element instances at same timestamp', function() {
+
+          // given — two elements in the same sub-process, neither is ancestor of the other
+          const timestamp = createMockTimestamp();
+          const time = createMockDate();
+
+          const task = createElementInstanceDetails({
+            elementId: 'Task_1',
+            elementInstanceKey: 'ei-1',
+            type: 'TASK',
+            state: 'COMPLETED',
+            startDate: time,
+            endDate: time
+          });
+
+          const endEvent = createElementInstanceDetails({
+            elementId: 'EndEvent_3',
+            elementInstanceKey: 'ei-2',
+            type: 'END_EVENT',
+            state: 'COMPLETED',
+            startDate: time,
+            endDate: time
+          });
+
+          // when
+          executionLog.setPolledResult(createPolledResult({
+            elementInstancesResponse: createGetProcessInstanceElementInstancesResponse({
+              response: { items: [ task, endEvent ] }
+            })
+          }), timestamp);
+
+          // then — no containment relationship, insertion order preserved
+          const entries = executionLog.getEntries();
+          const terminalEntries = entries
+            .filter(e => e.type === 'element-instance' && e.data?.state !== 'ACTIVE')
+            .map(e => e.data?.elementId);
+
+          expect(terminalEntries).to.deep.equal([
+            'Task_1',
+            'EndEvent_3'
+          ]);
+        });
+
+      });
+
     });
 
 
@@ -1541,6 +1742,48 @@ describe('ExecutionLog', function() {
 
         expect(areEntriesRelated(a, b)).to.be.false;
       });
+
+    });
+
+
+    describe('isAncestor', function() {
+
+      beforeEach(bootstrapModeler(subprocessesXML));
+
+
+      it('should return true when first element is parent of second', inject(function(elementRegistry) {
+        expect(isAncestor(elementRegistry, 'SubProcess_1', 'SubProcess_2')).to.be.true;
+      }));
+
+
+      it('should return true when first element is grandparent of second', inject(function(elementRegistry) {
+        expect(isAncestor(elementRegistry, 'SubProcess_1', 'Task_1')).to.be.true;
+      }));
+
+
+      it('should return false when elements are siblings', inject(function(elementRegistry) {
+        expect(isAncestor(elementRegistry, 'Task_1', 'EndEvent_3')).to.be.false;
+      }));
+
+
+      it('should return false when second is ancestor of first (reverse)', inject(function(elementRegistry) {
+        expect(isAncestor(elementRegistry, 'Task_1', 'SubProcess_2')).to.be.false;
+      }));
+
+
+      it('should return false for same element', inject(function(elementRegistry) {
+        expect(isAncestor(elementRegistry, 'SubProcess_1', 'SubProcess_1')).to.be.false;
+      }));
+
+
+      it('should return false when elementRegistry is null', function() {
+        expect(isAncestor(null, 'SubProcess_1', 'Task_1')).to.be.false;
+      });
+
+
+      it('should return false when descendant is not in registry', inject(function(elementRegistry) {
+        expect(isAncestor(elementRegistry, 'SubProcess_1', 'Unknown_1')).to.be.false;
+      }));
 
     });
 
