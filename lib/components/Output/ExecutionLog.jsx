@@ -70,11 +70,11 @@ function getJobLabel(data) {
 
 function getUserTaskLabel(data) {
   if (data.state === USER_TASK_STATES.COMPLETED) {
-    return 'User task completed';
+    return 'User task instance completed';
   } else if (data.state === USER_TASK_STATES.CANCELED) {
-    return 'User task canceled';
+    return 'User task instance canceled';
   } else if (data.state === USER_TASK_STATES.CREATED) {
-    return 'User task created';
+    return 'User task instance created';
   }
 }
 
