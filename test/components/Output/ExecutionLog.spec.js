@@ -529,7 +529,7 @@ describe('ExecutionLog', function() {
       const { queryByText } = renderExecutionLog({ entries });
 
       // then
-      expect(queryByText('User task created')).to.exist;
+      expect(queryByText('User task instance created')).to.exist;
     });
 
 
@@ -546,7 +546,7 @@ describe('ExecutionLog', function() {
       const { queryByText } = renderExecutionLog({ entries });
 
       // then
-      expect(queryByText('User task completed')).to.exist;
+      expect(queryByText('User task instance completed')).to.exist;
     });
 
 
@@ -563,7 +563,7 @@ describe('ExecutionLog', function() {
       const { queryByText } = renderExecutionLog({ entries });
 
       // then
-      expect(queryByText('User task canceled')).to.exist;
+      expect(queryByText('User task instance canceled')).to.exist;
     });
 
 
