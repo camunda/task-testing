@@ -2,10 +2,9 @@ import ExecutionLog, {
   EXECUTION_LOG_ENTRY_STATUS,
   EXECUTION_LOG_ENTRY_TYPE,
   ENTRY_ORDER,
-  areEntriesRelated,
-  compareContainmentOrder,
-  compareEntryOrders,
-  compareEntryTimestamps,
+  areRelated,
+  compareByOrder,
+  compareByTimestamp,
   formatElementType,
   getEntryOrder,
   isAncestor
@@ -1694,13 +1693,13 @@ describe('ExecutionLog', function() {
     });
 
 
-    describe('areEntriesRelated', function() {
+    describe('areRelated', function() {
 
       it('should return true for entries sharing the same elementId', function() {
         const a = { type: EXECUTION_LOG_ENTRY_TYPE.ELEMENT_INSTANCE, data: { elementId: 'Task_1', state: 'ACTIVE' }, timestamp: 0 };
         const b = { type: EXECUTION_LOG_ENTRY_TYPE.JOB, data: { elementId: 'Task_1', state: 'CREATED' }, timestamp: 0 };
 
-        expect(areEntriesRelated(a, b)).to.be.true;
+        expect(areRelated(a, b)).to.be.true;
       });
 
 
@@ -1708,7 +1707,7 @@ describe('ExecutionLog', function() {
         const a = { type: EXECUTION_LOG_ENTRY_TYPE.JOB, data: { elementId: 'Task_A', state: 'COMPLETED' }, timestamp: 0 };
         const b = { type: EXECUTION_LOG_ENTRY_TYPE.JOB, data: { elementId: 'Task_B', state: 'CREATED' }, timestamp: 0 };
 
-        expect(areEntriesRelated(a, b)).to.be.false;
+        expect(areRelated(a, b)).to.be.false;
       });
 
 
@@ -1716,7 +1715,7 @@ describe('ExecutionLog', function() {
         const a = { type: EXECUTION_LOG_ENTRY_TYPE.JOB, data: { jobKey: '42', state: 'CREATED' }, timestamp: 0 };
         const b = { type: EXECUTION_LOG_ENTRY_TYPE.JOB, data: { jobKey: '42', state: 'COMPLETED' }, timestamp: 0 };
 
-        expect(areEntriesRelated(a, b)).to.be.true;
+        expect(areRelated(a, b)).to.be.true;
       });
 
 
@@ -1724,7 +1723,7 @@ describe('ExecutionLog', function() {
         const a = { type: EXECUTION_LOG_ENTRY_TYPE.USER_TASK, data: { userTaskKey: '7', state: 'CREATED' }, timestamp: 0 };
         const b = { type: EXECUTION_LOG_ENTRY_TYPE.USER_TASK, data: { userTaskKey: '7', state: 'COMPLETED' }, timestamp: 0 };
 
-        expect(areEntriesRelated(a, b)).to.be.true;
+        expect(areRelated(a, b)).to.be.true;
       });
 
 
@@ -1732,7 +1731,7 @@ describe('ExecutionLog', function() {
         const a = { type: EXECUTION_LOG_ENTRY_TYPE.MESSAGE_SUBSCRIPTION, data: { messageSubscriptionKey: '3', messageSubscriptionState: 'CREATED' }, timestamp: 0 };
         const b = { type: EXECUTION_LOG_ENTRY_TYPE.MESSAGE_SUBSCRIPTION, data: { messageSubscriptionKey: '3', messageSubscriptionState: 'CORRELATED' }, timestamp: 0 };
 
-        expect(areEntriesRelated(a, b)).to.be.true;
+        expect(areRelated(a, b)).to.be.true;
       });
 
 
@@ -1740,7 +1739,7 @@ describe('ExecutionLog', function() {
         const a = { type: EXECUTION_LOG_ENTRY_TYPE.USER_TASK, data: { userTaskKey: '1', state: 'CREATED' }, timestamp: 0 };
         const b = { type: EXECUTION_LOG_ENTRY_TYPE.ELEMENT_INSTANCE, data: { state: 'ACTIVE' }, timestamp: 0 };
 
-        expect(areEntriesRelated(a, b)).to.be.false;
+        expect(areRelated(a, b)).to.be.false;
       });
 
     });
@@ -1788,13 +1787,13 @@ describe('ExecutionLog', function() {
     });
 
 
-    describe('compareEntryTimestamps', function() {
+    describe('compareByTimestamp', function() {
 
       it('should return negative when a is earlier', function() {
         const a = { timestamp: 100 };
         const b = { timestamp: 200 };
 
-        expect(compareEntryTimestamps(a, b)).to.be.below(0);
+        expect(compareByTimestamp(a, b)).to.be.below(0);
       });
 
 
@@ -1802,7 +1801,7 @@ describe('ExecutionLog', function() {
         const a = { timestamp: 300 };
         const b = { timestamp: 100 };
 
-        expect(compareEntryTimestamps(a, b)).to.be.above(0);
+        expect(compareByTimestamp(a, b)).to.be.above(0);
       });
 
 
@@ -1810,19 +1809,19 @@ describe('ExecutionLog', function() {
         const a = { timestamp: 100 };
         const b = { timestamp: 100 };
 
-        expect(compareEntryTimestamps(a, b)).to.equal(0);
+        expect(compareByTimestamp(a, b)).to.equal(0);
       });
 
     });
 
 
-    describe('compareEntryOrders', function() {
+    describe('compareByOrder', function() {
 
       it('should order entries by order', function() {
         const a = { type: EXECUTION_LOG_ENTRY_TYPE.ELEMENT_INSTANCE, data: { elementId: 'Task_1', state: 'ACTIVE' }, timestamp: 0 };
         const b = { type: EXECUTION_LOG_ENTRY_TYPE.JOB, data: { elementId: 'Task_1', state: 'CREATED', kind: 'BPMN_ELEMENT' }, timestamp: 0 };
 
-        expect(compareEntryOrders(a, b)).to.be.below(0);
+        expect(compareByOrder(a, b)).to.be.below(0);
       });
 
     });
