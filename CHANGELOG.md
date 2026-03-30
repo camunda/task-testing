@@ -6,6 +6,8 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+* `FIX`: update empty states to match design system ([#93](https://github.com/camunda/task-testing/pull/93))
+
 ## 4.0.0
 
 * `FIX`: show CTAs for child elements inside subprocesses ([#92](https://github.com/camunda/task-testing/pull/92))

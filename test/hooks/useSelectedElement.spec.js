@@ -3,9 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { bootstrapModeler, inject } from '../helpers/modeler';
 
 import {
-  useSelectedElement,
-  SINGLE_TASK_SELECTION_REQUIRED_MESSAGE,
-  TASK_SELECTION_REQUIRED_MESSAGE
+  useSelectedElement
 } from '../../lib/hooks/useSelectedElement';
 
 import diagramXML from '../fixtures/ElementConfig.bpmn';
@@ -16,11 +14,13 @@ describe('useSelectedElement', function() {
 
   it('should return null and a message if no element is selected', inject(function(injector) {
     const { result } = renderHook(() => useSelectedElement(injector));
-    const [ selectedElement, message ] = result.current;
+    const [ selectedElement, selectionInfo ] = result.current;
 
     // then
     expect(selectedElement).to.be.null;
-    expect(message).to.equal(SINGLE_TASK_SELECTION_REQUIRED_MESSAGE);
+    expect(selectionInfo).to.deep.equal({
+      message: 'Select a task or subprocess to start testing.'
+    });
   }));
 
 
@@ -39,15 +39,17 @@ describe('useSelectedElement', function() {
       selection.select(elements);
     });
 
-    const [ selectedElement, message ] = result.current;
+    const [ selectedElement, selectionInfo ] = result.current;
 
     // then
     expect(selectedElement).to.be.null;
-    expect(message).to.equal(SINGLE_TASK_SELECTION_REQUIRED_MESSAGE);
+    expect(selectionInfo).to.deep.equal({
+      message: 'Select a task or subprocess to start testing.'
+    });
   }));
 
 
-  it('should return null and a message if unsupported element is selected', inject(function(elementRegistry, injector, selection) {
+  it('should return null and a titled message if unsupported element is selected', inject(function(elementRegistry, injector, selection) {
 
     // given
     const { result } = renderHook(() => useSelectedElement(injector));
@@ -59,11 +61,14 @@ describe('useSelectedElement', function() {
       selection.select(element);
     });
 
-    const [ selectedElement, message ] = result.current;
+    const [ selectedElement, selectionInfo ] = result.current;
 
     // then
     expect(selectedElement).to.be.null;
-    expect(message).to.equal(TASK_SELECTION_REQUIRED_MESSAGE);
+    expect(selectionInfo).to.deep.equal({
+      title: 'Unsupported element',
+      message: 'Task testing is only supported for tasks and subprocesses. Select one to start testing.'
+    });
   }));
 
 
@@ -79,11 +84,11 @@ describe('useSelectedElement', function() {
       selection.select(element);
     });
 
-    const [ selectedElement, message ] = result.current;
+    const [ selectedElement, selectionInfo ] = result.current;
 
     // then
     expect(selectedElement).to.exist;
-    expect(message).to.be.null;
+    expect(selectionInfo).to.be.null;
   }));
 
 
@@ -99,10 +104,10 @@ describe('useSelectedElement', function() {
       selection.select(element);
     });
 
-    const [ selectedElement, message ] = result.current;
+    const [ selectedElement, selectionInfo ] = result.current;
 
     // then
     expect(selectedElement).to.exist;
-    expect(message).to.be.null;
+    expect(selectionInfo).to.be.null;
   }));
 });
