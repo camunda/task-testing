@@ -8,7 +8,9 @@ ___Note:__ Yet to be released changes appear here._
 
 ## 4.0.0
 
-* `FIX`: show CTAs for child elements inside subprocesses ([#92](https://github.com/camunda/task-testing/pull/92))
+* `FIX`: show waiting states for child elements inside subprocesses ([#92](https://github.com/camunda/task-testing/pull/92))
+* `FIX`: fix execution log order by using causal ordering for state entries and related entries with same timestamp ([#91](https://github.com/camunda/task-testing/pull/91))
+* `FIX`: move waiting states out of log so they are always visible when existing ([#91](https://github.com/camunda/task-testing/pull/91))
 
 ### Breaking Changes
 
