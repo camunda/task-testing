@@ -31,10 +31,6 @@ import {
 
 import TaskTesting from '../../../lib/components/TaskTesting/TaskTesting';
 
-import {
-  SINGLE_TASK_SELECTION_REQUIRED_MESSAGE
-} from '../../../lib/hooks/useSelectedElement';
-
 import { DEFAULT_CONFIG } from '../../../lib/ElementConfig';
 import { TASK_EXECUTION_FINISHED_REASON, POLL_INTERVAL_MS } from '../../../lib/TaskExecution';
 
@@ -63,7 +59,7 @@ describe('TaskTesting', function() {
     renderTaskTesting();
 
     // then
-    expect(screen.getByText(SINGLE_TASK_SELECTION_REQUIRED_MESSAGE)).to.exist;
+    expect(screen.getByText('Select a task or subprocess to start testing.')).to.exist;
   }));
 
 

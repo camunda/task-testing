@@ -320,8 +320,8 @@ function PlayIcon() {
 function EmptyState() {
   return (
     <div className="output__empty-state">
-      <span className="output__empty-state-icon"><PlayIcon /></span>
-      <span className="output__empty-state-text">Result will appear here after you run the test.</span>
+      <div className="output__empty-state-icon" aria-hidden="true"><PlayIcon /></div>
+      <p className="output__empty-state-text">Result will appear here after you run the test.</p>
     </div>
   );
 }
