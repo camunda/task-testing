@@ -8,6 +8,15 @@ ___Note:__ Yet to be released changes appear here._
 
 * `FIX`: update empty states to match design system ([#93](https://github.com/camunda/task-testing/pull/93))
 
+## 5.0.0
+
+* `FEAT`: add generic error props `hasError`, `errorBannerTitle`, `configureTooltip`, and `onConfigure` ([#95](https://github.com/camunda/task-testing/pull/95))
+
+### Breaking Changes
+
+* `data-testid` of configure button changed from `configure-connection-btn` to `configure-btn`
+* `isConnectionConfigured`, `configureConnectionBannerTitle`, `configureConnectionLabel`, and `onConfigureConnection` are removed; use `hasError`, `errorBannerTitle`, `configureTooltip`, and `onConfigure`
+
 ## 4.0.0
 
 * `FEAT`: pre-fill variables in input editor ([#87](https://github.com/camunda/task-testing/pull/87))
