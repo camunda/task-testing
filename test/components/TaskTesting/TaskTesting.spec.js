@@ -105,7 +105,6 @@ describe('TaskTesting', function() {
       };
 
       renderTaskTesting({
-        isConnectionConfigured: true,
         operateBaseUrl: 'https://camunda.com',
         api
       });
@@ -126,7 +125,6 @@ describe('TaskTesting', function() {
 
       // given
       renderTaskTesting({
-        isConnectionConfigured: true,
         operateBaseUrl: 'https://camunda.com',
         config: {
           input: {},
@@ -160,7 +158,6 @@ describe('TaskTesting', function() {
       };
 
       renderTaskTesting({
-        isConnectionConfigured: true,
         operateBaseUrl: 'https://camunda.com',
         api
       });
@@ -189,13 +186,13 @@ describe('TaskTesting', function() {
 
   describe('header state', function() {
 
-    describe('no connection configured', function() {
+    describe('hasError', function() {
 
       it('should show error header state', inject(async function(elementRegistry, selection) {
 
         // given
         renderTaskTesting({
-          isConnectionConfigured: false
+          hasError: true
         });
 
         // when
@@ -209,7 +206,7 @@ describe('TaskTesting', function() {
         const statusText = document.querySelector('.task-testing__header-status-text');
 
         expect(statusText).to.exist;
-        expect(statusText.textContent).to.equal('Connection required');
+        expect(statusText.textContent).to.equal('Error');
 
         const statusIcon = document.querySelector('.task-testing__status-icon--error');
 
@@ -227,7 +224,7 @@ describe('TaskTesting', function() {
         const deploySpy = sinon.spy(() => new Promise(() => {}));
 
         renderTaskTesting({
-          isConnectionConfigured: false,
+          hasError: true,
           api: {
             deploy: deploySpy
           }
@@ -253,13 +250,62 @@ describe('TaskTesting', function() {
     });
 
 
+    describe('error', function() {
+
+      it('should show error header state with custom banner title', inject(async function(elementRegistry, selection) {
+
+        // given
+        renderTaskTesting({
+          hasError: true,
+          errorBannerTitle: 'Connection error'
+        });
+
+        // when
+        selection.select(elementRegistry.get('ServiceTask_1'));
+
+        // then
+        await waitFor(async () => {
+          expect(document.querySelector('.task-testing__container--header-error')).to.exist;
+        });
+
+        const statusText = document.querySelector('.task-testing__header-status-text');
+
+        expect(statusText).to.exist;
+        expect(statusText.textContent).to.equal('Connection error');
+      }));
+
+
+      it('should show error header state', inject(async function(elementRegistry, selection) {
+
+        // given
+        renderTaskTesting({
+          hasError: true,
+          errorBannerTitle: 'Error'
+        });
+
+        // when
+        selection.select(elementRegistry.get('ServiceTask_1'));
+
+        // then
+        await waitFor(async () => {
+          expect(document.querySelector('.task-testing__container--header-error')).to.exist;
+        });
+
+        const statusText = document.querySelector('.task-testing__header-status-text');
+
+        expect(statusText).to.exist;
+        expect(statusText.textContent).to.equal('Error');
+      }));
+
+    });
+
+
     describe('input error', function() {
 
       it('should show error header state', inject(async function(elementRegistry, selection) {
 
         // given
         renderTaskTesting({
-          isConnectionConfigured: true,
           config: {
             input: { ServiceTask_3: '{' },
             output: {}
@@ -295,7 +341,6 @@ describe('TaskTesting', function() {
         const deploySpy = sinon.spy(() => new Promise(() => {}));
 
         renderTaskTesting({
-          isConnectionConfigured: true,
           config: {
             input: { ServiceTask_3: '{' },
             output: {}
@@ -346,7 +391,6 @@ describe('TaskTesting', function() {
       };
 
       renderTaskTesting({
-        isConnectionConfigured: true,
         onTaskExecutionStarted,
         api
       });
@@ -378,7 +422,6 @@ describe('TaskTesting', function() {
       };
 
       renderTaskTesting({
-        isConnectionConfigured: true,
         onTaskExecutionFinished,
         api
       });
@@ -421,7 +464,6 @@ describe('TaskTesting', function() {
       };
 
       renderTaskTesting({
-        isConnectionConfigured: true,
         onTaskExecutionFinished,
         api
       });
@@ -481,7 +523,6 @@ describe('TaskTesting', function() {
       };
 
       renderTaskTesting({
-        isConnectionConfigured: true,
         operateBaseUrl: 'https://camunda.com',
         onTaskExecutionFinished,
         api
@@ -536,7 +577,6 @@ describe('TaskTesting', function() {
       };
 
       renderTaskTesting({
-        isConnectionConfigured: true,
         operateBaseUrl: 'https://camunda.com',
         onTaskExecutionFinished,
         api
@@ -574,7 +614,6 @@ describe('TaskTesting', function() {
       };
 
       renderTaskTesting({
-        isConnectionConfigured: true,
         onTaskExecutionFinished,
         api
       });
@@ -614,7 +653,6 @@ describe('TaskTesting', function() {
       };
 
       renderTaskTesting({
-        isConnectionConfigured: true,
         onTaskExecutionFinished,
         api
       });
@@ -659,7 +697,6 @@ describe('TaskTesting', function() {
         const spy = sinon.spy(() => new Promise(() => {}));
 
         renderTaskTesting({
-          isConnectionConfigured: true,
           onTestTask: null,
           api: {
             deploy: spy
@@ -687,7 +724,6 @@ describe('TaskTesting', function() {
         const spy = sinon.spy(() => new Promise(() => {}));
 
         renderTaskTesting({
-          isConnectionConfigured: true,
           onTestTask: async () => true,
           api: {
             deploy: spy
@@ -726,7 +762,6 @@ describe('TaskTesting', function() {
         };
 
         renderTaskTesting({
-          isConnectionConfigured: true,
           onTestTask,
           api: {
             deploy: spy
@@ -770,7 +805,6 @@ describe('TaskTesting', function() {
         const spy = sinon.spy(() => new Promise(() => {}));
 
         renderTaskTesting({
-          isConnectionConfigured: true,
           onTestTask: async () => false,
           api: {
             deploy: spy
@@ -798,7 +832,6 @@ describe('TaskTesting', function() {
         const spy = sinon.spy(() => new Promise(() => {}));
 
         renderTaskTesting({
-          isConnectionConfigured: true,
           onTestTask: null,
           api: {
             deploy: spy
@@ -837,16 +870,15 @@ describe('TaskTesting', function() {
   });
 
 
-  describe('_Configure connection_ button', function() {
+  describe('configure button', function() {
 
-    it('should render if onConfigureConnection provided', inject(async function(elementRegistry, selection) {
+    it('should render if onConfigure provided', inject(async function(elementRegistry, selection) {
 
       // given
       const spy = sinon.spy();
 
       renderTaskTesting({
-        isConnectionConfigured: false,
-        onConfigureConnection: spy
+        onConfigure: spy
       });
 
       // when
@@ -854,11 +886,11 @@ describe('TaskTesting', function() {
 
       // then
       await waitFor(() => {
-        expect(screen.findByTestId('configure-connection-btn')).to.exist;
+        expect(screen.findByTestId('configure-btn')).to.exist;
       });
 
       // when
-      const button = await screen.findByTestId('configure-connection-btn');
+      const button = await screen.findByTestId('configure-btn');
 
       button.click();
 
@@ -869,19 +901,16 @@ describe('TaskTesting', function() {
     }));
 
 
-    it('should not render if onConfigureConnection not provided', inject(async function(elementRegistry, selection) {
+    it('should not render if onConfigure not provided', inject(async function(elementRegistry, selection) {
 
       // given
-      renderTaskTesting({
-        isConnectionConfigured: false,
-        onConfigureConnection: null
-      });
+      renderTaskTesting({});
 
       selection.select(elementRegistry.get('ServiceTask_1'));
 
       // then
       await waitFor(() => {
-        expect(screen.queryByTestId('configure-connection-btn')).not.to.exist;
+        expect(screen.queryByTestId('configure-btn')).not.to.exist;
       });
     }));
 
@@ -908,10 +937,10 @@ function renderTaskTesting(props = {}) {
   const {
     injector = modeler.get('injector'),
     api = DEFAULT_API,
-    isConnectionConfigured,
-    configureConnectionBannerTitle = 'Connection required',
-    configureConnectionLabel = 'Configure',
-    onConfigureConnection,
+    hasError,
+    errorBannerTitle,
+    configureTooltip,
+    onConfigure,
     onTestTask,
     config = DEFAULT_CONFIG,
     onConfigChanged = () => {},
@@ -924,10 +953,10 @@ function renderTaskTesting(props = {}) {
   return render(<TaskTesting
     injector={ injector }
     api={ api }
-    isConnectionConfigured={ isConnectionConfigured }
-    configureConnectionBannerTitle={ configureConnectionBannerTitle }
-    configureConnectionLabel={ configureConnectionLabel }
-    onConfigureConnection={ onConfigureConnection }
+    hasError={ hasError }
+    errorBannerTitle={ errorBannerTitle }
+    configureTooltip={ configureTooltip }
+    onConfigure={ onConfigure }
     onTestTask={ onTestTask }
     config={ config }
     onConfigChanged={ onConfigChanged }

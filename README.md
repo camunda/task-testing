@@ -29,12 +29,12 @@ function App() {
 |------|------|----------|-------------|
 | `injector` | `Object` | yes | The [didi](https://github.com/nikku/didi) injector from the bpmn-js modeler |
 | `api` | `TaskExecutionApi` | yes | API object with methods for deploying, starting instances, and polling |
-| `isConnectionConfigured` | `boolean` | yes | Whether a Camunda 8 connection is configured |
+| `hasError` | `boolean` | no | Whether an error is present |
 | `config` | `Config` | no | Input/output configuration for elements |
 | `onConfigChanged` | `(config: Config) => void` | no | Called when the configuration changes |
-| `configureConnectionBannerTitle` | `string` | no | Title for the connection banner (default: `'Connection required'`) |
-| `configureConnectionLabel` | `string` | no | Label for the configure connection button (default: `'Configure'`) |
-| `onConfigureConnection` | `Function` | no | Called when the user clicks the configure connection button |
+| `errorBannerTitle` | `string` | no | Title for the error banner (default: `'Error'`) |
+| `configureTooltip` | `string` | no | Tooltip for the configure button (default: `'Configure'`) |
+| `onConfigure` | `Function` | no | Called when the user clicks the configure button |
 | `onTestTask` | `() => boolean \| Promise<boolean>` | no | Called when the user clicks _Test task_. Return `true` to proceed, `false` to abort |
 | `operateBaseUrl` | `string` | no | Base URL for Operate links |
 | `tasklistBaseUrl` | `string` | no | Base URL for Tasklist links |

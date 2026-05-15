@@ -211,12 +211,17 @@ function App() {
           <div id="properties" style={ { width: '100%', height: '100%' } }></div>
         </ResizablePanel>
         <ResizablePanel className="task-testing" defaultWidth={ 500 } minWidth={ 300 } maxWidth={ 800 }>
+          <div style={ { position: 'fixed', bottom: '8px', left: '8px', zIndex: 1000 } }>
+            <button onClick={ () => setIsConnectionConfigured(c => !c) }>
+              Toggle error ({ isConnectionConfigured ? 'off' : 'on' })
+            </button>
+          </div>
           <TestTab
             injector={ injector }
-            isConnectionConfigured={ isConnectionConfigured }
-            configureConnectionBannerTitle="No cluster selected"
-            configureConnectionLabel="Select cluster"
-            onConfigureConnection={ onConfigureConnection }
+            hasError={ !isConnectionConfigured }
+            errorBannerTitle="Error"
+            configureTooltip="Select cluster"
+            onConfigure={ onConfigureConnection }
             onTestTask={ onTestTask }
             api={ api }
             config={ config }
