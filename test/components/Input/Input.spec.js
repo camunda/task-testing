@@ -28,6 +28,30 @@ describe('Input', function() {
     expect(container.textContent).to.match(/"baz": 1337/i);
   });
 
+
+  it('should render prefill sources in footer', function() {
+
+    // when
+    const { container } = renderWithProps({
+      prefillSources: [ 'Task A', 'Task B' ]
+    });
+
+    // then
+    expect(container.textContent).to.match(/Prefilled from Task A, Task B/);
+  });
+
+
+  it('should render fallback footer when no prefill sources', function() {
+
+    // when
+    const { container } = renderWithProps({
+      prefillSources: []
+    });
+
+    // then
+    expect(container.textContent).to.match(/Prefilled from process variables in scope\./);
+  });
+
 });
 
 function renderWithProps(props) {
@@ -41,6 +65,7 @@ function renderWithProps(props) {
     onSetInput = () => {},
     onResetInput = () => {},
     onErrorChange = () => {},
+    prefillSources,
     variablesForElement,
     output,
     onRunTask = () => {}
@@ -53,6 +78,7 @@ function renderWithProps(props) {
       onSetInput={ onSetInput }
       onResetInput={ onResetInput }
       onErrorChange={ onErrorChange }
+      prefillSources={ prefillSources }
       variablesForElement={ variablesForElement }
       output={ output }
       onRunTask={ onRunTask }

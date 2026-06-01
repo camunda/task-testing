@@ -3,6 +3,8 @@ import { bootstrapModeler, inject } from './helpers/modeler';
 import { ElementConfig } from '../lib/ElementConfig';
 import { ElementVariables } from '../lib/ElementVariables';
 
+import { getPrefillSources } from '../lib/utils/prefill';
+
 import diagramXML from './fixtures/prefill.bpmn';
 
 describe('Prefill', function() {
@@ -172,6 +174,50 @@ describe('Prefill', function() {
         expect(merged).to.be.null;
       })
     );
+
+  });
+
+
+  describe('#getPrefillSources', function() {
+
+    it('should collect distinct origin names from consumed variables', async function() {
+
+      // given
+      const elementVariables = {
+        getConsumedVariablesForElement() {
+          return Promise.resolve([
+            { name: 'a', origin: [ { id: 'Task_A', name: 'Task A' } ] },
+            { name: 'b', origin: [ { id: 'Task_A', name: 'Task A' }, { id: 'Task_B', name: 'Task B' } ] }
+          ]);
+        }
+      };
+
+      // when
+      const sources = await getPrefillSources(elementVariables, {});
+
+      // then
+      expect(sources).to.eql([ 'Task A', 'Task B' ]);
+    });
+
+
+    it('should return empty array when no origins have names', async function() {
+
+      // given
+      const elementVariables = {
+        getConsumedVariablesForElement() {
+          return Promise.resolve([
+            { name: 'a', origin: [] },
+            { name: 'b' }
+          ]);
+        }
+      };
+
+      // when
+      const sources = await getPrefillSources(elementVariables, {});
+
+      // then
+      expect(sources).to.eql([]);
+    });
 
   });
 

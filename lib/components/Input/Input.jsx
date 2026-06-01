@@ -7,12 +7,16 @@ import InputEditor from './InputEditor';
 
 import Tooltip from '../shared/Tooltip';
 
+/** @type {string[]} */
+const DEFAULT_PREFILL_SOURCES = [];
+
 export default function Input({
   allOutputs,
   input = '',
   onErrorChange,
   onResetInput,
   onSetInput,
+  prefillSources = DEFAULT_PREFILL_SOURCES,
   variablesForElement
 }) {
 
@@ -52,7 +56,11 @@ export default function Input({
           <Information />
         </div>
         <div className="input__footer--text">
-          Optionally define process variables to start the process instance with.
+          {
+            prefillSources.length > 0
+              ? `Prefilled from ${prefillSources.join(', ')}`
+              : 'Prefilled from process variables in scope.'
+          }
         </div>
       </div>
     </div>
