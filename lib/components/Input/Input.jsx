@@ -21,7 +21,7 @@ const DEFAULT_PREFILL_SOURCES = [];
 function hasPrefilledVariables(input) {
   try {
     const parsed = JSON.parse(input);
-    return parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0;
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) && Object.keys(parsed).length > 0;
   } catch (e) {
 
     // invalid JSON means the user has typed something -> treat as non-empty
