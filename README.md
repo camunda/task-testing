@@ -41,6 +41,9 @@ function App() {
 | `documentationUrl` | `string` | no | URL for the documentation link |
 | `onTaskExecutionStarted` | `(element) => void` | no | Called when task execution starts |
 | `onTaskExecutionFinished` | `(element, result) => void` | no | Called when task execution ends |
+| `connectionName` | `string` | no | Friendly name of the connected cluster, shown in the execution-is-real note and the executing banner |
+| `onAddToExampleData` | `(element, path, value) => void` | no | Called from the result action menu to persist a selected value as the element's example data. Menu item hidden when absent. |
+| `onAppendOutputMapping` | `(element, sourceFeelExpression, targetName) => void` | no | Called from the result action menu to append an output mapping for a selected value. Menu item hidden when absent. |
 
 #### `TaskExecutionApi`
 
