@@ -347,6 +347,98 @@ describe('Output', function() {
   });
 
 
+  it('should collapse Log section by default on successful output', async function() {
+
+    // given
+    const output = {
+      success: true,
+      variables: {}
+    };
+
+    // when
+    const { queryByText } = renderWithProps({
+      output,
+      executionLog: [{ type: 'some_entry', data: {} }]
+    });
+
+    // then
+    expect(queryByText(/Log/i)).to.exist;
+    // The content should not be rendered when collapsed
+    expect(queryByText(/Result does not have a log/i)).to.not.exist;
+    // The hint should be visible when collapsed
+    expect(queryByText(/View steps/i)).to.exist;
+  });
+
+
+  it('should keep Log section open by default on error output', async function() {
+
+    // given
+    const output = {
+      success: false,
+      error: {
+        message: 'Something went wrong'
+      }
+    };
+
+    // when
+    const { queryByText } = renderWithProps({
+      output,
+      executionLog: [{ type: 'some_entry', data: {} }]
+    });
+
+    // then
+    expect(queryByText(/Log/i)).to.exist;
+    // The hint should not be visible when open
+    expect(queryByText(/View steps/i)).to.not.exist;
+  });
+
+
+  it('should keep Log section open by default on incident output', async function() {
+
+    // given
+    const output = {
+      success: false,
+      incident: {
+        errorType: 'JOB_NO_RETRIES',
+        errorMessage: 'No retries left'
+      }
+    };
+
+    // when
+    const { queryByText } = renderWithProps({
+      output,
+      executionLog: [{ type: 'some_entry', data: {} }]
+    });
+
+    // then
+    expect(queryByText(/Log/i)).to.exist;
+    // The hint should not be visible when open
+    expect(queryByText(/View steps/i)).to.not.exist;
+  });
+
+
+  it('should keep Log section open during task execution', async function() {
+
+    // given
+    const output = {
+      success: true,
+      variables: {}
+    };
+
+    // when
+    const { queryByText } = renderWithProps({
+      output,
+      isTaskExecuting: true,
+      executionLog: [{ type: 'some_entry', data: {} }]
+    });
+
+    // then
+    expect(queryByText(/Log/i)).to.exist;
+    // The hint should not be visible when open
+    expect(queryByText(/View steps/i)).to.not.exist;
+  });
+
+
   describe('pickVariables', function() {
 
     it('should pick variables by scope', function() {

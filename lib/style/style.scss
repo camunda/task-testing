@@ -643,6 +643,12 @@
       user-select: none;
     }
 
+    .output__collapsible-hint {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--color-text-secondary);
+    }
+
     .output__collapsible-content {
       padding: 0 12px 8px;
     }

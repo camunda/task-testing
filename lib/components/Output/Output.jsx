@@ -136,7 +136,13 @@ export default function Output({
         <EmptyState />
       ) : (
         <div className="output__body">
-          <CollapsibleSection title="Log" defaultOpen={ true } isExecuting={ isTaskExecuting }>
+          <CollapsibleSection
+            key={ bannerVariant }
+            title="Log"
+            defaultOpen={ !isSuccess || isTaskExecuting }
+            isExecuting={ isTaskExecuting }
+            collapsedHint={ isSuccess ? 'View steps' : undefined }
+          >
             { executionLog?.length > 0 ? (
               <ExecutionLog
                 entries={ executionLog }
@@ -670,9 +676,10 @@ function capitalize(string) {
  * @param {string} [props.tooltip]
  * @param {boolean} [props.defaultOpen]
  * @param {boolean} [props.isExecuting]
+ * @param {string} [props.collapsedHint]
  * @param {React.ReactNode} props.children
  */
-function CollapsibleSection({ title, tooltip, defaultOpen = true, isExecuting = false, children }) {
+function CollapsibleSection({ title, tooltip, defaultOpen = true, isExecuting = false, collapsedHint, children }) {
   const [ isOpen, setIsOpen ] = useState(defaultOpen);
   const [ isStuck, setIsStuck ] = useState(false);
 
@@ -714,6 +721,9 @@ function CollapsibleSection({ title, tooltip, defaultOpen = true, isExecuting = 
           </Tooltip>
         ) : (
           <span className="output__collapsible-title">{ title }</span>
+        ) }
+        { !isOpen && collapsedHint && (
+          <span className="output__collapsible-hint">{ collapsedHint }</span>
         ) }
       </button>
       { isOpen && (
