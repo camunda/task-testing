@@ -73,7 +73,7 @@ export default function ResultActionMenu({
         onClick={ () => copy(path) }
       />
       {
-        onAddToExampleData && (
+        onAddToExampleData && targetName && (
           <MenuItem
             label="Save as example data"
             onClick={ () => {

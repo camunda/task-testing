@@ -305,6 +305,10 @@ function appendOutputMapping(modeler, element, source, target) {
   if (!extensionElements) {
     extensionElements = bpmnFactory.create('bpmn:ExtensionElements', { values: [] });
     extensionElements.$parent = businessObject;
+
+    modeling.updateModdleProperties(element, businessObject, {
+      extensionElements
+    });
   }
 
   let ioMapping = extensionElements.get('values').find(value => value.$type === 'zeebe:IoMapping');
@@ -320,10 +324,6 @@ function appendOutputMapping(modeler, element, source, target) {
 
   const output = bpmnFactory.create('zeebe:Output', { source, target });
   output.$parent = ioMapping;
-
-  modeling.updateModdleProperties(element, businessObject, {
-    extensionElements
-  });
 
   modeling.updateModdleProperties(element, ioMapping, {
     outputParameters: [ ...ioMapping.get('outputParameters'), output ]
