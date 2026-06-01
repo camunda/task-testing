@@ -143,10 +143,6 @@ describe('TaskTesting', function() {
       // when
       selection.select(elementRegistry.get('ServiceTask_3'));
 
-      const outputHeader = await screen.findByText('Result');
-
-      outputHeader.click();
-
       // then
       await screen.findByText('Open in Operate');
     }));
@@ -177,11 +173,9 @@ describe('TaskTesting', function() {
         expect(api.deploy).to.have.been.called;
       });
 
-      const outputHeader = await screen.findByText('Result');
-
-      outputHeader.click();
-
-      expect(screen.queryByText('Open in Operate')).to.not.exist;
+      await waitFor(() => {
+        expect(screen.queryByText('Open in Operate')).to.not.exist;
+      });
     }));
 
   });
@@ -887,6 +881,82 @@ describe('TaskTesting', function() {
 
   });
 
+
+  describe('merged Test panel', function() {
+
+    it('should not render a tab strip when there are no plugin tabs', inject(async function(elementRegistry, selection) {
+
+      // given
+      renderTaskTesting({
+        isConnectionConfigured: true
+      });
+
+      // when
+      selection.select(elementRegistry.get('ServiceTask_1'));
+
+      // then
+      await screen.findByTestId('test-task-btn');
+
+      expect(document.querySelector('.task-testing-tabs__list')).to.not.exist;
+
+      // Input and Result are both present in the merged panel
+      await screen.findByText('Input');
+    }));
+
+
+    it('should render a tab strip when plugin tabs are registered', inject(async function(elementRegistry, selection) {
+
+      // given
+      renderTaskTesting({
+        isConnectionConfigured: true,
+        children: <TaskTesting.Tab label="Custom">Custom content</TaskTesting.Tab>
+      });
+
+      // when
+      selection.select(elementRegistry.get('ServiceTask_1'));
+
+      // then
+      await screen.findByTestId('test-task-btn');
+
+      await waitFor(() => {
+        expect(document.querySelector('.task-testing-tabs__list')).to.exist;
+      });
+
+      await screen.findByText('Test');
+      await screen.findByText('Custom');
+    }));
+
+
+    it('should collapse the Input section on execute', inject(async function(elementRegistry, selection) {
+
+      // given
+      const api = {
+        deploy: sinon.spy(() => new Promise(() => {}))
+      };
+
+      renderTaskTesting({
+        isConnectionConfigured: true,
+        api
+      });
+
+      // when
+      selection.select(elementRegistry.get('ServiceTask_1'));
+
+      const button = await screen.findByTestId('test-task-btn');
+
+      // Input section is open before the run (process variables editor visible)
+      await screen.findByText('Process variables');
+
+      button.click();
+
+      // then: Input section collapses, hiding its content
+      await waitFor(() => {
+        expect(screen.queryByText('Process variables')).to.not.exist;
+      });
+    }));
+
+  });
+
 });
 
 /** @type {TaskTestingAPI} */
@@ -916,9 +986,11 @@ function renderTaskTesting(props = {}) {
     config = DEFAULT_CONFIG,
     onConfigChanged = () => {},
     operateBaseUrl,
+    connectionName,
     documentationUrl,
     onTaskExecutionStarted = () => {},
-    onTaskExecutionFinished = () => {}
+    onTaskExecutionFinished = () => {},
+    children
   } = props;
 
   return render(<TaskTesting
@@ -932,10 +1004,13 @@ function renderTaskTesting(props = {}) {
     config={ config }
     onConfigChanged={ onConfigChanged }
     operateBaseUrl={ operateBaseUrl }
+    connectionName={ connectionName }
     documentationUrl={ documentationUrl }
     onTaskExecutionStarted={ onTaskExecutionStarted }
     onTaskExecutionFinished={ onTaskExecutionFinished }
-  />);
+  >
+    { children }
+  </TaskTesting>);
 }
 
 function getClock() {

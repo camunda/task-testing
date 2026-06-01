@@ -13,7 +13,7 @@
  * } from '../../types';
  */
 
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import {
   InlineLoading,
@@ -37,6 +37,7 @@ import OutputEditor from './OutputEditor';
 import { ExecutionLog } from './ExecutionLog';
 import { PluginContext } from '../shared/plugins';
 import Tooltip from '../shared/Tooltip';
+import CollapsibleSection from '../shared/CollapsibleSection';
 import { SCOPES, pickVariables } from '../../utils/variables';
 import { EXECUTION_LOG_ENTRY_TYPE } from '../../ExecutionLog';
 import { getTasklistUrl } from '../../utils/getTasklistUrl';
@@ -53,6 +54,7 @@ import { getTasklistUrl } from '../../utils/getTasklistUrl';
  * @param {ExecutionLogEntry[]} props.executionLog
  * @param {string} [props.tasklistBaseUrl]
  * @param {Object} [props.currentVariables]
+ * @param {string} [props.connectionName]
  * @param {(element: Element, path: string, value: *) => void} [props.onAddToExampleData]
  * @param {(element: Element, sourceFeelExpression: string, targetName: string) => void} [props.onAppendOutputMapping]
  */
@@ -67,6 +69,7 @@ export default function Output({
   executionLog,
   tasklistBaseUrl,
   currentVariables,
+  connectionName,
   onAddToExampleData,
   onAppendOutputMapping
 }) {
@@ -121,6 +124,7 @@ export default function Output({
           currentOperateUrl={ currentOperateUrl }
           entries={ executionLog }
           tasklistBaseUrl={ tasklistBaseUrl }
+          connectionName={ connectionName }
         />
       }
       { !isTaskExecuting && output && (
@@ -439,8 +443,12 @@ export function getWaitingContext(entries, tasklistBaseUrl, currentOperateUrl) {
   return null;
 }
 
-function ExecutingBanner({ currentOperateUrl, entries, tasklistBaseUrl }) {
+function ExecutingBanner({ currentOperateUrl, entries, tasklistBaseUrl, connectionName }) {
   const waitingContext = getWaitingContext(entries, tasklistBaseUrl, currentOperateUrl);
+
+  const runningText = connectionName
+    ? `Running on ${connectionName} — executing for real.`
+    : 'Running test...';
 
   return (
     <div className="output__banner output__banner--executing">
@@ -448,7 +456,7 @@ function ExecutingBanner({ currentOperateUrl, entries, tasklistBaseUrl }) {
         <div className="output__banner-main">
           <InlineLoading className="output__banner-loader" />
           <span className="output__banner-text">
-            { waitingContext ? waitingContext.title : 'Running test...' }
+            { waitingContext ? waitingContext.title : runningText }
           </span>
         </div>
         { currentOperateUrl && (
@@ -678,71 +686,6 @@ function getIncidentDetails(incident) {
  */
 function capitalize(string) {
   return string.replace(/([A-Z])/g, ' $1').replace(/^./, (match) => match.toUpperCase());
-}
-
-/**
- * @param {Object} props
- * @param {string} props.title
- * @param {string} [props.tooltip]
- * @param {boolean} [props.defaultOpen]
- * @param {boolean} [props.isExecuting]
- * @param {string} [props.collapsedHint]
- * @param {React.ReactNode} props.children
- */
-function CollapsibleSection({ title, tooltip, defaultOpen = true, isExecuting = false, collapsedHint, children }) {
-  const [ isOpen, setIsOpen ] = useState(defaultOpen);
-  const [ isStuck, setIsStuck ] = useState(false);
-
-  /** @type {React.MutableRefObject<HTMLDivElement|null>} */
-  const sentinelRef = useRef(null);
-
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-
-    const scrollParent = el.closest('.task-testing-tabs__panel') || el.closest('.task-testing__container--body-executing');
-    if (!scrollParent) return;
-
-    const observer = new IntersectionObserver(
-      ([ entry ]) => {
-        setIsStuck(!entry.isIntersecting);
-      },
-      { root: scrollParent, threshold: 0 }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div className={ `output__collapsible${isOpen ? ' output__collapsible--open' : ''}` }>
-      <div ref={ sentinelRef } className="output__collapsible-sentinel" />
-      <button
-        className={ `output__collapsible-header${isStuck ? ' stuck' : ''}` }
-        onClick={ () => setIsOpen(!isOpen) }
-      >
-        {
-          isOpen ? <ChevronDown size={ 16 } className="output__chevron output__chevron--open" />
-            : <ChevronRight size={ 16 } className="output__chevron" />
-        }
-        { tooltip ? (
-          <Tooltip className="has-tooltip" label={ tooltip } align="bottom-start">
-            <span className="output__collapsible-title">{ title }</span>
-          </Tooltip>
-        ) : (
-          <span className="output__collapsible-title">{ title }</span>
-        ) }
-        { !isOpen && collapsedHint && (
-          <span className="output__collapsible-hint">{ collapsedHint }</span>
-        ) }
-      </button>
-      { isOpen && (
-        <div className="output__collapsible-content">
-          { children }
-        </div>
-      ) }
-    </div>
-  );
 }
 
 function VariablesSection({ title, tooltip, scope, output, currentVariables, isTaskExecuting, element, onAddToExampleData, onAppendOutputMapping }) {

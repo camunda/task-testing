@@ -300,6 +300,19 @@
         margin-left: 12px;
       }
     }
+
+    .input__run-note {
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--color-text-secondary);
+    }
+  }
+
+  .task-testing__test-panel {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-height: 0;
   }
 
   .output {

@@ -10,6 +10,25 @@ import Tooltip from '../shared/Tooltip';
 /** @type {string[]} */
 const DEFAULT_PREFILL_SOURCES = [];
 
+/**
+ * Determine whether the input contains any variables at all. Used to
+ * distinguish "prefilled from process variables in scope" from "nothing was
+ * prefilled" in the footer copy.
+ *
+ * @param {string} input - the input JSON string
+ * @returns {boolean}
+ */
+function hasPrefilledVariables(input) {
+  try {
+    const parsed = JSON.parse(input);
+    return parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0;
+  } catch (e) {
+
+    // invalid JSON means the user has typed something -> treat as non-empty
+    return true;
+  }
+}
+
 export default function Input({
   allOutputs,
   input = '',
@@ -17,7 +36,8 @@ export default function Input({
   onResetInput,
   onSetInput,
   prefillSources = DEFAULT_PREFILL_SOURCES,
-  variablesForElement
+  variablesForElement,
+  connectionName
 }) {
 
   const containerRef = /** @type {import('react').RefObject<HTMLDivElement | null>} */ (useRef(null));
@@ -59,9 +79,15 @@ export default function Input({
           {
             prefillSources.length > 0
               ? `Prefilled from ${prefillSources.join(', ')}`
-              : 'Prefilled from process variables in scope.'
+              : hasPrefilledVariables(input)
+                ? 'Prefilled from process variables in scope.'
+                : 'No variables to prefill — add process variables to start with.'
           }
         </div>
+      </div>
+      <div className="input__run-note">
+        This runs your process for real — it deploys to the connected cluster, starts an instance, and executes connectors and side effects.
+        { connectionName && ` Testing against ${connectionName}.` }
       </div>
     </div>
   );

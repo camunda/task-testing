@@ -242,6 +242,8 @@ function App() {
   // eslint-disable-next-line no-undef
   const tasklistBaseURL = process.env.CAMUNDA_TASKLIST_BASE_URL;
 
+  const connectionName = getConnectionName(operateBaseURL);
+
   return (
     <>
       <div className="modeler" ref={ modelerRef }>
@@ -262,6 +264,7 @@ function App() {
             onConfigChanged={ onConfigChanged }
             operateBaseUrl={ operateBaseURL }
             tasklistBaseUrl={ tasklistBaseURL }
+            connectionName={ connectionName }
             documentationUrl="https://docs.camunda.io/"
             onTaskExecutionStarted={ onTaskExecutionStarted }
             onTaskExecutionFinished={ onTaskExecutionFinished }
@@ -341,6 +344,25 @@ function valueToFeel(value) {
   // JSON is a subset of FEEL's context/list syntax, so the serialized JSON is
   // a valid FEEL literal for the prototype's purposes.
   return `= ${JSON.stringify(value)}`;
+}
+
+/**
+ * Derive a friendly connection name from the Operate base URL host, falling
+ * back to a static label.
+ *
+ * @param {string} [operateBaseUrl]
+ * @returns {string}
+ */
+function getConnectionName(operateBaseUrl) {
+  if (!operateBaseUrl) {
+    return 'dev cluster';
+  }
+
+  try {
+    return new URL(operateBaseUrl).host;
+  } catch (e) {
+    return 'dev cluster';
+  }
 }
 
 /**

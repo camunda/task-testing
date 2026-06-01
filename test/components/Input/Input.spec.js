@@ -41,15 +41,51 @@ describe('Input', function() {
   });
 
 
-  it('should render fallback footer when no prefill sources', function() {
+  it('should render "in scope" fallback when variables prefilled but no named source', function() {
 
     // when
     const { container } = renderWithProps({
-      prefillSources: []
+      prefillSources: [],
+      input: '{\n  "foo": "bar"\n}'
     });
 
     // then
     expect(container.textContent).to.match(/Prefilled from process variables in scope\./);
+  });
+
+
+  it('should render "nothing prefilled" footer when no variables at all', function() {
+
+    // when
+    const { container } = renderWithProps({
+      prefillSources: [],
+      input: '{\n  \n}'
+    });
+
+    // then
+    expect(container.textContent).to.match(/No variables to prefill/);
+  });
+
+
+  it('should render the execution-is-real run note', function() {
+
+    // when
+    const { container } = renderWithProps({});
+
+    // then
+    expect(container.textContent).to.match(/This runs your process for real/);
+  });
+
+
+  it('should append connection name to the run note when provided', function() {
+
+    // when
+    const { container } = renderWithProps({
+      connectionName: 'dev cluster'
+    });
+
+    // then
+    expect(container.textContent).to.match(/Testing against dev cluster\./);
   });
 
 });
@@ -68,6 +104,7 @@ function renderWithProps(props) {
     prefillSources,
     variablesForElement,
     output,
+    connectionName,
     onRunTask = () => {}
   } = props;
 
@@ -81,6 +118,7 @@ function renderWithProps(props) {
       prefillSources={ prefillSources }
       variablesForElement={ variablesForElement }
       output={ output }
+      connectionName={ connectionName }
       onRunTask={ onRunTask }
     />
   );
