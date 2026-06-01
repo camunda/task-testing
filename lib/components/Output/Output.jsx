@@ -55,6 +55,10 @@ import { getTasklistUrl } from '../../utils/getTasklistUrl';
  * @param {string} [props.tasklistBaseUrl]
  * @param {Object} [props.currentVariables]
  * @param {string} [props.connectionName]
+ * @param {React.ReactNode} [props.inputContent] - Input section rendered as the first collapsible section
+ * @param {boolean} [props.isInputOpen] - controlled open state for the Input section
+ * @param {(open: boolean) => void} [props.onInputToggle] - called when the Input section is toggled
+ * @param {string[]} [props.prefillSources] - element names that produced the prefilled variables
  * @param {(element: Element, path: string, value: *) => void} [props.onAddToExampleData]
  * @param {(element: Element, sourceFeelExpression: string, targetName: string) => void} [props.onAppendOutputMapping]
  */
@@ -70,6 +74,10 @@ export default function Output({
   tasklistBaseUrl,
   currentVariables,
   connectionName,
+  inputContent,
+  isInputOpen,
+  onInputToggle,
+  prefillSources = [],
   onAddToExampleData,
   onAppendOutputMapping
 }) {
@@ -139,6 +147,17 @@ export default function Output({
           output={ output }
           isTaskExecuting={ isTaskExecuting }
         />
+      ) }
+      { inputContent && (
+        <CollapsibleSection
+          title="Input"
+          tooltip={ buildInputTooltip(prefillSources, connectionName) }
+          open={ isInputOpen }
+          onToggle={ onInputToggle }
+          isExecuting={ isTaskExecuting }
+        >
+          { inputContent }
+        </CollapsibleSection>
       ) }
       { !isTaskExecuting && !output ? (
         <EmptyState />
@@ -724,5 +743,33 @@ function VariablesSection({ title, tooltip, scope, output, currentVariables, isT
         />
       ) }
     </CollapsibleSection>
+  );
+}
+
+/**
+ * Build the tooltip content for the Input collapsible section header.
+ * Follows the same pattern as the Variables section tooltips.
+ *
+ * @param {string[]} prefillSources
+ * @param {string} [connectionName]
+ * @returns {React.ReactNode}
+ */
+function buildInputTooltip(prefillSources, connectionName) {
+  const prefillLine = prefillSources.length > 0
+    ? `Variables prefilled from ${prefillSources.join(', ')}.`
+    : 'Variables the process instance will be started with.';
+
+  const runLine = connectionName
+    ? `Runs for real on ${connectionName} — deploys, starts an instance, and executes connectors.`
+    : 'Runs for real — deploys to the connected cluster, starts an instance, and executes connectors.';
+
+  return (
+    <span>
+      { prefillLine } { runLine } <a
+        href="https://docs.camunda.io/docs/components/concepts/variables/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >Learn more.</a>
+    </span>
   );
 }

@@ -944,14 +944,16 @@ describe('TaskTesting', function() {
 
       const button = await screen.findByTestId('test-task-btn');
 
-      // Input section is open before the run (process variables editor visible)
-      await screen.findByText('Process variables');
+      // Input section is open before the run (editor visible)
+      await waitFor(() => {
+        expect(document.querySelector('.code__editor')).to.exist;
+      });
 
       button.click();
 
       // then: Input section collapses, hiding its content
       await waitFor(() => {
-        expect(screen.queryByText('Process variables')).to.not.exist;
+        expect(document.querySelector('.code__editor')).to.not.exist;
       });
     }));
 

@@ -2,7 +2,7 @@ import React from 'react';
 
 import { render } from '@testing-library/react';
 
-import { bootstrapModeler, getModeler } from '../../helpers/modeler';
+import { bootstrapModeler } from '../../helpers/modeler';
 
 import Input from '../../../lib/components/Input/Input';
 
@@ -29,97 +29,24 @@ describe('Input', function() {
   });
 
 
-  it('should render prefill sources in footer', function() {
-
-    // when
-    const { container } = renderWithProps({
-      prefillSources: [ 'Task A', 'Task B' ]
-    });
-
-    // then
-    expect(container.textContent).to.match(/Prefilled from Task A, Task B/);
-  });
-
-
-  it('should render "in scope" fallback when variables prefilled but no named source', function() {
-
-    // when
-    const { container } = renderWithProps({
-      prefillSources: [],
-      input: '{\n  "foo": "bar"\n}'
-    });
-
-    // then
-    expect(container.textContent).to.match(/Prefilled from process variables in scope\./);
-  });
-
-
-  it('should render "nothing prefilled" footer when no variables at all', function() {
-
-    // when
-    const { container } = renderWithProps({
-      prefillSources: [],
-      input: '{\n  \n}'
-    });
-
-    // then
-    expect(container.textContent).to.match(/No variables to prefill/);
-  });
-
-
-  it('should render the execution-is-real run note', function() {
-
-    // when
-    const { container } = renderWithProps({});
-
-    // then
-    expect(container.textContent).to.match(/This runs your process for real/);
-  });
-
-
-  it('should append connection name to the run note when provided', function() {
-
-    // when
-    const { container } = renderWithProps({
-      connectionName: 'dev cluster'
-    });
-
-    // then
-    expect(container.textContent).to.match(/Testing against dev cluster\./);
-  });
-
 });
 
 function renderWithProps(props) {
-  const modeler = getModeler();
-
-  const elementRegistry = modeler.get('elementRegistry');
-
   const {
-    element = elementRegistry.get('ServiceTask_1'),
     input = '{}',
     onSetInput = () => {},
     onResetInput = () => {},
     onErrorChange = () => {},
-    prefillSources,
-    variablesForElement,
-    output,
-    connectionName,
-    onRunTask = () => {}
+    variablesForElement
   } = props;
 
   return render(
     <Input
-      element={ element }
       input={ input }
       onSetInput={ onSetInput }
       onResetInput={ onResetInput }
       onErrorChange={ onErrorChange }
-      prefillSources={ prefillSources }
       variablesForElement={ variablesForElement }
-      output={ output }
-      connectionName={ connectionName }
-      onRunTask={ onRunTask }
     />
   );
 }
