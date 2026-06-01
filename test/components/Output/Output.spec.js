@@ -358,13 +358,15 @@ describe('Output', function() {
     // when
     const { queryByText } = renderWithProps({
       output,
-      executionLog: [{ type: 'some_entry', data: {} }]
+      executionLog: [ { type: 'some_entry', data: {} } ]
     });
 
     // then
     expect(queryByText(/Log/i)).to.exist;
+
     // The content should not be rendered when collapsed
     expect(queryByText(/Result does not have a log/i)).to.not.exist;
+
     // The hint should be visible when collapsed
     expect(queryByText(/View steps/i)).to.exist;
   });
@@ -383,11 +385,12 @@ describe('Output', function() {
     // when
     const { queryByText } = renderWithProps({
       output,
-      executionLog: [{ type: 'some_entry', data: {} }]
+      executionLog: [ { type: 'some_entry', data: {} } ]
     });
 
     // then
     expect(queryByText(/Log/i)).to.exist;
+
     // The hint should not be visible when open
     expect(queryByText(/View steps/i)).to.not.exist;
   });
@@ -407,11 +410,12 @@ describe('Output', function() {
     // when
     const { queryByText } = renderWithProps({
       output,
-      executionLog: [{ type: 'some_entry', data: {} }]
+      executionLog: [ { type: 'some_entry', data: {} } ]
     });
 
     // then
     expect(queryByText(/Log/i)).to.exist;
+
     // The hint should not be visible when open
     expect(queryByText(/View steps/i)).to.not.exist;
   });
@@ -429,11 +433,12 @@ describe('Output', function() {
     const { queryByText } = renderWithProps({
       output,
       isTaskExecuting: true,
-      executionLog: [{ type: 'some_entry', data: {} }]
+      executionLog: [ { type: 'some_entry', data: {} } ]
     });
 
     // then
     expect(queryByText(/Log/i)).to.exist;
+
     // The hint should not be visible when open
     expect(queryByText(/View steps/i)).to.not.exist;
   });
