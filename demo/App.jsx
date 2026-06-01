@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 
+import { ToastNotification } from '@carbon/react';
+
 import { debounce, merge } from 'min-dash';
 
 import BpmnModeler from 'camunda-bpmn-js/lib/camunda-cloud/Modeler';
@@ -195,6 +197,43 @@ function App() {
     console.log('Task execution finished:', element.id, result.success ? 'success' : result.reason, result);
   }, []);
 
+  const [ toast, setToast ] = useState(null);
+
+  /**
+   * Persist a result value as the element's example data so it round-trips
+   * into the next prefill / autocomplete.
+   *
+   * The `@bpmn-io/variable-resolver` derives downstream variables from
+   * `zeebe:Output` mappings, so we write a `zeebe:Output` whose `source` is a
+   * FEEL literal of the value. The resolver then exposes `target` (and its
+   * inferred shape) as a produced variable for this and downstream elements.
+   */
+  const onAddToExampleData = useCallback((element, path, value) => {
+    const targetName = getLastSegment(path);
+
+    if (!targetName) {
+      return;
+    }
+
+    appendOutputMapping(modeler, element, valueToFeel(value), targetName);
+
+    setToast({
+      kind: 'success',
+      title: 'Saved as example data',
+      subtitle: 'Now powering autocomplete and the variables panel for this and downstream elements.'
+    });
+  }, [ modeler ]);
+
+  const onAppendOutputMapping = useCallback((element, sourceFeelExpression, targetName) => {
+    appendOutputMapping(modeler, element, sourceFeelExpression, targetName);
+
+    setToast({
+      kind: 'success',
+      title: 'Output mapping added',
+      subtitle: `Mapped ${sourceFeelExpression} to ${targetName}.`
+    });
+  }, [ modeler ]);
+
   const { current: onConfigChanged } = useRef(debounce(config => setConfig(config), 300));
 
   // eslint-disable-next-line no-undef
@@ -226,11 +265,102 @@ function App() {
             documentationUrl="https://docs.camunda.io/"
             onTaskExecutionStarted={ onTaskExecutionStarted }
             onTaskExecutionFinished={ onTaskExecutionFinished }
+            onAddToExampleData={ onAddToExampleData }
+            onAppendOutputMapping={ onAppendOutputMapping }
           />
         </ResizablePanel>
       </div>
+      { toast && (
+        <div className="demo-toast">
+          <ToastNotification
+            kind={ toast.kind }
+            title={ toast.title }
+            subtitle={ toast.subtitle }
+            onClose={ () => setToast(null) }
+            timeout={ 6000 }
+          />
+        </div>
+      ) }
     </>
   );
+}
+
+/**
+ * Append a `zeebe:Output` mapping to an element, creating the `zeebe:IoMapping`
+ * extension element if missing.
+ *
+ * @param {Object} modeler
+ * @param {Object} element
+ * @param {string} source - FEEL expression
+ * @param {string} target - variable name
+ */
+function appendOutputMapping(modeler, element, source, target) {
+  const modeling = modeler.get('modeling');
+  const bpmnFactory = modeler.get('bpmnFactory');
+
+  const businessObject = element.businessObject;
+
+  let extensionElements = businessObject.get('extensionElements');
+
+  if (!extensionElements) {
+    extensionElements = bpmnFactory.create('bpmn:ExtensionElements', { values: [] });
+    extensionElements.$parent = businessObject;
+  }
+
+  let ioMapping = extensionElements.get('values').find(value => value.$type === 'zeebe:IoMapping');
+
+  if (!ioMapping) {
+    ioMapping = bpmnFactory.create('zeebe:IoMapping', { inputParameters: [], outputParameters: [] });
+    ioMapping.$parent = extensionElements;
+
+    modeling.updateModdleProperties(element, extensionElements, {
+      values: [ ...extensionElements.get('values'), ioMapping ]
+    });
+  }
+
+  const output = bpmnFactory.create('zeebe:Output', { source, target });
+  output.$parent = ioMapping;
+
+  modeling.updateModdleProperties(element, businessObject, {
+    extensionElements
+  });
+
+  modeling.updateModdleProperties(element, ioMapping, {
+    outputParameters: [ ...ioMapping.get('outputParameters'), output ]
+  });
+}
+
+/**
+ * Serialize a JSON value as a FEEL literal expression.
+ *
+ * @param {*} value
+ * @returns {string} FEEL expression, e.g. `= "foo"` or `= {a: 1}`
+ */
+function valueToFeel(value) {
+
+  // JSON is a subset of FEEL's context/list syntax, so the serialized JSON is
+  // a valid FEEL literal for the prototype's purposes.
+  return `= ${JSON.stringify(value)}`;
+}
+
+/**
+ * @param {string} path
+ * @returns {string}
+ */
+function getLastSegment(path) {
+  if (!path) {
+    return '';
+  }
+
+  const tokens = path.match(/[^.[\]]+|\[\d+\]/g) || [];
+
+  for (let i = tokens.length - 1; i >= 0; i--) {
+    if (!tokens[i].startsWith('[')) {
+      return tokens[i];
+    }
+  }
+
+  return '';
 }
 
 function TestTab(props) {

@@ -53,6 +53,8 @@ import { getTasklistUrl } from '../../utils/getTasklistUrl';
  * @param {ExecutionLogEntry[]} props.executionLog
  * @param {string} [props.tasklistBaseUrl]
  * @param {Object} [props.currentVariables]
+ * @param {(element: Element, path: string, value: *) => void} [props.onAddToExampleData]
+ * @param {(element: Element, sourceFeelExpression: string, targetName: string) => void} [props.onAppendOutputMapping]
  */
 export default function Output({
   element,
@@ -64,7 +66,9 @@ export default function Output({
   taskExecutionState,
   executionLog,
   tasklistBaseUrl,
-  currentVariables
+  currentVariables,
+  onAddToExampleData,
+  onAppendOutputMapping
 }) {
 
   const isError = output?.error || output?.incident;
@@ -163,6 +167,9 @@ export default function Output({
             output={ output }
             currentVariables={ currentVariables }
             isTaskExecuting={ isTaskExecuting }
+            element={ element }
+            onAddToExampleData={ onAddToExampleData }
+            onAppendOutputMapping={ onAppendOutputMapping }
           />
           <VariablesSection
             title="Local Variables"
@@ -175,6 +182,9 @@ export default function Output({
             output={ output }
             currentVariables={ currentVariables }
             isTaskExecuting={ isTaskExecuting }
+            element={ element }
+            onAddToExampleData={ onAddToExampleData }
+            onAppendOutputMapping={ onAppendOutputMapping }
           />
         </div>
       ) }
@@ -735,7 +745,7 @@ function CollapsibleSection({ title, tooltip, defaultOpen = true, isExecuting = 
   );
 }
 
-function VariablesSection({ title, tooltip, scope, output, currentVariables, isTaskExecuting }) {
+function VariablesSection({ title, tooltip, scope, output, currentVariables, isTaskExecuting, element, onAddToExampleData, onAppendOutputMapping }) {
   const isLoading = isTaskExecuting && !currentVariables;
 
   const variables = useMemo(() => {
@@ -763,7 +773,12 @@ function VariablesSection({ title, tooltip, scope, output, currentVariables, isT
           <SkeletonPlaceholder />
         </div>
       ) : (
-        <OutputEditor value={ isEmpty ? '{}' : jsonValue } />
+        <OutputEditor
+          value={ isEmpty ? '{}' : jsonValue }
+          element={ element }
+          onAddToExampleData={ onAddToExampleData }
+          onAppendOutputMapping={ onAppendOutputMapping }
+        />
       ) }
     </CollapsibleSection>
   );
