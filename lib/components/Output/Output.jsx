@@ -59,8 +59,8 @@ import { getTasklistUrl } from '../../utils/getTasklistUrl';
  * @param {boolean} [props.isInputOpen] - controlled open state for the Input section
  * @param {(open: boolean) => void} [props.onInputToggle] - called when the Input section is toggled
  * @param {string[]} [props.prefillSources] - element names that produced the prefilled variables
- * @param {(element: Element, path: string, value: *) => void} [props.onAddToExampleData]
  * @param {(element: Element, sourceFeelExpression: string, targetName: string) => void} [props.onAppendOutputMapping]
+ * @param {(element: Element, targetName: string) => void} [props.onNavigateToOutputMapping]
  */
 export default function Output({
   element,
@@ -78,8 +78,8 @@ export default function Output({
   isInputOpen,
   onInputToggle,
   prefillSources = [],
-  onAddToExampleData,
-  onAppendOutputMapping
+  onAppendOutputMapping,
+  onNavigateToOutputMapping
 }) {
 
   const isError = output?.error || output?.incident;
@@ -191,8 +191,8 @@ export default function Output({
             currentVariables={ currentVariables }
             isTaskExecuting={ isTaskExecuting }
             element={ element }
-            onAddToExampleData={ onAddToExampleData }
             onAppendOutputMapping={ onAppendOutputMapping }
+            onNavigateToOutputMapping={ onNavigateToOutputMapping }
           />
           <VariablesSection
             title="Local Variables"
@@ -206,8 +206,8 @@ export default function Output({
             currentVariables={ currentVariables }
             isTaskExecuting={ isTaskExecuting }
             element={ element }
-            onAddToExampleData={ onAddToExampleData }
             onAppendOutputMapping={ onAppendOutputMapping }
+            onNavigateToOutputMapping={ onNavigateToOutputMapping }
           />
         </div>
       ) }
@@ -707,7 +707,7 @@ function capitalize(string) {
   return string.replace(/([A-Z])/g, ' $1').replace(/^./, (match) => match.toUpperCase());
 }
 
-function VariablesSection({ title, tooltip, scope, output, currentVariables, isTaskExecuting, element, onAddToExampleData, onAppendOutputMapping }) {
+function VariablesSection({ title, tooltip, scope, output, currentVariables, isTaskExecuting, element, onAppendOutputMapping, onNavigateToOutputMapping }) {
   const isLoading = isTaskExecuting && !currentVariables;
 
   const variables = useMemo(() => {
@@ -738,8 +738,9 @@ function VariablesSection({ title, tooltip, scope, output, currentVariables, isT
         <OutputEditor
           value={ isEmpty ? '{}' : jsonValue }
           element={ element }
-          onAddToExampleData={ onAddToExampleData }
+          variables={ output?.variables || null }
           onAppendOutputMapping={ onAppendOutputMapping }
+          onNavigateToOutputMapping={ onNavigateToOutputMapping }
         />
       ) }
     </CollapsibleSection>

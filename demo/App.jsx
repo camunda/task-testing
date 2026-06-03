@@ -199,31 +199,6 @@ function App() {
 
   const [ toast, setToast ] = useState(null);
 
-  /**
-   * Persist a result value as the element's example data so it round-trips
-   * into the next prefill / autocomplete.
-   *
-   * The `@bpmn-io/variable-resolver` derives downstream variables from
-   * `zeebe:Output` mappings, so we write a `zeebe:Output` whose `source` is a
-   * FEEL literal of the value. The resolver then exposes `target` (and its
-   * inferred shape) as a produced variable for this and downstream elements.
-   */
-  const onAddToExampleData = useCallback((element, path, value) => {
-    const targetName = getLastSegment(path);
-
-    if (!targetName) {
-      return;
-    }
-
-    appendOutputMapping(modeler, element, valueToFeel(value), targetName);
-
-    setToast({
-      kind: 'success',
-      title: 'Saved as example data',
-      subtitle: 'Now powering autocomplete and the variables panel for this and downstream elements.'
-    });
-  }, [ modeler ]);
-
   const onAppendOutputMapping = useCallback((element, sourceFeelExpression, targetName) => {
     appendOutputMapping(modeler, element, sourceFeelExpression, targetName);
 
@@ -233,6 +208,10 @@ function App() {
       subtitle: `Mapped ${sourceFeelExpression} to ${targetName}.`
     });
   }, [ modeler ]);
+
+  const onNavigateToOutputMapping = useCallback((element, targetName) => {
+    console.log('Navigate to output mapping:', element.id, targetName);
+  }, []);
 
   const { current: onConfigChanged } = useRef(debounce(config => setConfig(config), 300));
 
@@ -268,8 +247,8 @@ function App() {
             documentationUrl="https://docs.camunda.io/"
             onTaskExecutionStarted={ onTaskExecutionStarted }
             onTaskExecutionFinished={ onTaskExecutionFinished }
-            onAddToExampleData={ onAddToExampleData }
             onAppendOutputMapping={ onAppendOutputMapping }
+            onNavigateToOutputMapping={ onNavigateToOutputMapping }
           />
         </ResizablePanel>
       </div>
@@ -334,19 +313,6 @@ function appendOutputMapping(modeler, element, source, target) {
 }
 
 /**
- * Serialize a JSON value as a FEEL literal expression.
- *
- * @param {*} value
- * @returns {string} FEEL expression, e.g. `= "foo"` or `= {a: 1}`
- */
-function valueToFeel(value) {
-
-  // JSON is a subset of FEEL's context/list syntax, so the serialized JSON is
-  // a valid FEEL literal for the prototype's purposes.
-  return `= ${JSON.stringify(value)}`;
-}
-
-/**
  * Derive a friendly connection name from the Operate base URL host, falling
  * back to a static label.
  *
@@ -363,26 +329,6 @@ function getConnectionName(operateBaseUrl) {
   } catch (e) {
     return 'dev cluster';
   }
-}
-
-/**
- * @param {string} path
- * @returns {string}
- */
-function getLastSegment(path) {
-  if (!path) {
-    return '';
-  }
-
-  const tokens = path.match(/[^.[\]]+|\[\d+\]/g) || [];
-
-  for (let i = tokens.length - 1; i >= 0; i--) {
-    if (!tokens[i].startsWith('[')) {
-      return tokens[i];
-    }
-  }
-
-  return '';
 }
 
 function TestTab(props) {

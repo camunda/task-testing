@@ -672,6 +672,13 @@
       padding: 4px 0;
     }
 
+    .output__hover-highlight {
+      background-color: rgba(15, 98, 254, 0.10); /* fallback */
+      background-color: color-mix(in srgb, var(--color-interactive) 10%, transparent);
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
     .output__error {
       display: flex;
       flex-direction: column;

@@ -3,7 +3,9 @@ import { json } from '@codemirror/lang-json';
 
 import {
   resolveJsonNode,
-  toFeelPath
+  toFeelPath,
+  toFeelValue,
+  getLastSegment
 } from '../../lib/utils/jsonPath';
 
 /**
@@ -32,6 +34,21 @@ function resolveAt(doc, needle) {
   const to = from + needle.length;
 
   return resolveJsonNode(state, { from, to });
+}
+
+/**
+ * Resolve the node at the cursor position of the first occurrence of `needle`.
+ * Simulates a hover (point query) rather than a text selection.
+ *
+ * @param {string} doc
+ * @param {string} needle
+ * @returns {ReturnType<typeof resolveJsonNode>}
+ */
+function resolveAtPoint(doc, needle) {
+  const state = createState(doc);
+  const pos = doc.indexOf(needle);
+
+  return resolveJsonNode(state, { from: pos, to: pos });
 }
 
 describe('utils/jsonPath', function() {
@@ -132,6 +149,140 @@ describe('utils/jsonPath', function() {
 
       // then
       expect(resolved).to.be.null;
+    });
+
+
+    describe('nodeFrom / nodeTo (hover highlight range)', function() {
+
+      it('should return the full Property range when cursor is on a key', function() {
+
+        // when — cursor on the "score" key
+        const resolved = resolveAtPoint(DOC, '"score"');
+
+        // then — range covers '"score": 42' (the whole Property)
+        expect(resolved).to.exist;
+        expect(resolved.nodeFrom).to.equal(DOC.indexOf('"score"'));
+        expect(resolved.nodeTo).to.be.greaterThan(DOC.indexOf('42') + 1);
+      });
+
+
+      it('should return the full Property range when cursor is on a scalar value', function() {
+
+        // when — point-resolve the `false` value (inside "racist": false)
+        const resolved = resolveAtPoint(DOC, 'false');
+
+        // then — range covers '"racist": false' (the whole Property, not just `false`)
+        const propStart = DOC.lastIndexOf('"racist"', DOC.indexOf('false'));
+        expect(resolved).to.exist;
+        expect(resolved.nodeFrom).to.equal(propStart);
+        expect(resolved.nodeTo).to.be.greaterThan(DOC.indexOf('false') + 'false'.length - 1);
+      });
+
+
+      it('should return the object range when cursor is on the opening brace of a root object', function() {
+
+        // given — point-resolve the root `{`
+        const state = createState(DOC);
+        const openBrace = DOC.indexOf('{');
+        const resolved = resolveJsonNode(state, { from: openBrace, to: openBrace });
+
+        // then — root object has no enclosing Property, so highlights the object itself
+        expect(resolved).to.exist;
+        expect(resolved.nodeFrom).to.equal(openBrace);
+      });
+
+    });
+
+
+    describe('key field', function() {
+
+      it('should return the last named segment as key for a nested value', function() {
+
+        const resolved = resolveAt(DOC, '"b"');
+
+        expect(resolved).to.exist;
+        expect(resolved.key).to.equal('id');
+      });
+
+
+      it('should return an empty string for array-index paths', function() {
+
+        // given — select an array item directly (the first { id: 'a' } object)
+        const state = createState(DOC);
+        const itemsKey = DOC.indexOf('"items"');
+        const open = DOC.indexOf('{', itemsKey);
+        const close = DOC.indexOf('}', open);
+        const resolved = resolveJsonNode(state, { from: open, to: close + 1 });
+
+        // path is items[0] — no named terminal segment
+        expect(resolved).to.exist;
+        expect(resolved.key).to.equal('');
+      });
+
+    });
+
+  });
+
+
+  describe('#toFeelValue', function() {
+
+    it('should unquote valid-identifier keys in an object', function() {
+      expect(toFeelValue({ status: 200 })).to.equal('{status: 200}');
+    });
+
+
+    it('should unquote nested valid-identifier keys', function() {
+      expect(toFeelValue({ body: { userId: 'abc' } })).to.equal('{body: {userId: "abc"}}');
+    });
+
+
+    it('should keep quotes on keys that are not valid identifiers', function() {
+      expect(toFeelValue({ 'my-key': 1 })).to.equal('{"my-key": 1}');
+    });
+
+
+    it('should leave scalar string values unchanged', function() {
+      expect(toFeelValue('hello')).to.equal('"hello"');
+    });
+
+
+    it('should serialize arrays without index changes', function() {
+      expect(toFeelValue([ 1, 2 ])).to.equal('[1, 2]');
+    });
+
+
+    it('should serialize null', function() {
+      expect(toFeelValue(null)).to.equal('null');
+    });
+
+
+    it('should serialize booleans', function() {
+      expect(toFeelValue(true)).to.equal('true');
+      expect(toFeelValue(false)).to.equal('false');
+    });
+
+  });
+
+
+  describe('#getLastSegment', function() {
+
+    it('should return the last key segment', function() {
+      expect(getLastSegment('result.body.status')).to.equal('status');
+    });
+
+
+    it('should return empty string when the path ends with an array index', function() {
+      expect(getLastSegment('items[0]')).to.equal('');
+    });
+
+
+    it('should return empty string for empty path', function() {
+      expect(getLastSegment('')).to.equal('');
+    });
+
+
+    it('should handle a single segment', function() {
+      expect(getLastSegment('result')).to.equal('result');
     });
 
   });
