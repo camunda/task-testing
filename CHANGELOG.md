@@ -11,11 +11,13 @@ ___Note:__ Yet to be released changes appear here._
 ## 5.0.0
 
 * `FEAT`: add generic error props `hasError`, `errorBannerTitle`, `configureTooltip`, and `onConfigure` ([#95](https://github.com/camunda/task-testing/pull/95))
+* `FEAT`: change default priority of header link to 1000 ([`6b4bb35d`](https://github.com/camunda/task-testing/commit/6b4bb35da3958b684eb7bb4bd90c26c4123f5b40))
 
 ### Breaking Changes
 
 * `data-testid` of configure button changed from `configure-connection-btn` to `configure-btn`
 * `isConnectionConfigured`, `configureConnectionBannerTitle`, `configureConnectionLabel`, and `onConfigureConnection` are removed; use `hasError`, `errorBannerTitle`, `configureTooltip`, and `onConfigure`
+* `TaskTesting.Link` default `priority` changed from `100` to `1000`; custom links without explicit `priority` may render in a different order
 
 ## 4.0.0
 
