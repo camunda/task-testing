@@ -249,12 +249,12 @@ const HeaderLinks = (props) => {
  * @param {string | ((props: Object) => string)} [props.role] - ARIA role (static or dynamic)
  * @param {string | ((props: Object) => string | undefined)} [props.tooltip] - Tooltip text (static or dynamic)
  * @param {React.ComponentType | ((props: Object) => React.ComponentType)} [props.renderIcon] - Icon
- * @param {number} [props.priority] - Priority for sorting (higher values first)
+ * @param {number} [props.priority=1000] - Priority for sorting (higher values first)
  * @returns {null}
  */
 const DEFAULT_RENDER = /** @type {(props?: any) => React.ReactNode} */ (() => null);
 
-export const HeaderLink = ({ children = null, render = DEFAULT_RENDER, visible, href, target, className, onClick = undefined, renderIcon, role = undefined, tooltip, priority = 100 }) => {
+export const HeaderLink = ({ children = null, render = DEFAULT_RENDER, visible, href, target, className, onClick = undefined, renderIcon, role = undefined, tooltip, priority = 1000 }) => {
   const { registerPlugin, unregisterPlugin } = useContext(PluginContext);
 
   useEffect(() => {
