@@ -18,6 +18,7 @@ module.exports = function(config) {
     preprocessors: {
       ['test/**/*.spec.js']: [ 'webpack', 'env' ]
     },
+    reporters: [ 'tldr' ],
     browsers,
     singleRun: true,
     webpack: {
