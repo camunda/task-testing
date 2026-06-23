@@ -15,7 +15,10 @@ module.exports = {
   },
   externals: {
     react: 'react',
+    'react/jsx-runtime': 'react/jsx-runtime',
+    'react/jsx-dev-runtime': 'react/jsx-dev-runtime',
     'react-dom': 'react-dom',
+    'react-dom/server': 'react-dom/server',
     '@carbon/react': '@carbon/react',
     '@carbon/icons-react': '@carbon/icons-react'
   },
