@@ -6,12 +6,13 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
-* `FIX`: update empty states to match design system ([#93](https://github.com/camunda/task-testing/pull/93))
+* `FIX`: don't bundle `react*` dependencies ([#98](https://github.com/camunda/task-testing/pull/98))
 
 ## 5.0.0
 
 * `FEAT`: add generic error props `hasError`, `errorBannerTitle`, `configureTooltip`, and `onConfigure` ([#95](https://github.com/camunda/task-testing/pull/95))
 * `FEAT`: change default priority of header link to 1000 ([`6b4bb35d`](https://github.com/camunda/task-testing/commit/6b4bb35da3958b684eb7bb4bd90c26c4123f5b40))
+* `FIX`: update empty states to match design system ([#93](https://github.com/camunda/task-testing/pull/93))
 
 ### Breaking Changes
 
