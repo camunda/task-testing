@@ -6,6 +6,8 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+## 5.1.0
+
 * `FIX`: don't bundle `react*` dependencies ([#98](https://github.com/camunda/task-testing/pull/98))
 
 ## 5.0.0
