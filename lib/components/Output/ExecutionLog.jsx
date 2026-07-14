@@ -9,7 +9,7 @@ import React, { useState } from 'react';
 import {
   ChevronRight,
   ChevronDown
-} from '@carbon/icons-react';
+} from 'lucide-react';
 
 import classNames from 'classnames';
 

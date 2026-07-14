@@ -17,20 +17,14 @@
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
-  InlineLoading,
-  Link,
-  SkeletonPlaceholder
-} from '@carbon/react';
-
-import {
-  CheckmarkFilled,
+  CircleCheck as CheckmarkFilled,
   ChevronDown,
   ChevronRight,
-  ErrorFilled,
-  Launch,
-  StopFilledAlt,
-  WarningFilled
-} from '@carbon/icons-react';
+  CircleX as ErrorFilled,
+  ExternalLink as Launch,
+  CircleStop as StopFilledAlt,
+  TriangleAlert as WarningFilled
+} from 'lucide-react';
 
 import { isFunction } from 'min-dash';
 
@@ -38,6 +32,9 @@ import OutputEditor from './OutputEditor';
 import { ExecutionLog } from './ExecutionLog';
 import { PluginContext } from '../shared/plugins';
 import Tooltip from '../shared/Tooltip';
+import Link from '../shared/Link';
+import Spinner from '../shared/Spinner';
+import Skeleton from '../shared/Skeleton';
 import { SCOPES, pickVariables } from '../../utils/variables';
 import { EXECUTION_LOG_ENTRY_TYPE } from '../../ExecutionLog';
 import { getOperateUrl } from '../../utils/getOperateUrl';
@@ -86,19 +83,19 @@ export default function Output({
 
   const statusIcon = useMemo(() => {
     if (isError) {
-      return <WarningFilled />;
+      return <WarningFilled size={ 16 } />;
     }
 
     if (isSuccess) {
-      return <CheckmarkFilled />;
+      return <CheckmarkFilled size={ 16 } />;
     }
 
     if (isTerminated) {
-      return <StopFilledAlt />;
+      return <StopFilledAlt size={ 16 } />;
     }
 
     if (isCanceled) {
-      return <ErrorFilled />;
+      return <ErrorFilled size={ 16 } />;
     }
 
     return null;
@@ -469,7 +466,7 @@ function ExecutingBanner({ currentOperateUrl, entries, operateBaseUrl, tasklistB
     <div className="output__banner output__banner--executing">
       <div className="output__banner-header">
         <div className="output__banner-main">
-          <InlineLoading className="output__banner-loader" />
+          <Spinner className="output__banner-loader" />
           <span className="output__banner-text">
             { waitingContext ? waitingContext.title : 'Running test...' }
           </span>
@@ -722,7 +719,7 @@ function CollapsibleSection({ title, tooltip, defaultOpen = true, isExecuting = 
     const el = sentinelRef.current;
     if (!el) return;
 
-    const scrollParent = el.closest('.task-testing-tabs__panel') || el.closest('.task-testing__container--body-executing');
+    const scrollParent = el.closest('.task-testing__container--body');
     if (!scrollParent) return;
 
     const observer = new IntersectionObserver(
@@ -789,7 +786,7 @@ function VariablesSection({ title, tooltip, scope, output, currentVariables, isT
     <CollapsibleSection title={ title } tooltip={ tooltip } defaultOpen={ true } isExecuting={ isTaskExecuting }>
       { isLoading ? (
         <div className="output__variables--skeleton">
-          <SkeletonPlaceholder />
+          <Skeleton />
         </div>
       ) : (
         <OutputEditor value={ isEmpty ? '{}' : jsonValue } />

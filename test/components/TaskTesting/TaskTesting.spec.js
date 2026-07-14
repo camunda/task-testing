@@ -142,10 +142,6 @@ describe('TaskTesting', function() {
       // when
       selection.select(elementRegistry.get('ServiceTask_3'));
 
-      const outputHeader = await screen.findByText('Result');
-
-      outputHeader.click();
-
       // then
       await screen.findByText('Open in Operate');
     }));
@@ -174,10 +170,6 @@ describe('TaskTesting', function() {
       await waitFor(() => {
         expect(api.deploy).to.have.been.called;
       });
-
-      const outputHeader = await screen.findByText('Result');
-
-      outputHeader.click();
 
       expect(screen.queryByText('Open in Operate')).to.not.exist;
     }));
@@ -215,7 +207,7 @@ describe('TaskTesting', function() {
 
         const button = await screen.findByTestId('test-task-btn');
 
-        expect(button.classList.contains('cds--btn--secondary')).to.be.true;
+        expect(button.getAttribute('data-variant')).to.equal('secondary');
       }));
 
 
@@ -332,7 +324,7 @@ describe('TaskTesting', function() {
 
         const button = await screen.findByTestId('test-task-btn');
 
-        expect(button.classList.contains('cds--btn--secondary')).to.be.true;
+        expect(button.getAttribute('data-variant')).to.equal('secondary');
       }));
 
 

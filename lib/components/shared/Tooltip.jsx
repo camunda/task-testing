@@ -207,7 +207,7 @@ function getTooltipPosition(triggerElement, align) {
   if (!triggerElement) return {};
 
   const rect = triggerElement.getBoundingClientRect();
-  const style = {};
+  const style = /** @type {React.CSSProperties} */ ({});
 
   if (align.startsWith('bottom')) {
     style.top = rect.bottom + 6;

@@ -13,7 +13,7 @@ import form1 from './fixtures/form_1.form';
 import connectorTemplates from './fixtures/connectorTemplates.json';
 import defaultConfig from './fixtures/config';
 
-import '@carbon/styles/css/styles.min.css';
+import '@camunda/design-system/styles.css';
 import './style.css';
 import { RPALink, RPATab } from './plugins/RPA';
 import {

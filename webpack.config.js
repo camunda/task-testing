@@ -20,7 +20,9 @@ module.exports = {
     'react-dom': 'react-dom',
     'react-dom/server': 'react-dom/server',
     '@carbon/react': '@carbon/react',
-    '@carbon/icons-react': '@carbon/icons-react'
+    '@carbon/icons-react': '@carbon/icons-react',
+    '@camunda/design-system': '@camunda/design-system',
+    'lucide-react': 'lucide-react'
   },
   resolve: {
     extensions: [ '.js', '.jsx' ]

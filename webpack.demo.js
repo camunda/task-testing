@@ -38,6 +38,10 @@ module.exports = {
       {
         test: /\.(bpmn|form|html)$/i,
         use: 'raw-loader'
+      },
+      {
+        test: /\.(woff2?|ttf|eot)$/i,
+        type: 'asset/resource'
       }
     ]
   },
