@@ -19,8 +19,9 @@ import theme from '../shared/CodeMirrorTheme';
 import { getAutocompletionExtensions } from '../../utils/autocompletion';
 
 import { SCOPES } from '../../utils/variables';
-import { Button } from '@carbon/react';
-import { Erase } from '@carbon/icons-react';
+import { Button } from '@camunda/design-system';
+import { Eraser as Erase } from 'lucide-react';
+import Tooltip from '../shared/Tooltip';
 
 const fromPropAnnotation = Annotation.define();
 
@@ -192,14 +193,15 @@ export default function InputEditor({
 
   return <div className={ classNames('code__editor', { 'code__editor--error': error }) }>
     <div className="code__editor-buttons">
-      <Button
-        renderIcon={ Erase }
-        iconDescription="Reset editor"
-        size="sm"
-        kind="ghost"
-        hasIconOnly
-        tooltipPosition="left"
-        onClick={ onClear } />
+      <Tooltip label="Reset editor" align="bottom-end">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Reset editor"
+          onClick={ onClear }>
+          <Erase aria-hidden="true" />
+        </Button>
+      </Tooltip>
     </div>
     <div className="code__editor-codemirror">
       <div ref={ ref } className="code__editor-codemirror-inner"></div>

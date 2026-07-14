@@ -1,11 +1,11 @@
 import React, { useRef } from 'react';
 
-import { Link } from '@carbon/react';
-import { Information } from '@carbon/icons-react';
+import { Info as Information } from 'lucide-react';
 
 import InputEditor from './InputEditor';
 
 import Tooltip from '../shared/Tooltip';
+import Link from '../shared/Link';
 
 export default function Input({
   allOutputs,
