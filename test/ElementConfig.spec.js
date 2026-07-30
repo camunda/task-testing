@@ -130,6 +130,21 @@ describe('ElementConfig', function() {
     }));
 
 
+    it('should set input config for call activity', inject(function(elementRegistry) {
+
+      // given
+      const element = elementRegistry.get('CallActivity_1');
+
+      // when
+      elementConfig.setInputConfigForElement(element, '{"orderId": "baz"}');
+
+      // then
+      const inputConfigForElement = elementConfig.getInputConfigForElement(element);
+
+      expect(inputConfigForElement).to.eql('{"orderId": "baz"}');
+    }));
+
+
     it('should set output config for element', inject(function(elementRegistry) {
 
       // given

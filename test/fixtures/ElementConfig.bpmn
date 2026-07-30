@@ -81,6 +81,14 @@
     <bpmn:adHocSubProcess id="AdHocSubProcess_1">
       <bpmn:task id="AdHocChild_1" name="In ad-hoc subprocess" />
     </bpmn:adHocSubProcess>
+    <bpmn:callActivity id="CallActivity_1" name="Call child process">
+      <bpmn:extensionElements>
+        <zeebe:calledElement processId="child-process" propagateAllChildVariables="true" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=orderId" target="childOrderId" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+    </bpmn:callActivity>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
@@ -109,6 +117,9 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="AdHocChild_1_di" bpmnElement="AdHocChild_1">
         <dc:Bounds x="270" y="230" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_1_di" bpmnElement="CallActivity_1">
+        <dc:Bounds x="510" y="220" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_0d202t1_di" bpmnElement="Flow_0d202t1">
         <di:waypoint x="188" y="120" />

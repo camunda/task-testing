@@ -19,7 +19,7 @@ describe('useSelectedElement', function() {
     // then
     expect(selectedElement).to.be.null;
     expect(selectionInfo).to.deep.equal({
-      message: 'Select a task or subprocess to start testing.'
+      message: 'Select a task, subprocess, or call activity to start testing.'
     });
   }));
 
@@ -44,7 +44,7 @@ describe('useSelectedElement', function() {
     // then
     expect(selectedElement).to.be.null;
     expect(selectionInfo).to.deep.equal({
-      message: 'Select a task or subprocess to start testing.'
+      message: 'Select a task, subprocess, or call activity to start testing.'
     });
   }));
 
@@ -67,7 +67,7 @@ describe('useSelectedElement', function() {
     expect(selectedElement).to.be.null;
     expect(selectionInfo).to.deep.equal({
       title: 'Unsupported element',
-      message: 'Task testing is only supported for tasks and subprocesses. Select one to start testing.'
+      message: 'Task testing is only supported for tasks, subprocesses, and call activities. Select one to start testing.'
     });
   }));
 
@@ -98,6 +98,26 @@ describe('useSelectedElement', function() {
     const { result } = renderHook(() => useSelectedElement(injector));
 
     const element = elementRegistry.get('AdHocChild_1');
+
+    // when
+    act(() => {
+      selection.select(element);
+    });
+
+    const [ selectedElement, selectionInfo ] = result.current;
+
+    // then
+    expect(selectedElement).to.exist;
+    expect(selectionInfo).to.be.null;
+  }));
+
+
+  it('should return element if call activity is selected', inject(function(elementRegistry, injector, selection) {
+
+    // given
+    const { result } = renderHook(() => useSelectedElement(injector));
+
+    const element = elementRegistry.get('CallActivity_1');
 
     // when
     act(() => {
