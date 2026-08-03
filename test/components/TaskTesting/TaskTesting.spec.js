@@ -18,6 +18,7 @@ import { bootstrapModeler, inject, getModeler } from '../../helpers/modeler';
 import {
   createDeployResponse,
   createElementInstanceDetails,
+  createGetChildProcessInstancesResponse,
   createGetProcessInstanceElementInstancesResponse,
   createGetProcessInstanceIncidentResponse,
   createGetProcessInstanceJobsResponse,
@@ -504,6 +505,7 @@ describe('TaskTesting', function() {
 
       const api = {
         deploy: sinon.spy(() => Promise.resolve(createDeployResponse())),
+        getChildProcessInstances: sinon.spy(() => Promise.resolve(createGetChildProcessInstancesResponse())),
         getProcessInstance: sinon.spy(() => Promise.resolve(createGetProcessInstanceResponse({
           response: {
             items: [ createProcessInstanceDetails({ state: 'TERMINATED' }) ]
@@ -554,6 +556,7 @@ describe('TaskTesting', function() {
 
       const api = {
         deploy: sinon.spy(() => Promise.resolve(createDeployResponse())),
+        getChildProcessInstances: sinon.spy(() => Promise.resolve(createGetChildProcessInstancesResponse())),
         getProcessInstance: sinon.spy(() => Promise.resolve(createGetProcessInstanceResponse({
           response: {
             items: [ createProcessInstanceDetails({ state: 'ACTIVE', hasIncident: true }) ]

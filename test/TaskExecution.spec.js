@@ -10,6 +10,7 @@ import {
   createEmptyGetProcessInstanceMessageSubscriptionsResponse,
   createEmptyGetProcessInstanceResponse,
   createEmptyGetProcessInstanceUserTasksResponse,
+  createGetChildProcessInstancesResponse,
   createGetProcessInstanceElementInstancesResponse,
   createGetProcessInstanceIncidentResponse,
   createGetProcessInstanceJobsResponse,
@@ -66,6 +67,7 @@ describe('TaskExecution', function() {
   beforeEach(inject(function(injector) {
     api = {
       deploy: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
+      getChildProcessInstances: sinon.stub().resolves(createGetChildProcessInstancesResponse()),
       getProcessInstance: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
       getProcessInstanceElementInstances: sinon.stub().resolves({ success: false, error: 'Not implemented' }),
       getProcessInstanceIncident: sinon.stub().resolves({ success: false, error: 'Not implemented' }),

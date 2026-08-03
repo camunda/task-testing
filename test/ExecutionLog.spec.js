@@ -19,6 +19,7 @@ import subprocessesXML from './fixtures/subprocesses.bpmn';
 import {
   createDeployResponse,
   createStartInstanceResponse,
+  createGetChildProcessInstancesResponse,
   createGetProcessInstanceElementInstancesResponse,
   createGetProcessInstanceJobsResponse,
   createGetProcessInstanceMessageSubscriptionsResponse,
@@ -567,6 +568,38 @@ describe('ExecutionLog', function() {
         // Second: completed entry
         expect(instanceEntries[1].data.state).to.equal('COMPLETED');
         expect(instanceEntries[1].timestamp).to.equal(new Date(endDate).getTime());
+      });
+
+
+      it('should attach child process instance key to call activity', function() {
+
+        // given
+        const instance = createElementInstanceDetails({
+          type: 'CALL_ACTIVITY',
+          state: 'ACTIVE',
+          elementInstanceKey: '1',
+          startDate: createMockDate(),
+          endDate: undefined
+        });
+
+        // when
+        executionLog.setPolledResult(createPolledResult({
+          childProcessInstancesResponse: createGetChildProcessInstancesResponse({
+            response: {
+              items: [ { processInstanceKey: '2', parentElementInstanceKey: '1' } ]
+            }
+          }),
+          elementInstancesResponse: createGetProcessInstanceElementInstancesResponse({
+            response: { items: [ instance ] }
+          })
+        }), createMockTimestamp());
+
+        // then
+        const entries = executionLog.getEntries();
+        const instanceEntries = entries.filter(e => e.type === EXECUTION_LOG_ENTRY_TYPE.ELEMENT_INSTANCE);
+
+        expect(instanceEntries).to.have.length(1);
+        expect(instanceEntries[0].data.childProcessInstanceKey).to.equal('2');
       });
 
     });
@@ -2055,6 +2088,7 @@ function createPolledResult(overrides = {}) {
   return {
     elementId: 'ServiceTask_1',
     processInstanceKey: DEFAULT_PROCESS_INSTANCE_KEY,
+    childProcessInstancesResponse: createGetChildProcessInstancesResponse(),
     elementInstancesResponse: createGetProcessInstanceElementInstancesResponse({
       response: { items: [], page: { totalItems: 0 } }
     }),

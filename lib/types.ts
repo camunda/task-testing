@@ -79,6 +79,7 @@ export type ApiResponse<T> = {
 };
 
 export type DeployResponse = ApiResponse<DeploymentResult>;
+export type GetChildProcessInstancesResponse = ApiResponse<ProcessInstanceSearchQueryResult>;
 export type GetProcessInstanceResponse = ApiResponse<ProcessInstanceSearchQueryResult>;
 export type GetProcessInstanceElementInstancesResponse = ApiResponse<ElementInstanceSearchQueryResult>;
 export type GetProcessInstanceIncidentsResponse = ApiResponse<IncidentSearchQueryResult>;
@@ -89,6 +90,7 @@ export type GetProcessInstanceVariablesResponse = ApiResponse<VariableSearchQuer
 export type StartInstanceResponse = ApiResponse<CreateProcessInstanceResult>;
 
 export type TaskExecutionPolledResult = {
+  childProcessInstancesResponse: GetChildProcessInstancesResponse;
   elementId: string;
   elementInstancesResponse: GetProcessInstanceElementInstancesResponse;
   jobsResponse: GetProcessInstanceJobsResponse;
@@ -101,6 +103,7 @@ export type TaskExecutionPolledResult = {
 
 export type TaskExecutionApi = {
   deploy: () => Promise<DeployResponse>;
+  getChildProcessInstances: (processInstanceKey: string) => Promise<GetChildProcessInstancesResponse>;
   getProcessInstance: (processInstanceKey: string) => Promise<GetProcessInstanceResponse>;
   getProcessInstanceElementInstances: (processInstanceKey: string) => Promise<GetProcessInstanceElementInstancesResponse>;
   getProcessInstanceIncident: (processInstanceKey: string) => Promise<GetProcessInstanceIncidentsResponse>;
@@ -250,6 +253,7 @@ export type ExecutionLogElementInstanceData = {
   startDate?: string;
   endDate?: string;
   elementInstanceKey?: string;
+  childProcessInstanceKey?: string;
 };
 
 export type ExecutionLogMessageSubscriptionData = {
