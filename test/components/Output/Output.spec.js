@@ -702,6 +702,60 @@ describe('getWaitingContext', function() {
     expect(context.title).to.equal('Waiting for user task completion');
   });
 
+
+  it('should return context for active call activity', function() {
+
+    // given
+    const entries = [
+      createCallActivityEntry({
+        state: 'ACTIVE',
+        elementInstanceKey: '1',
+        childProcessInstanceKey: '2'
+      })
+    ];
+
+    // when
+    const context = getWaitingContext(entries, null, null, 'https://operate.example.com');
+
+    // then
+    expect(context).to.exist;
+    expect(context.title).to.equal('Waiting for called process completion');
+    expect(context.linkLabel).to.equal('Open called process in Operate');
+    expect(context.linkUrl).to.equal('https://operate.example.com/processes/2');
+  });
+
+
+  it('should return null for completed call activity', function() {
+
+    // given
+    const entries = [
+      createCallActivityEntry({ state: 'ACTIVE', elementInstanceKey: '1' }),
+      createCallActivityEntry({ state: 'COMPLETED', elementInstanceKey: '1' })
+    ];
+
+    // when
+    const context = getWaitingContext(entries, null, null, 'https://operate.example.com');
+
+    // then
+    expect(context).to.be.null;
+  });
+
+
+  it('should return context for active call activity without child process instance', function() {
+
+    // given
+    const entries = [
+      createCallActivityEntry({ state: 'ACTIVE', elementInstanceKey: '1' })
+    ];
+
+    // when
+    const context = getWaitingContext(entries, null, null, 'https://operate.example.com');
+
+    // then
+    expect(context).to.exist;
+    expect(context.linkUrl).to.be.null;
+  });
+
 });
 
 
@@ -755,6 +809,21 @@ function createUserTaskEntry(data, timestamp = 0) {
       state: 'CREATED',
       name: 'Foo',
       userTaskKey: '1',
+      ...data
+    },
+    timestamp
+  };
+}
+
+function createCallActivityEntry(data, timestamp = 0) {
+  return {
+    type: EXECUTION_LOG_ENTRY_TYPE.ELEMENT_INSTANCE,
+    data: {
+      type: 'CALL_ACTIVITY',
+      elementId: 'CallActivity_1',
+      elementName: 'Call activity',
+      state: 'ACTIVE',
+      elementInstanceKey: '1',
       ...data
     },
     timestamp

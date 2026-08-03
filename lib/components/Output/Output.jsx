@@ -6,6 +6,7 @@
  * @import {
  *   ElementOutput,
  *   ExecutionLogEntry,
+ *   ExecutionLogElementInstanceEntry,
  *   ExecutionLogJobEntry,
  *   ExecutionLogUserTaskEntry,
  *   ExecutionLogMessageSubscriptionEntry,
@@ -39,6 +40,7 @@ import { PluginContext } from '../shared/plugins';
 import Tooltip from '../shared/Tooltip';
 import { SCOPES, pickVariables } from '../../utils/variables';
 import { EXECUTION_LOG_ENTRY_TYPE } from '../../ExecutionLog';
+import { getOperateUrl } from '../../utils/getOperateUrl';
 import { getTasklistUrl } from '../../utils/getTasklistUrl';
 
 /**
@@ -51,6 +53,7 @@ import { getTasklistUrl } from '../../utils/getTasklistUrl';
  * @param {Function} props.onResetOutput
  * @param {TaskExecutionState} props.taskExecutionState
  * @param {ExecutionLogEntry[]} props.executionLog
+ * @param {string} [props.operateBaseUrl]
  * @param {string} [props.tasklistBaseUrl]
  * @param {Object} [props.currentVariables]
  */
@@ -63,6 +66,7 @@ export default function Output({
   onResetOutput,
   taskExecutionState,
   executionLog,
+  operateBaseUrl,
   tasklistBaseUrl,
   currentVariables
 }) {
@@ -116,6 +120,7 @@ export default function Output({
         isTaskExecuting && <ExecutingBanner
           currentOperateUrl={ currentOperateUrl }
           entries={ executionLog }
+          operateBaseUrl={ operateBaseUrl }
           tasklistBaseUrl={ tasklistBaseUrl }
         />
       }
@@ -333,10 +338,11 @@ function EmptyState() {
  * @param {ExecutionLogEntry[]} [entries]
  * @param {string} [tasklistBaseUrl]
  * @param {string|null} [currentOperateUrl]
+ * @param {string} [operateBaseUrl]
  *
  * @returns {{ title: string, description: React.ReactNode, linkUrl: string|null, linkLabel: string } | null}
  */
-export function getWaitingContext(entries, tasklistBaseUrl, currentOperateUrl) {
+export function getWaitingContext(entries, tasklistBaseUrl, currentOperateUrl, operateBaseUrl) {
   if (!entries || !entries.length) {
     return null;
   }
@@ -420,11 +426,44 @@ export function getWaitingContext(entries, tasklistBaseUrl, currentOperateUrl) {
     };
   }
 
+  const terminalCallActivityKeys = new Set(
+    /** @type {ExecutionLogElementInstanceEntry[]} */ (entries
+      .filter(entry => entry.type === EXECUTION_LOG_ENTRY_TYPE.ELEMENT_INSTANCE
+        && entry.data.type === 'CALL_ACTIVITY'
+        && entry.data.state !== 'ACTIVE'))
+      .map(entry => entry.data.elementInstanceKey)
+  );
+
+  const activeCallActivity = /** @type {ExecutionLogElementInstanceEntry|undefined} */ (entries.find(
+    entry => entry.type === EXECUTION_LOG_ENTRY_TYPE.ELEMENT_INSTANCE
+      && entry.data.type === 'CALL_ACTIVITY'
+      && entry.data.state === 'ACTIVE'
+      && !terminalCallActivityKeys.has(entry.data.elementInstanceKey)
+  ));
+
+  if (activeCallActivity) {
+    const name = activeCallActivity.data.elementName || activeCallActivity.data.elementId;
+    const childProcessInstanceKey = activeCallActivity.data.childProcessInstanceKey;
+
+    const childProcessUrl = operateBaseUrl && childProcessInstanceKey
+      ? getOperateUrl(operateBaseUrl, childProcessInstanceKey)
+      : null;
+
+    return {
+      title: 'Waiting for called process completion',
+      description: name
+        ? <>The <span className="output__banner-tag">{ name }</span> call activity is waiting for the called process to complete.</>
+        : 'The call activity is waiting for the called process to complete.',
+      linkUrl: childProcessUrl,
+      linkLabel: 'Open called process in Operate'
+    };
+  }
+
   return null;
 }
 
-function ExecutingBanner({ currentOperateUrl, entries, tasklistBaseUrl }) {
-  const waitingContext = getWaitingContext(entries, tasklistBaseUrl, currentOperateUrl);
+function ExecutingBanner({ currentOperateUrl, entries, operateBaseUrl, tasklistBaseUrl }) {
+  const waitingContext = getWaitingContext(entries, tasklistBaseUrl, currentOperateUrl, operateBaseUrl);
 
   return (
     <div className="output__banner output__banner--executing">

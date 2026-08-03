@@ -253,6 +253,20 @@ export function createEmptyGetProcessInstanceResponse() {
   });
 }
 
+/**
+ * Creates a mock API response for getting child process instances with the given overrides.
+ *
+ * @param {Partial<ApiResponse<ProcessInstanceSearchQueryResult>>} overrides
+ *
+ * @returns {ApiResponse<ProcessInstanceSearchQueryResult>}
+ */
+export function createGetChildProcessInstancesResponse(overrides = {}) {
+  return createAPIResponse({
+    response: createSearchProcessInstancesSDKResponse({ items: [] }),
+    ...overrides
+  });
+}
+
 export const DEFAULT_VARIABLE_KEY = '1';
 export const DEFAULT_SCOPE_KEY = DEFAULT_PROCESS_INSTANCE_KEY;
 
