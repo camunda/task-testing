@@ -6,6 +6,9 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+* `FEAT`: support call activities in task testing ([#101](https://github.com/camunda/task-testing/pull/101))
+
+
 ## 5.1.0
 
 * `FIX`: don't bundle `react*` dependencies ([#98](https://github.com/camunda/task-testing/pull/98), [#97](https://github.com/camunda/task-testing/issues/97))
