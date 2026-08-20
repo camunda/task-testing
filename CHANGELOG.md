@@ -6,6 +6,10 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+## 6.0.1
+
+* `FIX`: do not prefill camunda variables ([#102](https://github.com/camunda/task-testing/pull/102))
+
 ## 6.0.0
 
 * `FEAT`: support call activities in task testing ([#101](https://github.com/camunda/task-testing/pull/101))
