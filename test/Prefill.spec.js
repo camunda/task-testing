@@ -38,6 +38,22 @@ describe('Prefill', function() {
     );
 
 
+    it('should not prefill engine-provided Camunda context',
+      inject(async function(elementRegistry) {
+
+        // given
+        const element = elementRegistry.get('firstTask');
+
+        // when
+        const result = await elementConfig.getDefaultInputForElement(element);
+        const parsed = JSON.parse(result);
+
+        // then
+        expect(parsed).to.not.have.property('camunda');
+      })
+    );
+
+
     it('should only include requirements for the given element',
       inject(async function(elementRegistry) {
 
@@ -134,6 +150,24 @@ describe('Prefill', function() {
         // then
         expect(parsed).to.have.property('a', 42);
         expect(parsed).to.have.property('b', null);
+      })
+    );
+
+
+    it('should preserve user-provided Camunda context when merging',
+      inject(async function(elementRegistry) {
+
+        // given
+        const element = elementRegistry.get('firstTask');
+
+        elementConfig.setInputConfigForElement(element, '{"camunda":{"custom":42}}');
+
+        // when
+        const merged = await elementConfig.getMergedInputConfigForElement(element);
+        const parsed = JSON.parse(merged);
+
+        // then
+        expect(parsed).to.have.nested.property('camunda.custom', 42);
       })
     );
 
