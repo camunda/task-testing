@@ -98,6 +98,14 @@ export function createApi(client) {
       }));
     },
 
+    searchChildProcessInstances(processInstanceKey) {
+      return safe(client.searchProcessInstances({
+        filter: { parentProcessInstanceKey: processInstanceKey }
+      }, {
+        consistency: { waitUpToMs }
+      }));
+    },
+
     searchVariables(processInstanceKey) {
       return safe(client.searchVariables({
         filter: { processInstanceKey },
