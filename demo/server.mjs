@@ -87,6 +87,16 @@ app.get('/api/getProcessInstance/:processInstanceKey', async (req, res) => {
   res.json(result);
 });
 
+app.get('/api/getChildProcessInstances/:processInstanceKey', async (req, res) => {
+  if (!api) {
+    return res.json({ success: false, error: 'Camunda environment not configured' });
+  }
+
+  const { processInstanceKey } = req.params;
+  const result = await api.searchChildProcessInstances(processInstanceKey);
+  res.json(result);
+});
+
 app.get('/api/getProcessInstanceVariables/:processInstanceKey', async (req, res) => {
   if (!api) {
     return res.json({ success: false, error: 'Camunda environment not configured' });

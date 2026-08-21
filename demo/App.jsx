@@ -115,6 +115,11 @@ function App() {
       .then(response => response.json());
   }, []);
 
+  const getChildProcessInstances = useCallback(async (processInstanceKey) => {
+    return fetch(`/api/getChildProcessInstances/${processInstanceKey}`)
+      .then(response => response.json());
+  }, []);
+
   const getProcessInstanceVariables = useCallback(async (processInstanceKey) => {
     return fetch(`/api/getProcessInstanceVariables/${processInstanceKey}`)
       .then(response => response.json());
@@ -147,6 +152,7 @@ function App() {
 
   const api = useMemo(() => ({
     deploy,
+    getChildProcessInstances,
     getProcessInstance,
     getProcessInstanceElementInstances,
     getProcessInstanceIncident,
@@ -157,6 +163,7 @@ function App() {
     startInstance
   }), [
     deploy,
+    getChildProcessInstances,
     getProcessInstance,
     getProcessInstanceElementInstances,
     getProcessInstanceIncident,
