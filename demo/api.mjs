@@ -16,8 +16,9 @@
 
 import { isObject } from 'min-dash';
 
+// Eventual consistency is handled by the task execution polling loop and
+// its terminal-state grace polling, not by per-request consistency waits.
 const waitUpToMs = 0;
-const waitUpToMsProcessInstance = 10000;
 
 const SDK_ERROR_NAMES = new Set([
   'HttpSdkError',
@@ -91,10 +92,7 @@ export function createApi(client) {
       return safe(client.searchProcessInstances({
         filter: { processInstanceKey }
       }, {
-        consistency: {
-          waitUpToMs: waitUpToMsProcessInstance,
-          predicate: (result) => Array.isArray(result.items) && result.items.length > 0
-        }
+        consistency: { waitUpToMs }
       }));
     },
 
