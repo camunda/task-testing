@@ -4,6 +4,15 @@ body {
   margin: 0;
 }
 
+/* improved-canvas assumes the host app's global border-box reset
+   (e.g. desktop modeler); without it the context pad entries
+   render 46px instead of 36px (padding added to 28px box). */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 #root {
   height: 100%;
   display: flex;
