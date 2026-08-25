@@ -1,4 +1,8 @@
 .DS_Store
 dist
 node_modules
-public
+public.env
+.env
+.env.local
+.env.*.local
+demo/public
