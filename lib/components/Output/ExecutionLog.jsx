@@ -265,16 +265,21 @@ function getEntryDetails(entry) {
   return [];
 }
 
-function formatDuration(ms) {
+export function formatDuration(ms) {
   if (ms < 1000) {
     return `${ms}ms`;
   }
-  if (ms < 60000) {
-    return `${(ms / 1000).toFixed(1)}s`;
+
+  // round once, then split, so 59.99s is `1m 0s` rather than `60.0s`
+  const tenths = Math.round(ms / 100);
+
+  if (tenths < 600) {
+    return `${(tenths / 10).toFixed(1)}s`;
   }
-  const minutes = Math.floor(ms / 60000);
-  const seconds = Math.round((ms % 60000) / 1000);
-  return `${minutes}m ${seconds}s`;
+
+  const totalSeconds = Math.round(ms / 1000);
+
+  return `${Math.floor(totalSeconds / 60)}m ${totalSeconds % 60}s`;
 }
 
 /**

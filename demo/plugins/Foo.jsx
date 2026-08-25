@@ -23,7 +23,7 @@ export const FooTabStatic = () => {
 
 export const FooLinkDynamic = () => {
   const render = useCallback(({ output }) => {
-    return <div>Dynamic link: { output?.variables ? `${ JSON.stringify(output.variables).substring(0, 10) }...` : '-' }</div>;
+    return <span>Dynamic link: { output?.variables ? `${ JSON.stringify(output.variables).substring(0, 10) }...` : '-' }</span>;
   }, []);
 
   return <TaskTesting.Link

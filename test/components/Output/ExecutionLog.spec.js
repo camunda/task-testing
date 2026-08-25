@@ -3,7 +3,8 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 
 import {
-  ExecutionLog
+  ExecutionLog,
+  formatDuration
 } from '../../../lib/components/Output/ExecutionLog';
 
 import {
@@ -1192,6 +1193,26 @@ describe('ExecutionLog', function() {
 
       // then
       expect(queryByText('3m 15s')).to.exist;
+    });
+
+
+    it('should carry rounded seconds over into minutes', function() {
+
+      // when
+      const duration = formatDuration(ONE_MINUTE_MS * 2 - 1);
+
+      // then
+      expect(duration).to.equal('2m 0s');
+    });
+
+
+    it('should switch to minutes when seconds round up to a minute', function() {
+
+      // when
+      const duration = formatDuration(ONE_MINUTE_MS - 1);
+
+      // then
+      expect(duration).to.equal('1m 0s');
     });
 
   });
