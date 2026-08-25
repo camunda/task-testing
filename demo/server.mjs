@@ -21,7 +21,12 @@ import { createApi } from './api.mjs';
 let api;
 
 try {
-  const { parsed: config } = dotenv.config({ path: path.join(__dirname, '.env') });
+
+  // Local overrides (gitignored) take precedence over the tracked defaults
+  const { parsed: localConfig } = dotenv.config({ path: path.join(__dirname, '.env.local') });
+  const { parsed: defaultConfig } = dotenv.config({ path: path.join(__dirname, '.env') });
+
+  const config = { ...defaultConfig, ...localConfig };
 
   if (!Object.keys(config)?.length) {
     throw new Error('No configuration found in .env file');
