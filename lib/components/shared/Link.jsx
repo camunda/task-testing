@@ -37,7 +37,7 @@ export default function Link({
       role={ role }
       { ...rest }
     >
-      { children }
+      <span className="link__text">{ children }</span>
       { Icon && <Icon className="link__icon" size={ 16 } aria-hidden="true" /> }
     </a>
   );

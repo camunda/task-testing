@@ -74,11 +74,13 @@ The `result` parameter is a discriminated union:
 
 Custom tabs and links can be added as children:
 
-- **`<TaskTesting.Tab>`** — Adds a tab to the output panel
-  - `label` (string, required) — Tab label
+- **`<TaskTesting.Tab>`** — Adds a collapsible strip to the run card, below the built-in variables and timeline strips
+  - `label` (string, required) — Strip label
   - `render` (function) — Render function receiving `{ output }`, for dynamic content
   - `children` (ReactNode) — Static content (alternative to `render`)
-  - `priority` (number, default `1000`) — Higher priority tabs appear first
+  - `priority` (number, default `1000`) — Higher priority strips appear first
+  - `fullBleed` (boolean, default `false`) — Render the content edge to edge in a fixed-height, scroll-isolated body, for foreign HTML
+  - `onOpenExternal` (function) — Adds a button to the strip header that calls it with `{ element, output, isTaskExecuting, executionLog }`, e.g. to open the content in its own window
 
 - **`<TaskTesting.Link>`** — Adds a link to the output header
   - `href` (string, required) — Link URL

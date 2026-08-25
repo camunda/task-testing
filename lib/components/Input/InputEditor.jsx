@@ -20,7 +20,7 @@ import { getAutocompletionExtensions } from '../../utils/autocompletion';
 
 import { SCOPES } from '../../utils/variables';
 import { Button } from '@camunda/design-system';
-import { Eraser as Erase } from 'lucide-react';
+import { RotateCcw as Reset } from 'lucide-react';
 import Tooltip from '../shared/Tooltip';
 
 const fromPropAnnotation = Annotation.define();
@@ -193,13 +193,13 @@ export default function InputEditor({
 
   return <div className={ classNames('code__editor', { 'code__editor--error': error }) }>
     <div className="code__editor-buttons">
-      <Tooltip label="Reset editor" align="bottom-end">
+      <Tooltip label="Reset to default values" align="bottom-end">
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label="Reset editor"
+          aria-label="Reset to default values"
           onClick={ onClear }>
-          <Erase aria-hidden="true" />
+          <Reset aria-hidden="true" />
         </Button>
       </Tooltip>
     </div>
