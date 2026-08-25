@@ -181,7 +181,7 @@ describe('TaskTesting', function() {
 
     describe('hasError', function() {
 
-      it('should show error header state', inject(async function(elementRegistry, selection) {
+      it('should show connection error card', inject(async function(elementRegistry, selection) {
 
         // given
         renderTaskTesting({
@@ -193,17 +193,13 @@ describe('TaskTesting', function() {
 
         // then
         await waitFor(async () => {
-          expect(document.querySelector('.task-testing__container--header-error')).to.exist;
+          expect(document.querySelector('.run-card--error')).to.exist;
         });
 
-        const statusText = document.querySelector('.task-testing__header-status-text');
+        const title = document.querySelector('.run-card__title');
 
-        expect(statusText).to.exist;
-        expect(statusText.textContent).to.equal('Error');
-
-        const statusIcon = document.querySelector('.task-testing__status-icon--error');
-
-        expect(statusIcon).to.exist;
+        expect(title).to.exist;
+        expect(title.textContent).to.equal('Error');
 
         const button = await screen.findByTestId('test-task-btn');
 
@@ -229,7 +225,7 @@ describe('TaskTesting', function() {
         const button = await screen.findByTestId('test-task-btn');
 
         await waitFor(() => {
-          expect(document.querySelector('.task-testing__container--header-error')).to.exist;
+          expect(document.querySelector('.run-card--error')).to.exist;
         });
 
         button.click();
@@ -245,7 +241,7 @@ describe('TaskTesting', function() {
 
     describe('error', function() {
 
-      it('should show error header state with custom banner title', inject(async function(elementRegistry, selection) {
+      it('should show connection error card with custom banner title', inject(async function(elementRegistry, selection) {
 
         // given
         renderTaskTesting({
@@ -258,17 +254,17 @@ describe('TaskTesting', function() {
 
         // then
         await waitFor(async () => {
-          expect(document.querySelector('.task-testing__container--header-error')).to.exist;
+          expect(document.querySelector('.run-card--error')).to.exist;
         });
 
-        const statusText = document.querySelector('.task-testing__header-status-text');
+        const title = document.querySelector('.run-card__title');
 
-        expect(statusText).to.exist;
-        expect(statusText.textContent).to.equal('Connection error');
+        expect(title).to.exist;
+        expect(title.textContent).to.equal('Connection error');
       }));
 
 
-      it('should show error header state', inject(async function(elementRegistry, selection) {
+      it('should show connection error card', inject(async function(elementRegistry, selection) {
 
         // given
         renderTaskTesting({
@@ -281,13 +277,13 @@ describe('TaskTesting', function() {
 
         // then
         await waitFor(async () => {
-          expect(document.querySelector('.task-testing__container--header-error')).to.exist;
+          expect(document.querySelector('.run-card--error')).to.exist;
         });
 
-        const statusText = document.querySelector('.task-testing__header-status-text');
+        const title = document.querySelector('.run-card__title');
 
-        expect(statusText).to.exist;
-        expect(statusText.textContent).to.equal('Error');
+        expect(title).to.exist;
+        expect(title.textContent).to.equal('Error');
       }));
 
     });
@@ -295,7 +291,7 @@ describe('TaskTesting', function() {
 
     describe('input error', function() {
 
-      it('should show error header state', inject(async function(elementRegistry, selection) {
+      it('should show input error placeholder and editor error state', inject(async function(elementRegistry, selection) {
 
         // given
         renderTaskTesting({
@@ -310,17 +306,15 @@ describe('TaskTesting', function() {
 
         // then
         await waitFor(() => {
-          expect(document.querySelector('.task-testing__container--header-error')).to.exist;
+          expect(document.querySelector('.output__placeholder--muted')).to.exist;
         });
 
-        const statusText = document.querySelector('.task-testing__header-status-text');
+        expect(screen.getByText('Fix the input to run a test.')).to.exist;
 
-        expect(statusText).to.exist;
-        expect(statusText.textContent).to.equal('Input error');
+        // input group is expanded and the editor shows the error state
+        const editor = document.querySelector('.code__editor--error');
 
-        const statusIcon = document.querySelector('.task-testing__status-icon--error');
-
-        expect(statusIcon).to.exist;
+        expect(editor).to.exist;
 
         const button = await screen.findByTestId('test-task-btn');
 
@@ -349,7 +343,7 @@ describe('TaskTesting', function() {
         const button = await screen.findByTestId('test-task-btn');
 
         await waitFor(() => {
-          expect(document.querySelector('.task-testing__container--header-error')).to.exist;
+          expect(document.querySelector('.output__placeholder--muted')).to.exist;
         });
 
         button.click();

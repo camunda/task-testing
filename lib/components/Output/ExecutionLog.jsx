@@ -265,7 +265,7 @@ function getEntryDetails(entry) {
   return [];
 }
 
-function formatDuration(ms) {
+export function formatDuration(ms) {
   if (ms < 1000) {
     return `${ms}ms`;
   }

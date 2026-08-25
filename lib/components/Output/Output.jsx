@@ -14,36 +14,47 @@
  * } from '../../types';
  */
 
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+
+import { Button, Collapsible, CollapsibleContent, CollapsibleTrigger } from '@camunda/design-system';
 
 import {
-  CircleCheck as CheckmarkFilled,
+  CircleCheck,
   ChevronDown,
   ChevronRight,
-  CircleX as ErrorFilled,
+  CircleX,
   ExternalLink as Launch,
-  CircleStop as StopFilledAlt,
-  TriangleAlert as WarningFilled
+  Info,
+  CircleStop,
+  Trash2,
+  TriangleAlert
 } from 'lucide-react';
 
 import { isFunction } from 'min-dash';
 
 import OutputEditor from './OutputEditor';
-import { ExecutionLog } from './ExecutionLog';
+import { ExecutionLog, formatDuration } from './ExecutionLog';
 import { PluginContext } from '../shared/plugins';
 import Tooltip from '../shared/Tooltip';
 import Link from '../shared/Link';
 import Spinner from '../shared/Spinner';
 import Skeleton from '../shared/Skeleton';
 import { SCOPES, pickVariables } from '../../utils/variables';
-import { EXECUTION_LOG_ENTRY_TYPE } from '../../ExecutionLog';
+import { EXECUTION_LOG_ENTRY_STATUS, EXECUTION_LOG_ENTRY_TYPE } from '../../ExecutionLog';
+import { TASK_EXECUTION_STATE } from '../../TaskExecution';
 import { getOperateUrl } from '../../utils/getOperateUrl';
 import { getTasklistUrl } from '../../utils/getTasklistUrl';
 
 /**
+ * The run card. Renders the status of the current or last run as a pinned
+ * card with strips (variables, timeline, plugin output) inside it.
+ *
  * @param {Object} props
  * @param {Element} props.element
  * @param {boolean} props.isConnectionConfigured
+ * @param {string} [props.errorBannerTitle='Error']
+ * @param {Function} [props.onConfigure]
+ * @param {string|null} [props.inputError]
  * @param {string|null} props.currentOperateUrl
  * @param {boolean} props.isTaskExecuting
  * @param {ElementOutput} props.output
@@ -53,10 +64,14 @@ import { getTasklistUrl } from '../../utils/getTasklistUrl';
  * @param {string} [props.operateBaseUrl]
  * @param {string} [props.tasklistBaseUrl]
  * @param {Object} [props.currentVariables]
+ * @param {number|null} [props.executionStartedAt] - Timestamp the current run was started at
  */
 export default function Output({
   element,
   isConnectionConfigured,
+  errorBannerTitle = 'Error',
+  onConfigure,
+  inputError,
   isTaskExecuting,
   output,
   currentOperateUrl,
@@ -65,117 +80,108 @@ export default function Output({
   executionLog,
   operateBaseUrl,
   tasklistBaseUrl,
-  currentVariables
+  currentVariables,
+  executionStartedAt
 }) {
 
-  const isError = output?.error || output?.incident;
-  const isSuccess = output?.success && !isError;
-  const isTerminated = output?.terminated;
-  const isCanceled = output?.canceled;
+  const waitingContext = useMemo(() => {
+    if (!isTaskExecuting) {
+      return null;
+    }
 
-  const bannerVariant = useMemo(() => {
-    if (isError) return 'error';
-    if (isSuccess) return 'success';
-    if (isTerminated) return 'warning';
-    if (isCanceled) return 'canceled';
+    return getWaitingContext(executionLog, tasklistBaseUrl, currentOperateUrl, operateBaseUrl);
+  }, [ isTaskExecuting, executionLog, tasklistBaseUrl, currentOperateUrl, operateBaseUrl ]);
+
+  const [ elapsedMs, setElapsedMs ] = useState(/** @type {number|null} */ (null));
+
+  // Live elapsed timer while a run is executing
+  useEffect(() => {
+    if (!isTaskExecuting || !executionStartedAt) {
+      setElapsedMs(null);
+
+      return;
+    }
+
+    const tick = () => setElapsedMs(Date.now() - executionStartedAt);
+
+    tick();
+
+    const interval = setInterval(tick, 100);
+
+    return () => clearInterval(interval);
+  }, [ isTaskExecuting, executionStartedAt ]);
+
+  const durationText = useMemo(() => {
+    if (isTaskExecuting) {
+      return elapsedMs !== null ? formatDuration(elapsedMs) : null;
+    }
+
+    if (output?.startedAt && output?.finishedAt) {
+      return formatDuration(output.finishedAt - output.startedAt);
+    }
+
     return null;
-  }, [ isError, isSuccess, isTerminated, isCanceled ]);
+  }, [ isTaskExecuting, elapsedMs, output ]);
 
-  const statusIcon = useMemo(() => {
-    if (isError) {
-      return <WarningFilled size={ 16 } />;
-    }
+  const hasRunError = !!(output?.incident || output?.error);
 
-    if (isSuccess) {
-      return <CheckmarkFilled size={ 16 } />;
-    }
+  // A run only exists once the process instance was started; deploy/start
+  // failures render no strips
+  const hasStartedInstance = useMemo(() => {
+    return (executionLog || []).some(entry =>
+      entry.type === EXECUTION_LOG_ENTRY_TYPE.STATUS
+      && entry.status === EXECUTION_LOG_ENTRY_STATUS.INSTANCE_STARTED
+    );
+  }, [ executionLog ]);
 
-    if (isTerminated) {
-      return <StopFilledAlt size={ 16 } />;
-    }
+  if (isTaskExecuting) {
+    return (
+      <ExecutingCard
+        currentOperateUrl={ currentOperateUrl }
+        currentVariables={ currentVariables }
+        duration={ durationText }
+        element={ element }
+        executionLog={ executionLog }
+        isTaskExecuting={ isTaskExecuting }
+        output={ output }
+        taskExecutionState={ taskExecutionState }
+        waitingContext={ waitingContext }
+      />
+    );
+  }
 
-    if (isCanceled) {
-      return <ErrorFilled size={ 16 } />;
-    }
+  if (output) {
+    return (
+      <ResultCard
+        currentOperateUrl={ currentOperateUrl }
+        currentVariables={ currentVariables }
+        duration={ durationText }
+        element={ element }
+        executionLog={ executionLog }
+        hasRunError={ hasRunError }
+        hasStartedInstance={ hasStartedInstance }
+        isConnectionConfigured={ isConnectionConfigured }
+        isTaskExecuting={ isTaskExecuting }
+        onResetOutput={ onResetOutput }
+        output={ output }
+      />
+    );
+  }
 
-    return null;
-  }, [ isError, isSuccess, isTerminated, isCanceled ]);
+  if (!isConnectionConfigured) {
+    return (
+      <ConnectionErrorCard
+        title={ errorBannerTitle }
+        onConfigure={ onConfigure }
+      />
+    );
+  }
 
-  const timingText = useMemo(() => {
-    if (!output?.startedAt || !output?.finishedAt) return null;
+  if (inputError) {
+    return <IdlePlaceholder muted text="Fix the input to run a test." />;
+  }
 
-    const durationMs = output.finishedAt - output.startedAt;
-
-    return durationMs < 1000
-      ? `${durationMs}ms`
-      : `${(durationMs / 1000).toFixed(1)}s`;
-  }, [ output ]);
-
-  return (
-    <div className="output">
-      {
-        isTaskExecuting && <ExecutingBanner
-          currentOperateUrl={ currentOperateUrl }
-          entries={ executionLog }
-          operateBaseUrl={ operateBaseUrl }
-          tasklistBaseUrl={ tasklistBaseUrl }
-        />
-      }
-      { !isTaskExecuting && output && (
-        <ResultBanner
-          bannerVariant={ bannerVariant }
-          statusIcon={ statusIcon }
-          timingText={ timingText }
-          onResetOutput={ onResetOutput }
-          isConnectionConfigured={ isConnectionConfigured }
-          currentOperateUrl={ currentOperateUrl }
-          element={ element }
-          output={ output }
-          isTaskExecuting={ isTaskExecuting }
-        />
-      ) }
-      { !isTaskExecuting && !output ? (
-        <EmptyState />
-      ) : (
-        <div className="output__body">
-          <CollapsibleSection title="Log" defaultOpen={ true } isExecuting={ isTaskExecuting }>
-            { executionLog?.length > 0 ? (
-              <ExecutionLog
-                entries={ executionLog }
-                isTaskExecuting={ isTaskExecuting }
-              />
-            ) : (
-              <div className="output__section-empty">Result does not have a log.</div>
-            ) }
-          </CollapsibleSection>
-          <VariablesSection
-            title="Process Variables"
-            tooltip={ <span>Variables in the process scope. <a
-              href="https://docs.camunda.io/docs/components/concepts/variables/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >Learn more.</a></span> }
-            scope={ SCOPES.PROCESS }
-            output={ output }
-            currentVariables={ currentVariables }
-            isTaskExecuting={ isTaskExecuting }
-          />
-          <VariablesSection
-            title="Local Variables"
-            tooltip={ <span>Variables in the scope of the executed element. <a
-              href="https://docs.camunda.io/docs/components/concepts/variables/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >Learn more.</a></span> }
-            scope={ SCOPES.LOCAL }
-            output={ output }
-            currentVariables={ currentVariables }
-            isTaskExecuting={ isTaskExecuting }
-          />
-        </div>
-      ) }
-    </div>
-  );
+  return <IdlePlaceholder text="No run yet. Results appear here." />;
 }
 
 const HeaderLinks = (props) => {
@@ -305,25 +311,13 @@ const OperateLink = () => {
   />;
 };
 
-function PlayIcon() {
+function IdlePlaceholder({ muted = false, text }) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <mask id="mask0_191_9328" style={ { maskType: 'luminance' } } maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
-        <path d="M24 0H0V24H24V0Z" fill="white" />
-      </mask>
-      <g mask="url(#mask0_191_9328)">
-        <path d="M19.3852 2.40472C21.2873 2.50108 22.8 4.07389 22.8 6.00002V13.2H21.3V6.00002C21.3 4.84022 20.3598 3.90002 19.2 3.90002H4.80001C3.64021 3.90002 2.70001 4.84022 2.70001 6.00002V15.6C2.70001 16.7598 3.64021 17.7 4.80001 17.7H13.2V19.2H4.80001C2.87388 19.2 1.30106 17.6873 1.2047 15.7852L1.20001 15.6V6.00002C1.20001 4.0118 2.81179 2.40002 4.80001 2.40002H19.2L19.3852 2.40472Z" fill="currentColor" />
-        <path d="M15.9273 22.8C15.8405 22.8 15.7572 22.7579 15.6959 22.6829C15.6345 22.6079 15.6 22.5061 15.6 22.4V13.6001C15.6 13.5305 15.6148 13.4622 15.643 13.4018C15.6712 13.3415 15.7118 13.2911 15.7607 13.2557C15.8097 13.2203 15.8654 13.2011 15.9222 13.2C15.9791 13.1989 16.0352 13.216 16.0851 13.2496L22.6305 17.6495C22.6818 17.684 22.7247 17.7348 22.7544 17.7964C22.7843 17.858 22.8 17.9284 22.8 18C22.8 18.0716 22.7843 18.142 22.7544 18.2036C22.7247 18.2652 22.6818 18.316 22.6305 18.3505L16.0851 22.7504C16.0367 22.783 15.9825 22.8 15.9273 22.8Z" fill="currentColor" />
-      </g>
-    </svg>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="output__empty-state">
-      <div className="output__empty-state-icon" aria-hidden="true"><PlayIcon /></div>
-      <p className="output__empty-state-text">Result will appear here after you run the test.</p>
+    <div className="output">
+      <div className={ `output__placeholder${muted ? ' output__placeholder--muted' : ''}` }>
+        <Info size={ 18 } aria-hidden="true" />
+        <span>{ text }</span>
+      </div>
     </div>
   );
 }
@@ -337,7 +331,7 @@ function EmptyState() {
  * @param {string|null} [currentOperateUrl]
  * @param {string} [operateBaseUrl]
  *
- * @returns {{ title: string, description: React.ReactNode, linkUrl: string|null, linkLabel: string } | null}
+ * @returns {{ title: string, description: React.ReactNode, linkUrl: string|null, linkLabel: string, primaryLink?: boolean } | null}
  */
 export function getWaitingContext(entries, tasklistBaseUrl, currentOperateUrl, operateBaseUrl) {
   if (!entries || !entries.length) {
@@ -362,12 +356,13 @@ export function getWaitingContext(entries, tasklistBaseUrl, currentOperateUrl, o
     const tasklistUrl = getTasklistUrl(tasklistBaseUrl || '', pendingUserTask.data.userTaskKey || '');
 
     return {
-      title: 'Waiting for user task completion',
+      title: 'Waiting for user task',
       description: name
-        ? <>Complete the <span className="output__banner-tag">{ name }</span> user task to continue the test execution.</>
-        : 'Complete the user task to continue the test execution.',
+        ? <>Complete <span className="run-card__tag">{ name }</span> to continue.</>
+        : 'Complete the user task to continue.',
       linkUrl: tasklistUrl || null,
-      linkLabel: 'Open in Tasklist'
+      linkLabel: 'Open in Tasklist',
+      primaryLink: true
     };
   }
 
@@ -388,10 +383,10 @@ export function getWaitingContext(entries, tasklistBaseUrl, currentOperateUrl, o
     const messageName = activeSubscription.data.messageName;
 
     return {
-      title: 'Waiting for message correlation',
+      title: 'Waiting for message',
       description: messageName
-        ? <>Ensure the <span className="output__banner-tag">{ messageName }</span> message is correlated to continue the test execution.</>
-        : 'Ensure the required message is correlated to continue the test execution.',
+        ? <>Correlate <span className="run-card__tag">{ messageName }</span> to continue.</>
+        : 'Correlate the message to continue.',
       linkUrl: currentOperateUrl || null,
       linkLabel: 'Open in Operate'
     };
@@ -414,10 +409,10 @@ export function getWaitingContext(entries, tasklistBaseUrl, currentOperateUrl, o
     const jobType = pendingJob.data.type;
 
     return {
-      title: 'Waiting for job completion',
+      title: 'Waiting for job',
       description: jobType
-        ? <>Ensure the <span className="output__banner-tag">{ jobType }</span> job is completed to continue the test execution.</>
-        : 'Ensure the corresponding job is completed to continue the test execution.',
+        ? <>No worker has picked up <span className="run-card__tag">{ jobType }</span>.</>
+        : 'No worker has picked up the job.',
       linkUrl: currentOperateUrl || null,
       linkLabel: 'Open in Operate'
     };
@@ -447,206 +442,279 @@ export function getWaitingContext(entries, tasklistBaseUrl, currentOperateUrl, o
       : null;
 
     return {
-      title: 'Waiting for called process completion',
+      title: 'Waiting for called process',
       description: name
-        ? <>The <span className="output__banner-tag">{ name }</span> call activity is waiting for the called process to complete.</>
-        : 'The call activity is waiting for the called process to complete.',
+        ? <><span className="run-card__tag">{ name }</span> has not completed.</>
+        : 'The called process has not completed.',
       linkUrl: childProcessUrl,
-      linkLabel: 'Open called process in Operate'
+      linkLabel: 'Open called process'
     };
   }
 
   return null;
 }
 
-function ExecutingBanner({ currentOperateUrl, entries, operateBaseUrl, tasklistBaseUrl }) {
-  const waitingContext = getWaitingContext(entries, tasklistBaseUrl, currentOperateUrl, operateBaseUrl);
-
+/**
+ * Pinned card representing the current or last run. Everything the run
+ * produced lives inside it as strips.
+ *
+ * @param {Object} props
+ * @param {'info'|'success'|'error'|'warning'|'canceled'} props.accent
+ * @param {React.ReactNode} props.icon
+ * @param {string} props.title
+ * @param {string|null} [props.duration]
+ * @param {string|null} [props.meta]
+ * @param {React.ReactNode} [props.description]
+ * @param {{ label: string, value: string }[]|null} [props.detailRows]
+ * @param {React.ReactNode} [props.links]
+ * @param {React.MouseEventHandler<HTMLButtonElement>} [props.onClear]
+ * @param {React.ReactNode} [props.strips]
+ */
+function RunCard({ accent, icon, title, duration, meta, description, detailRows, links, onClear, strips }) {
   return (
-    <div className="output__banner output__banner--executing">
-      <div className="output__banner-header">
-        <div className="output__banner-main">
-          <Spinner className="output__banner-loader" />
-          <span className="output__banner-text">
-            { waitingContext ? waitingContext.title : 'Running test...' }
-          </span>
+    <div className="output">
+      <div className={ `run-card run-card--${accent}` }>
+        <div className="run-card__header">
+          <span className="run-card__icon">{ icon }</span>
+          <div className="run-card__header-main">
+            <div className="run-card__title-row">
+              <span className="run-card__title">{ title }</span>
+              { duration && <span className="run-card__duration">{ duration }</span> }
+            </div>
+            { meta && <p className="run-card__meta">{ meta }</p> }
+            { description && <p className="run-card__description">{ description }</p> }
+            { detailRows && (
+              <dl className="run-card__details">
+                { detailRows.map(({ label, value }, index) => (
+                  <div key={ index } className="run-card__details-row">
+                    <dt className="run-card__details-label">{ label }</dt>
+                    <dd className="run-card__details-value">{ value }</dd>
+                  </div>
+                )) }
+              </dl>
+            ) }
+            { links && <div className="run-card__links">{ links }</div> }
+          </div>
+          { onClear && (
+            <Tooltip label="Delete result" align="bottom-end">
+              <button
+                type="button"
+                className="run-card__clear"
+                aria-label="Delete result"
+                onClick={ onClear }
+              >
+                <Trash2 size={ 15 } aria-hidden="true" />
+              </button>
+            </Tooltip>
+          ) }
         </div>
-        { currentOperateUrl && (
-          <Link
-            className="output__banner-operate-link"
-            href={ currentOperateUrl }
-            target="_blank"
-            renderIcon={ Launch }
-          >
-            Open in Operate
-          </Link>
-        ) }
+        { strips && <div className="run-card__strips">{ strips }</div> }
       </div>
-      { waitingContext && (
-        <div className="output__banner-details">
-          { waitingContext.description && (
-            <p className="output__banner-details-content">{ waitingContext.description }</p>
-          ) }
-          { waitingContext.linkUrl && waitingContext.linkUrl !== currentOperateUrl && (
-            <Link
-              className="output__banner-details-link"
-              href={ waitingContext.linkUrl }
-              target="_blank"
-              renderIcon={ Launch }
-            >
-              { waitingContext.linkLabel }
-            </Link>
-          ) }
-        </div>
-      ) }
     </div>
   );
 }
 
-function ResultBanner({
-  bannerVariant,
-  statusIcon,
-  timingText,
-  output,
-  onResetOutput,
-  isConnectionConfigured,
+function ConnectionErrorCard({ title, onConfigure }) {
+  return (
+    <div className="output">
+      <div className="run-card run-card--error">
+        <div className="run-card__header">
+          <span className="run-card__icon"><TriangleAlert size={ 18 } aria-hidden="true" /></span>
+          <div className="run-card__header-main">
+            <div className="run-card__title-row">
+              <span className="run-card__title">{ title }</span>
+            </div>
+            <p className="run-card__description">Connect a Camunda 8 cluster to run tests from the modeler.</p>
+            { onConfigure && (
+              <div className="run-card__actions">
+                <Button variant="secondary" size="sm" onClick={ onConfigure }>Configure connection</Button>
+              </div>
+            ) }
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ExecutingCard({
   currentOperateUrl,
+  currentVariables,
+  duration,
   element,
-  isTaskExecuting
+  executionLog,
+  isTaskExecuting,
+  output,
+  taskExecutionState,
+  waitingContext
 }) {
-  const headerText = useMemo(() => {
-    if (output) {
-      if (output.error) {
-        return output.error ? `Error: ${output?.error?.message}` : 'Error';
-      }
 
-      if (output.incident) {
-        return output.incident.errorType ? `Incident: ${output.incident.errorType}` : 'Incident';
-      }
-
-      if (output.success) {
-        return 'Test completed';
-      }
-
-      if (output.terminated) {
-        return 'Process instance terminated';
-      }
-
-      if (output.canceled) {
-        return 'Test canceled';
-      }
+  const title = useMemo(() => {
+    if (waitingContext) {
+      return waitingContext.title;
     }
 
-    return null;
-  }, [ output ]);
-
-  const detailsContent = useMemo(() => {
-    if (output?.success) {
-      return 'See output variables below.';
+    if (taskExecutionState === TASK_EXECUTION_STATE.DEPLOYING) {
+      return 'Deploying process';
     }
 
-    if (output?.terminated) {
-      return 'The process instance was terminated before the test could complete. This might be the expected behavior.';
+    if (taskExecutionState === TASK_EXECUTION_STATE.STARTING_INSTANCE) {
+      return 'Starting process instance';
     }
 
-    if (output?.canceled) {
-      return 'The test was manually canceled.';
-    }
+    return 'Running test';
+  }, [ waitingContext, taskExecutionState ]);
 
-    return null;
-  }, [ output ]);
+  const meta = !waitingContext && taskExecutionState !== TASK_EXECUTION_STATE.DEPLOYING
+    ? 'Process deployed.'
+    : null;
 
-  const incidentDetails = useMemo(() => {
-    if (output?.incident) {
-      return getIncidentDetails(output.incident);
-    }
-    return null;
-  }, [ output ]);
+  const links = [];
 
-  const isError = output?.error || output?.incident;
-  const [ detailsExpanded, setDetailsExpanded ] = useState(true);
+  if (waitingContext?.linkUrl) {
+    links.push(
+      <Link
+        key="waiting"
+        className={ waitingContext.primaryLink ? 'run-card__link--primary' : undefined }
+        href={ waitingContext.linkUrl }
+        target="_blank"
+        renderIcon={ Launch }
+      >
+        { waitingContext.linkLabel }
+      </Link>
+    );
+  }
+
+  if (currentOperateUrl && currentOperateUrl !== waitingContext?.linkUrl) {
+    links.push(
+      <Link
+        key="operate"
+        href={ currentOperateUrl }
+        target="_blank"
+        renderIcon={ Launch }
+      >
+        Open in Operate
+      </Link>
+    );
+  }
 
   return (
-    <div className={ `output__banner output__banner--${bannerVariant}` }>
-      <div className="output__banner-header" onClick={ isError ? () => setDetailsExpanded(!detailsExpanded) : undefined }>
-        <div className="output__banner-main">
-          <span className="output__banner-icon">{ statusIcon }</span>
-          <span className="output__banner-text">{ headerText }</span>
-        </div>
-        { timingText && <span className="output__banner-timing">{ timingText }</span> }
-        { isError && (
-          detailsExpanded ? <ChevronDown size={ 16 } className="output__banner-chevron output__banner-chevron--open" />
-            : <ChevronRight size={ 16 } className="output__banner-chevron" />
-        ) }
-      </div>
-      { detailsExpanded && detailsContent && (
-        <div className="output__banner-details">
-          <div className="output__banner-details-content">{ detailsContent }</div>
-        </div>
-      ) }
-      {
-        detailsExpanded && output?.error && (
-          <div className="output__banner-details">
-            <div className="output__banner-error">
-              <Tooltip className="has-tooltip" label={ <span>Details about the error that occurred during task execution</span> } align="bottom-start">
-                <span className="output__banner-error-heading">Error details</span>
-              </Tooltip>
-              <div className="output__banner-details-content">
-                <div className="output__banner-details-row">
-                  <dt className="output__banner-details-label">Message</dt>
-                  <dd className="output__banner-details-value">{ output.error?.message || 'No error message available' }</dd>
-                </div>
-                { output.error?.detail && (
-                  <div className="output__banner-details-row">
-                    <dt className="output__banner-details-label">Detail</dt>
-                    <dd className="output__banner-details-value">{ output.error.detail }</dd>
-                  </div>
-                ) }
-                { output.error?.errorType && (
-                  <div className="output__banner-details-row">
-                    <dt className="output__banner-details-label">Error type</dt>
-                    <dd className="output__banner-details-value">{ output.error.errorType }</dd>
-                  </div>
-                ) }
-                { output.error?.status != null && (
-                  <div className="output__banner-details-row">
-                    <dt className="output__banner-details-label">Status</dt>
-                    <dd className="output__banner-details-value">{ output.error.status }</dd>
-                  </div>
-                ) }
-                { output.error?.response && (
-                  <div className="output__banner-details-row">
-                    <dt className="output__banner-details-label">Response</dt>
-                    <dd className="output__banner-details-value">{ output.error.response }</dd>
-                  </div>
-                ) }
-              </div>
-            </div>
-          </div>
-        )
-      }
-      { detailsExpanded && incidentDetails && (
-        <div className="output__banner-details">
-          <div className="output__banner-incident">
-            <Tooltip className="has-tooltip" label={ <span>Details about the incident that occurred during task execution <Link
-              href="https://docs.camunda.io/docs/components/concepts/incidents/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >Learn more.</Link></span> } align="bottom-start">
-              <span className="output__banner-incident-heading">Incident details</span>
-            </Tooltip>
-            <div className="output__banner-details-content">
-              { incidentDetails.map(({ label, value }, i) => (
-                <div key={ i } className="output__banner-details-row">
-                  <dt className="output__banner-details-label">{ label }</dt>
-                  <dd className="output__banner-details-value">{ value }</dd>
-                </div>
-              )) }
-            </div>
-          </div>
-        </div>
-      ) }
-      <div className="output__banner-actions">
+    <RunCard
+      accent="info"
+      icon={ <Spinner size={ 18 } /> }
+      title={ title }
+      duration={ duration }
+      meta={ meta }
+      description={ waitingContext?.description }
+      links={ links.length ? links : null }
+      strips={ <>
+        <VariablesStrip
+          output={ output }
+          currentVariables={ currentVariables }
+          isTaskExecuting={ isTaskExecuting }
+          defaultOpen={ !waitingContext }
+        />
+        <TimelineStrip
+          entries={ executionLog }
+          isTaskExecuting={ isTaskExecuting }
+          hasError={ false }
+        />
+        <PluginStrips
+          element={ element }
+          output={ output }
+          isTaskExecuting={ isTaskExecuting }
+          executionLog={ executionLog }
+        />
+      </> }
+    />
+  );
+}
+
+function ResultCard({
+  currentOperateUrl,
+  currentVariables,
+  duration,
+  element,
+  executionLog,
+  hasRunError,
+  hasStartedInstance,
+  isConnectionConfigured,
+  isTaskExecuting,
+  onResetOutput,
+  output
+}) {
+
+  const accent = output.error || output.incident
+    ? 'error'
+    : output.success
+      ? 'success'
+      : output.terminated
+        ? 'warning'
+        : 'canceled';
+
+  const icon = output.error || output.incident
+    ? <TriangleAlert size={ 18 } aria-hidden="true" />
+    : output.success
+      ? <CircleCheck size={ 18 } aria-hidden="true" />
+      : output.terminated
+        ? <CircleStop size={ 18 } aria-hidden="true" />
+        : <CircleX size={ 18 } aria-hidden="true" />;
+
+  const title = output.error
+    ? 'Could not start test'
+    : output.incident
+      ? 'Incident'
+      : output.success
+        ? 'Test completed'
+        : output.terminated
+          ? 'Instance terminated'
+          : 'Test canceled';
+
+  const description = output.terminated
+    ? 'Terminated before the test could complete. This may be expected.'
+    : output.canceled
+      ? 'You stopped the test. Partial results kept below.'
+      : null;
+
+  const meta = useMemo(() => {
+    if (!output.success || !output.finishedAt) {
+      return null;
+    }
+
+    const time = new Date(output.finishedAt).toLocaleTimeString([], { hour12: false });
+
+    const processVariables = output.variables ? pickVariables(output.variables, SCOPES.PROCESS) : {};
+
+    const count = Object.keys(processVariables).length;
+
+    return `${time} · ${count} ${count === 1 ? 'variable' : 'variables'} in`;
+  }, [ output ]);
+
+  const detailRows = useMemo(() => {
+    if (output.incident) {
+      return getIncidentDetails(output.incident);
+    }
+
+    if (output.error) {
+      return getErrorDetails(output.error);
+    }
+
+    return null;
+  }, [ output ]);
+
+  // Deploy/start failures have no run, so no strips are rendered
+  const showStrips = !output.error || hasStartedInstance;
+
+  return (
+    <RunCard
+      accent={ accent }
+      icon={ icon }
+      title={ title }
+      duration={ duration }
+      meta={ meta }
+      description={ description }
+      detailRows={ detailRows }
+      links={ <>
         <OperateLink />
         <HeaderLinks
           onResetOutput={ onResetOutput }
@@ -656,9 +724,268 @@ function ResultBanner({
           output={ output }
           isTaskExecuting={ isTaskExecuting }
         />
+      </> }
+      onClear={ onResetOutput }
+      strips={ showStrips ? <>
+        <VariablesStrip
+          output={ output }
+          currentVariables={ currentVariables }
+          isTaskExecuting={ isTaskExecuting }
+          defaultOpen={ !!output.success }
+        />
+        <TimelineStrip
+          entries={ executionLog }
+          isTaskExecuting={ isTaskExecuting }
+          hasError={ hasRunError }
+        />
+        <PluginStrips
+          element={ element }
+          output={ output }
+          isTaskExecuting={ isTaskExecuting }
+          executionLog={ executionLog }
+        />
+      </> : null }
+    />
+  );
+}
+
+/**
+ * @param {import('../../types').TaskExecutionError} error
+ *
+ * @returns {{ label: string, value: string }[]}
+ */
+function getErrorDetails(error) {
+  const details = [
+    { label: 'Message', value: error?.message || 'No error message available' }
+  ];
+
+  if (error?.detail) {
+    details.push({ label: 'Detail', value: error.detail });
+  }
+
+  if (error?.errorType) {
+    details.push({ label: 'Error type', value: error.errorType });
+  }
+
+  if (error?.status != null) {
+    details.push({ label: 'Status', value: String(error.status) });
+  }
+
+  if (error?.response) {
+    details.push({ label: 'Response', value: error.response });
+  }
+
+  return details;
+}
+
+/**
+ * A collapsible strip inside the run card.
+ *
+ * @param {Object} props
+ * @param {string} props.label
+ * @param {boolean} [props.live=false] - Whether to show a `live` marker next to the label
+ * @param {string} [props.count] - Trailing count label (e.g. `3 events`)
+ * @param {boolean} [props.countError=false] - Whether to render the count in error color
+ * @param {boolean} [props.defaultOpen=false]
+ * @param {React.ReactNode} [props.headerContent] - Content rendered on the right side of the header (e.g. scope toggle)
+ * @param {boolean} [props.fullBleed=false] - Whether the body breaks the card's inset (foreign HTML)
+ * @param {React.MouseEventHandler<HTMLButtonElement>} [props.onOpenExternal] - If provided, renders a button that opens the content in its own window
+ * @param {React.ReactNode} props.children
+ */
+function RunStrip({ label, live = false, count, countError = false, defaultOpen = false, headerContent, fullBleed = false, onOpenExternal, children }) {
+  const [ isOpen, setIsOpen ] = useState(defaultOpen);
+
+  useEffect(() => {
+    setIsOpen(defaultOpen);
+  }, [ defaultOpen ]);
+
+  return (
+    <Collapsible
+      className="run-card__strip"
+      open={ isOpen }
+      onOpenChange={ setIsOpen }
+    >
+      <div className="run-card__strip-header">
+        <CollapsibleTrigger asChild>
+          <button
+            type="button"
+            className="run-card__strip-toggle"
+          >
+            <span className="run-card__strip-chevron">
+              { isOpen ? <ChevronDown size={ 14 } /> : <ChevronRight size={ 14 } /> }
+            </span>
+            <span className="run-card__strip-label">{ label }</span>
+            { live && <span className="run-card__strip-live">live</span> }
+          </button>
+        </CollapsibleTrigger>
+        { headerContent }
+        { onOpenExternal && (
+          <button
+            type="button"
+            className="run-card__strip-external"
+            aria-label={ `Open ${label} in new window` }
+            onClick={ onOpenExternal }
+          >
+            <Launch size={ 14 } aria-hidden="true" />
+          </button>
+        ) }
+        { count && (
+          <span className={ `run-card__strip-count${countError ? ' run-card__strip-count--error' : ''}` }>
+            { count }
+          </span>
+        ) }
       </div>
+      <CollapsibleContent
+        className={ `run-card__strip-body${fullBleed ? ' run-card__strip-body--full-bleed' : ''}` }
+      >
+        { children }
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+const PROCESS_SCOPE_TOOLTIP = (
+  <span>Variables in the process scope. <a
+    href="https://docs.camunda.io/docs/components/concepts/variables/"
+    target="_blank"
+    rel="noopener noreferrer"
+  >Learn more.</a></span>
+);
+
+const LOCAL_SCOPE_TOOLTIP = (
+  <span>Variables in the scope of the executed element. <a
+    href="https://docs.camunda.io/docs/components/concepts/variables/"
+    target="_blank"
+    rel="noopener noreferrer"
+  >Learn more.</a></span>
+);
+
+function VariablesStrip({ output, currentVariables, isTaskExecuting, defaultOpen }) {
+  const [ scope, setScope ] = useState(/** @type {typeof SCOPES[keyof typeof SCOPES]} */ (SCOPES.PROCESS));
+
+  const isLoading = isTaskExecuting && !currentVariables;
+
+  const variables = useMemo(() => {
+
+    // During execution, show current variables
+    if (isTaskExecuting && currentVariables && Object.keys(currentVariables).length > 0) {
+      return pickVariables(currentVariables, scope);
+    }
+
+    // After execution, show variables from output
+    if (output && output.variables) {
+      return pickVariables(output.variables, scope);
+    }
+
+    return null;
+  }, [ isTaskExecuting, currentVariables, output, scope ]);
+
+  const isEmpty = !variables || Object.keys(variables).length === 0;
+  const jsonValue = isEmpty ? '' : JSON.stringify(variables, null, 2);
+
+  const scopeToggle = (
+    <div className="run-card__scope-toggle">
+      <Tooltip className="has-tooltip" label={ PROCESS_SCOPE_TOOLTIP } align="bottom-end">
+        <button
+          type="button"
+          className={ `run-card__scope-option${scope === SCOPES.PROCESS ? ' run-card__scope-option--selected' : ''}` }
+          aria-pressed={ scope === SCOPES.PROCESS }
+          onClick={ () => setScope(SCOPES.PROCESS) }
+        >
+          Process
+        </button>
+      </Tooltip>
+      <Tooltip className="has-tooltip" label={ LOCAL_SCOPE_TOOLTIP } align="bottom-end">
+        <button
+          type="button"
+          className={ `run-card__scope-option${scope === SCOPES.LOCAL ? ' run-card__scope-option--selected' : ''}` }
+          aria-pressed={ scope === SCOPES.LOCAL }
+          onClick={ () => setScope(SCOPES.LOCAL) }
+        >
+          Local
+        </button>
+      </Tooltip>
     </div>
   );
+
+  return (
+    <RunStrip
+      label="Variables"
+      live={ isTaskExecuting }
+      defaultOpen={ defaultOpen }
+      headerContent={ scopeToggle }
+    >
+      { isLoading ? (
+        <div className="output__variables--skeleton">
+          <Skeleton />
+        </div>
+      ) : (
+        <OutputEditor value={ isEmpty ? '{}' : jsonValue } />
+      ) }
+    </RunStrip>
+  );
+}
+
+function TimelineStrip({ entries = [], isTaskExecuting, hasError }) {
+  const count = hasError ? '1 error' : `${entries.length} events`;
+
+  return (
+    <RunStrip
+      label="Timeline"
+      defaultOpen={ hasError }
+      count={ count }
+      countError={ hasError }
+    >
+      { entries.length > 0 ? (
+        <ExecutionLog
+          entries={ entries }
+          isTaskExecuting={ isTaskExecuting }
+        />
+      ) : (
+        <div className="output__section-empty">Result does not have a log.</div>
+      ) }
+    </RunStrip>
+  );
+}
+
+/**
+ * Renders plugins registered through `TaskTesting.Tab` (type
+ * `output.body.tab`) as strips inside the run card, in priority order.
+ * Plugins whose `render()` returns nothing are not rendered at all.
+ */
+function PluginStrips({ element, output, isTaskExecuting, executionLog }) {
+  const { getPlugins } = useContext(PluginContext);
+
+  const strips = getPlugins('output.body.tab')
+    .map((plugin, index) => {
+      const { fullBleed, onOpenExternal } = plugin;
+
+      return {
+        key: `plugin-${index}`,
+        label: plugin.label,
+        fullBleed: !!fullBleed,
+        onOpenExternal: isFunction(onOpenExternal)
+          ? () => onOpenExternal({ element, output, isTaskExecuting, executionLog })
+          : undefined,
+        children: plugin.render?.({ element, output, isTaskExecuting, executionLog }) || plugin.children
+      };
+    })
+    .filter(strip => strip.children);
+
+  if (!strips.length) {
+    return null;
+  }
+
+  return strips.map(strip => (
+    <RunStrip
+      key={ strip.key }
+      label={ strip.label }
+      fullBleed={ strip.fullBleed }
+      onOpenExternal={ strip.onOpenExternal }
+    >
+      { strip.children }
+    </RunStrip>
+  ));
 }
 
 function getIncidentDetails(incident) {
@@ -700,97 +1027,4 @@ function capitalize(string) {
   return string.replace(/([A-Z])/g, ' $1').replace(/^./, (match) => match.toUpperCase());
 }
 
-/**
- * @param {Object} props
- * @param {string} props.title
- * @param {string} [props.tooltip]
- * @param {boolean} [props.defaultOpen]
- * @param {boolean} [props.isExecuting]
- * @param {React.ReactNode} props.children
- */
-function CollapsibleSection({ title, tooltip, defaultOpen = true, isExecuting = false, children }) {
-  const [ isOpen, setIsOpen ] = useState(defaultOpen);
-  const [ isStuck, setIsStuck ] = useState(false);
 
-  /** @type {React.MutableRefObject<HTMLDivElement|null>} */
-  const sentinelRef = useRef(null);
-
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-
-    const scrollParent = el.closest('.task-testing__container--body');
-    if (!scrollParent) return;
-
-    const observer = new IntersectionObserver(
-      ([ entry ]) => {
-        setIsStuck(!entry.isIntersecting);
-      },
-      { root: scrollParent, threshold: 0 }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div className={ `output__collapsible${isOpen ? ' output__collapsible--open' : ''}` }>
-      <div ref={ sentinelRef } className="output__collapsible-sentinel" />
-      <button
-        className={ `output__collapsible-header${isStuck ? ' stuck' : ''}` }
-        onClick={ () => setIsOpen(!isOpen) }
-      >
-        {
-          isOpen ? <ChevronDown size={ 16 } className="output__chevron output__chevron--open" />
-            : <ChevronRight size={ 16 } className="output__chevron" />
-        }
-        { tooltip ? (
-          <Tooltip className="has-tooltip" label={ tooltip } align="bottom-start">
-            <span className="output__collapsible-title">{ title }</span>
-          </Tooltip>
-        ) : (
-          <span className="output__collapsible-title">{ title }</span>
-        ) }
-      </button>
-      { isOpen && (
-        <div className="output__collapsible-content">
-          { children }
-        </div>
-      ) }
-    </div>
-  );
-}
-
-function VariablesSection({ title, tooltip, scope, output, currentVariables, isTaskExecuting }) {
-  const isLoading = isTaskExecuting && !currentVariables;
-
-  const variables = useMemo(() => {
-
-    // During execution, show current variables
-    if (isTaskExecuting && currentVariables && Object.keys(currentVariables).length > 0) {
-      return pickVariables(currentVariables, scope);
-    }
-
-    // After execution, show variables from output
-    if (output && output.variables) {
-      return pickVariables(output.variables, scope);
-    }
-
-    return null;
-  }, [ isTaskExecuting, currentVariables, output, scope ]);
-
-  const isEmpty = !variables || Object.keys(variables).length === 0;
-  const jsonValue = isEmpty ? '' : JSON.stringify(variables, null, 2);
-
-  return (
-    <CollapsibleSection title={ title } tooltip={ tooltip } defaultOpen={ true } isExecuting={ isTaskExecuting }>
-      { isLoading ? (
-        <div className="output__variables--skeleton">
-          <Skeleton />
-        </div>
-      ) : (
-        <OutputEditor value={ isEmpty ? '{}' : jsonValue } />
-      ) }
-    </CollapsibleSection>
-  );
-}
