@@ -5,6 +5,7 @@
  * } from '@camunda8/orchestration-cluster-api'
  */
 
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
@@ -22,9 +23,11 @@ let api;
 
 try {
 
-  // Local overrides (gitignored) take precedence over the tracked defaults
+  // Local overrides (gitignored) take precedence; without `.env`, the c8run defaults from `.env.example` apply
+  const envFile = fs.existsSync(path.join(__dirname, '.env')) ? '.env' : '.env.example';
+
   const { parsed: localConfig } = dotenv.config({ path: path.join(__dirname, '.env.local') });
-  const { parsed: defaultConfig } = dotenv.config({ path: path.join(__dirname, '.env') });
+  const { parsed: defaultConfig } = dotenv.config({ path: path.join(__dirname, envFile) });
 
   const config = { ...defaultConfig, ...localConfig };
 
