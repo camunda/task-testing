@@ -3,7 +3,17 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { debounce, merge } from 'min-dash';
 
 import BpmnModeler from 'camunda-bpmn-js/lib/camunda-cloud/Modeler';
-import 'camunda-bpmn-js/dist/assets/camunda-cloud-modeler.css';
+
+// TODO: temporary until a `camunda-bpmn-js` release bundles the theme-adopted styles;
+// then replace with `camunda-bpmn-js/dist/assets/camunda-cloud-modeler.css` and drop the `diagram-js` and `bpmn-js` devDependencies
+import 'diagram-js/assets/diagram-js.css';
+import 'bpmn-js/dist/assets/bpmn-js.css';
+import 'bpmn-js-element-templates/dist/assets/element-templates.css';
+
+import 'camunda-bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
+import 'camunda-bpmn-js/dist/assets/properties-panel.css';
+import 'camunda-bpmn-js/dist/assets/element-template-chooser.css';
+import 'camunda-bpmn-js/dist/assets/color-picker.css';
 
 import { BpmnImprovedCanvasModule } from '@camunda/improved-canvas';
 
@@ -16,10 +26,7 @@ import connectorTemplates from './fixtures/connectorTemplates.json';
 import defaultConfig from './fixtures/config';
 
 import '@camunda/design-system/styles.css';
-import '@bpmn-io/shadcn-theme/assets/tokens.css';
-import '@bpmn-io/shadcn-theme/assets/properties-panel.css';
-import '@bpmn-io/shadcn-theme/assets/diagram.css';
-import '@bpmn-io/shadcn-theme/assets/c4.css';
+import '@bpmn-io/c4-theme/assets/all.css';
 import './style.css';
 import { RPALink, RPATab } from './plugins/RPA';
 import {
@@ -221,7 +228,7 @@ function App() {
 
   return (
     <>
-      <div className="modeler bpmn-io-shadcn-theme" ref={ modelerRef }>
+      <div className="modeler" ref={ modelerRef }>
         <div id="canvas" className="canvas"></div>
         <ResizablePanel className="properties-panel" defaultWidth={ 300 } minWidth={ 200 } maxWidth={ 600 }>
           <div id="properties" style={ { width: '100%', height: '100%' } }></div>
