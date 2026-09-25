@@ -103,7 +103,7 @@ It requires a Camunda 8 instance to run.
 
 We recommend using [Camunda 8 Run](https://docs.camunda.io/docs/self-managed/quickstart/developer-quickstart/c8run/) for development.
 
-Configure your Camunda 8 environment by copying `demo/.env.example` to `demo/.env` and filling in your cluster credentials. Machine-specific overrides can go into `demo/.env.local`. Both files are gitignored — never commit credentials.
+Without further setup, the demo connects to a local Camunda 8 Run using the defaults in `demo/.env.example`. To use another cluster, copy `demo/.env.example` to `demo/.env` and fill in your cluster credentials. Machine-specific overrides can go into `demo/.env.local`. Both files are gitignored — never commit credentials.
 
 ## Build
 
