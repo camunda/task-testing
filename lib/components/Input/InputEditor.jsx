@@ -19,9 +19,8 @@ import theme from '../shared/CodeMirrorTheme';
 import { getAutocompletionExtensions } from '../../utils/autocompletion';
 
 import { SCOPES } from '../../utils/variables';
-import { Button } from '@camunda/design-system';
-import { RotateCcw as Reset } from 'lucide-react';
-import Tooltip from '../shared/Tooltip';
+import { IconButton } from '@camunda/design-system';
+import { RotateCcw as Reset } from '@camunda/design-system/icons';
 
 const fromPropAnnotation = Annotation.define();
 
@@ -193,15 +192,13 @@ export default function InputEditor({
 
   return <div className={ classNames('code__editor', { 'code__editor--error': error }) }>
     <div className="code__editor-buttons">
-      <Tooltip label="Reset to default values" align="bottom-end">
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label="Reset to default values"
-          onClick={ onClear }>
-          <Reset aria-hidden="true" />
-        </Button>
-      </Tooltip>
+      <IconButton
+        variant="ghost"
+        size="xs"
+        label="Reset to default values"
+        icon={ Reset }
+        onClick={ onClear }
+      />
     </div>
     <div className="code__editor-codemirror">
       <div ref={ ref } className="code__editor-codemirror-inner"></div>
