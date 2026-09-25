@@ -9,7 +9,7 @@ import React, { useState } from 'react';
 import {
   ChevronRight,
   ChevronDown
-} from 'lucide-react';
+} from '@camunda/design-system/icons';
 
 import classNames from 'classnames';
 

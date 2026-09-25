@@ -1,8 +1,10 @@
 import React from 'react';
-import classNames from 'classnames';
+
+import { Link as DSLink } from '@camunda/design-system';
 
 /**
- * Anchor link styled to match the design system.
+ * Design system link with an optional trailing icon. Renders disabled when it
+ * has neither `href` nor `onClick`.
  *
  * @param {Object} props
  * @param {React.ReactNode} [props.children] - Link content
@@ -17,28 +19,14 @@ import classNames from 'classnames';
 export default function Link({
   children,
   href,
-  target,
-  rel,
-  className,
   onClick,
-  role,
   renderIcon: Icon,
   ...rest
 }) {
-  const computedRel = rel ?? (target === '_blank' ? 'noopener noreferrer' : undefined);
-
   return (
-    <a
-      href={ href }
-      target={ target }
-      rel={ computedRel }
-      className={ classNames('link', { 'link--icon': Icon }, className) }
-      onClick={ onClick }
-      role={ role }
-      { ...rest }
-    >
+    <DSLink href={ href } onClick={ onClick } disabled={ !href && !onClick } { ...rest }>
       <span className="link__text">{ children }</span>
-      { Icon && <Icon className="link__icon" size={ 16 } aria-hidden="true" /> }
-    </a>
+      { Icon && <Icon aria-hidden="true" /> }
+    </DSLink>
   );
 }

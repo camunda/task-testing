@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 
-import { Info as Information } from 'lucide-react';
+import { Alert, Label } from '@camunda/design-system';
 
 import InputEditor from './InputEditor';
 
@@ -29,15 +29,13 @@ export default function Input({
   return (
     <div className="input" ref={ containerRef }>
       <div className="input__header">
-        <div className="input__header--title">
-          <Tooltip className="has-tooltip" label={ <span>Variables the process instance will be started with. <Link
-            href="https://docs.camunda.io/docs/components/concepts/variables/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >Learn more.</Link></span> } align="bottom-start">
-            <span>Process variables</span>
-          </Tooltip>
-        </div>
+        <Tooltip className="has-tooltip" label={ <span>Variables the process instance will be started with. <Link
+          href="https://docs.camunda.io/docs/components/concepts/variables/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >Learn more.</Link></span> } align="bottom-start">
+          <Label>Process variables</Label>
+        </Tooltip>
       </div>
       <InputEditor
         allOutputs={ allOutputs }
@@ -47,14 +45,10 @@ export default function Input({
         onErrorChange={ onErrorChange }
         variablesForElement={ variablesForElement }
       />
-      <div className="input__footer">
-        <div className="input__footer--icon">
-          <Information />
-        </div>
-        <div className="input__footer--text">
-          Optionally define process variables to start the process instance with.
-        </div>
-      </div>
+      <Alert
+        variant="info"
+        description="Optionally define process variables to start the process instance with."
+      />
     </div>
   );
 }

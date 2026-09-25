@@ -1,6 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
-import { Loader2 } from 'lucide-react';
+import { Loader2 } from '@camunda/design-system/icons';
 
 /**
  * Inline loading spinner.
@@ -12,7 +12,7 @@ import { Loader2 } from 'lucide-react';
 export default function Spinner({ className, size = 16, ...rest }) {
   return (
     <Loader2
-      className={ classNames('spinner', className) }
+      className={ classNames('spinner animate-spin', className) }
       size={ size }
       role="status"
       aria-label="Loading"

@@ -6,6 +6,14 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+* `FEAT`: build the panel on `@camunda/design-system` components and tokens
+* `FEAT`: reorganize the panel around a run card; `TaskTesting.Tab` plugins render as collapsible strips inside it
+* `DEPS`: drop `lucide-react`; icons come from `@camunda/design-system/icons`
+
+### Breaking Changes
+
+* Requires `@camunda/design-system@>=0.63.0` as a peer dependency. The host must load `@camunda/design-system/styles.css`.
+
 ## 6.0.1
 
 * `FIX`: do not prefill camunda variables ([#102](https://github.com/camunda/task-testing/pull/102))

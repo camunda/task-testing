@@ -16,7 +16,21 @@
 
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-import { Button, Collapsible, CollapsibleContent, CollapsibleTrigger } from '@camunda/design-system';
+import {
+  Alert,
+  Button,
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+  IconButton,
+  InlineCode,
+  Skeleton,
+  ToggleGroup,
+  ToggleGroupItem,
+  Tooltip as DSTooltip,
+  TooltipContent,
+  TooltipTrigger
+} from '@camunda/design-system';
 
 import {
   CircleCheck,
@@ -28,17 +42,16 @@ import {
   CircleStop,
   Trash2,
   TriangleAlert
-} from 'lucide-react';
+} from '@camunda/design-system/icons';
 
 import { isFunction } from 'min-dash';
 
 import OutputEditor from './OutputEditor';
 import { ExecutionLog, formatDuration } from './ExecutionLog';
 import { PluginContext } from '../shared/plugins';
-import Tooltip from '../shared/Tooltip';
+import Tooltip, { TOOLTIP_CONTENT_CLASS } from '../shared/Tooltip';
 import Link from '../shared/Link';
 import Spinner from '../shared/Spinner';
-import Skeleton from '../shared/Skeleton';
 import { SCOPES, pickVariables } from '../../utils/variables';
 import { EXECUTION_LOG_ENTRY_STATUS, EXECUTION_LOG_ENTRY_TYPE } from '../../ExecutionLog';
 import { TASK_EXECUTION_STATE } from '../../TaskExecution';
@@ -178,7 +191,7 @@ export default function Output({
   }
 
   if (inputError) {
-    return <IdlePlaceholder muted text="Fix the input to run a test." />;
+    return <IdlePlaceholder text="Fix the input to run a test." />;
   }
 
   return <IdlePlaceholder text="No run yet. Results appear here." />;
@@ -262,7 +275,7 @@ const HeaderLinks = (props) => {
  */
 const DEFAULT_RENDER = /** @type {(props?: any) => React.ReactNode} */ (() => null);
 
-export const HeaderLink = ({ children = null, render = DEFAULT_RENDER, visible, href, target, className, onClick = undefined, renderIcon, role = undefined, tooltip, priority = 1000 }) => {
+export const HeaderLink = ({ children = null, render = DEFAULT_RENDER, visible, href, target, className = undefined, onClick = undefined, renderIcon, role = undefined, tooltip, priority = 1000 }) => {
   const { registerPlugin, unregisterPlugin } = useContext(PluginContext);
 
   useEffect(() => {
@@ -288,11 +301,6 @@ const OperateLink = () => {
     return currentOperateUrl || output?.operateUrl;
   }, []);
 
-  const getClassName = useCallback(({ output, currentOperateUrl }) => {
-    const operateUrl = currentOperateUrl || output?.operateUrl;
-    return !operateUrl ? 'link--disabled' : undefined;
-  }, []);
-
   const getTooltip = useCallback(({ output, currentOperateUrl }) => {
     const operateUrl = currentOperateUrl || output?.operateUrl;
 
@@ -305,19 +313,15 @@ const OperateLink = () => {
     visible={ getVisible }
     href={ getHref }
     target="_blank"
-    className={ getClassName }
     tooltip={ getTooltip }
     renderIcon={ Launch }
   />;
 };
 
-function IdlePlaceholder({ muted = false, text }) {
+function IdlePlaceholder({ text }) {
   return (
     <div className="output">
-      <div className={ `output__placeholder${muted ? ' output__placeholder--muted' : ''}` }>
-        <Info size={ 18 } aria-hidden="true" />
-        <span>{ text }</span>
-      </div>
+      <Alert description={ text } icon={ Info } />
     </div>
   );
 }
@@ -331,7 +335,7 @@ function IdlePlaceholder({ muted = false, text }) {
  * @param {string|null} [currentOperateUrl]
  * @param {string} [operateBaseUrl]
  *
- * @returns {{ title: string, description: React.ReactNode, linkUrl: string|null, linkLabel: string, primaryLink?: boolean } | null}
+ * @returns {{ title: string, description: React.ReactNode, linkUrl: string|null, linkLabel: string } | null}
  */
 export function getWaitingContext(entries, tasklistBaseUrl, currentOperateUrl, operateBaseUrl) {
   if (!entries || !entries.length) {
@@ -358,11 +362,10 @@ export function getWaitingContext(entries, tasklistBaseUrl, currentOperateUrl, o
     return {
       title: 'Waiting for user task',
       description: name
-        ? <>Complete <span className="run-card__tag">{ name }</span> to continue.</>
+        ? <>Complete <InlineCode>{ name }</InlineCode> to continue.</>
         : 'Complete the user task to continue.',
       linkUrl: tasklistUrl || null,
-      linkLabel: 'Open in Tasklist',
-      primaryLink: true
+      linkLabel: 'Open in Tasklist'
     };
   }
 
@@ -385,7 +388,7 @@ export function getWaitingContext(entries, tasklistBaseUrl, currentOperateUrl, o
     return {
       title: 'Waiting for message',
       description: messageName
-        ? <>Correlate <span className="run-card__tag">{ messageName }</span> to continue.</>
+        ? <>Correlate <InlineCode>{ messageName }</InlineCode> to continue.</>
         : 'Correlate the message to continue.',
       linkUrl: currentOperateUrl || null,
       linkLabel: 'Open in Operate'
@@ -411,7 +414,7 @@ export function getWaitingContext(entries, tasklistBaseUrl, currentOperateUrl, o
     return {
       title: 'Waiting for job',
       description: jobType
-        ? <>No worker has picked up <span className="run-card__tag">{ jobType }</span>.</>
+        ? <>No worker has picked up <InlineCode>{ jobType }</InlineCode>.</>
         : 'No worker has picked up the job.',
       linkUrl: currentOperateUrl || null,
       linkLabel: 'Open in Operate'
@@ -444,7 +447,7 @@ export function getWaitingContext(entries, tasklistBaseUrl, currentOperateUrl, o
     return {
       title: 'Waiting for called process',
       description: name
-        ? <><span className="run-card__tag">{ name }</span> has not completed.</>
+        ? <><InlineCode>{ name }</InlineCode> has not completed.</>
         : 'The called process has not completed.',
       linkUrl: childProcessUrl,
       linkLabel: 'Open called process'
@@ -471,16 +474,29 @@ export function getWaitingContext(entries, tasklistBaseUrl, currentOperateUrl, o
  * @param {React.ReactNode} [props.strips]
  */
 function RunCard({ accent, icon, title, duration, meta, description, detailRows, links, onClear, strips }) {
+  const hasBody = meta || description || detailRows || links;
+
   return (
     <div className="output">
       <div className={ `run-card run-card--${accent}` }>
-        <div className="run-card__header">
+        <div className="run-card__title-bar">
           <span className="run-card__icon">{ icon }</span>
+          <div className="run-card__title-row">
+            <span className="run-card__title">{ title }</span>
+            { duration && <span className="run-card__duration">{ duration }</span> }
+          </div>
+          { onClear && (
+            <IconButton
+              variant="ghost"
+              size="xs"
+              label="Delete result"
+              icon={ Trash2 }
+              onClick={ onClear }
+            />
+          ) }
+        </div>
+        { hasBody && (
           <div className="run-card__header-main">
-            <div className="run-card__title-row">
-              <span className="run-card__title">{ title }</span>
-              { duration && <span className="run-card__duration">{ duration }</span> }
-            </div>
             { meta && <p className="run-card__meta">{ meta }</p> }
             { description && <p className="run-card__description">{ description }</p> }
             { detailRows && (
@@ -495,19 +511,7 @@ function RunCard({ accent, icon, title, duration, meta, description, detailRows,
             ) }
             { links && <div className="run-card__links">{ links }</div> }
           </div>
-          { onClear && (
-            <Tooltip label="Delete result" align="bottom-end">
-              <button
-                type="button"
-                className="run-card__clear"
-                aria-label="Delete result"
-                onClick={ onClear }
-              >
-                <Trash2 size={ 15 } aria-hidden="true" />
-              </button>
-            </Tooltip>
-          ) }
-        </div>
+        ) }
         { strips && <div className="run-card__strips">{ strips }</div> }
       </div>
     </div>
@@ -517,22 +521,13 @@ function RunCard({ accent, icon, title, duration, meta, description, detailRows,
 function ConnectionErrorCard({ title, onConfigure }) {
   return (
     <div className="output">
-      <div className="run-card run-card--error">
-        <div className="run-card__header">
-          <span className="run-card__icon"><TriangleAlert size={ 18 } aria-hidden="true" /></span>
-          <div className="run-card__header-main">
-            <div className="run-card__title-row">
-              <span className="run-card__title">{ title }</span>
-            </div>
-            <p className="run-card__description">Connect a Camunda 8 cluster to run tests from the modeler.</p>
-            { onConfigure && (
-              <div className="run-card__actions">
-                <Button variant="secondary" size="sm" onClick={ onConfigure }>Configure connection</Button>
-              </div>
-            ) }
-          </div>
-        </div>
-      </div>
+      <Alert
+        variant="destructive"
+        title={ title }
+        description="Connect a Camunda 8 cluster to run tests from the modeler."
+      >
+        { onConfigure && <Button variant="secondary" size="sm" onClick={ onConfigure }>Configure connection</Button> }
+      </Alert>
     </div>
   );
 }
@@ -575,7 +570,6 @@ function ExecutingCard({
     links.push(
       <Link
         key="waiting"
-        className={ waitingContext.primaryLink ? 'run-card__link--primary' : undefined }
         href={ waitingContext.linkUrl }
         target="_blank"
         renderIcon={ Launch }
@@ -820,14 +814,14 @@ function RunStrip({ label, live = false, count, countError = false, defaultOpen 
         </CollapsibleTrigger>
         { headerContent }
         { onOpenExternal && (
-          <button
-            type="button"
+          <IconButton
             className="run-card__strip-external"
-            aria-label={ `Open ${label} in new window` }
+            variant="ghost"
+            size="xs"
+            label={ `Open ${label} in new window` }
+            icon={ Launch }
             onClick={ onOpenExternal }
-          >
-            <Launch size={ 14 } aria-hidden="true" />
-          </button>
+          />
         ) }
         { count && (
           <span className={ `run-card__strip-count${countError ? ' run-card__strip-count--error' : ''}` }>
@@ -860,6 +854,21 @@ const LOCAL_SCOPE_TOOLTIP = (
   >Learn more.</a></span>
 );
 
+// the item wraps the trigger so its `data-state` (on/off) wins over the
+// tooltip's, and the item stays a direct child of the toggle group
+function ScopeToggleItem({ value, tooltip, children }) {
+  return (
+    <DSTooltip>
+      <ToggleGroupItem value={ value } asChild className="h-6 px-2 text-xs">
+        <TooltipTrigger>{ children }</TooltipTrigger>
+      </ToggleGroupItem>
+      <TooltipContent side="bottom" align="end" className={ TOOLTIP_CONTENT_CLASS }>
+        { tooltip }
+      </TooltipContent>
+    </DSTooltip>
+  );
+}
+
 function VariablesStrip({ output, currentVariables, isTaskExecuting, defaultOpen }) {
   const [ scope, setScope ] = useState(/** @type {typeof SCOPES[keyof typeof SCOPES]} */ (SCOPES.PROCESS));
 
@@ -885,26 +894,19 @@ function VariablesStrip({ output, currentVariables, isTaskExecuting, defaultOpen
 
   const scopeToggle = (
     <div className="run-card__scope-toggle">
-      <Tooltip className="has-tooltip" label={ PROCESS_SCOPE_TOOLTIP } align="bottom-end">
-        <button
-          type="button"
-          className={ `run-card__scope-option${scope === SCOPES.PROCESS ? ' run-card__scope-option--selected' : ''}` }
-          aria-pressed={ scope === SCOPES.PROCESS }
-          onClick={ () => setScope(SCOPES.PROCESS) }
-        >
-          Process
-        </button>
-      </Tooltip>
-      <Tooltip className="has-tooltip" label={ LOCAL_SCOPE_TOOLTIP } align="bottom-end">
-        <button
-          type="button"
-          className={ `run-card__scope-option${scope === SCOPES.LOCAL ? ' run-card__scope-option--selected' : ''}` }
-          aria-pressed={ scope === SCOPES.LOCAL }
-          onClick={ () => setScope(SCOPES.LOCAL) }
-        >
-          Local
-        </button>
-      </Tooltip>
+      <ToggleGroup
+        type="single"
+        variant="outline"
+        size="sm"
+        aria-label="Variable scope"
+        value={ scope }
+
+        // a single toggle group allows deselecting; one scope is always shown
+        onValueChange={ value => value && setScope(/** @type {typeof scope} */ (value)) }
+      >
+        <ScopeToggleItem value={ SCOPES.PROCESS } tooltip={ PROCESS_SCOPE_TOOLTIP }>Process</ScopeToggleItem>
+        <ScopeToggleItem value={ SCOPES.LOCAL } tooltip={ LOCAL_SCOPE_TOOLTIP }>Local</ScopeToggleItem>
+      </ToggleGroup>
     </div>
   );
 
@@ -916,9 +918,7 @@ function VariablesStrip({ output, currentVariables, isTaskExecuting, defaultOpen
       headerContent={ scopeToggle }
     >
       { isLoading ? (
-        <div className="output__variables--skeleton">
-          <Skeleton />
-        </div>
+        <Skeleton className="output__skeleton" />
       ) : (
         <OutputEditor value={ isEmpty ? '{}' : jsonValue } />
       ) }

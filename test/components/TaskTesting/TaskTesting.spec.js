@@ -193,10 +193,10 @@ describe('TaskTesting', function() {
 
         // then
         await waitFor(async () => {
-          expect(document.querySelector('.run-card--error')).to.exist;
+          expect(screen.getByRole('alert')).to.exist;
         });
 
-        const title = document.querySelector('.run-card__title');
+        const title = document.querySelector('[data-slot="alert-title"]');
 
         expect(title).to.exist;
         expect(title.textContent).to.equal('Error');
@@ -225,7 +225,7 @@ describe('TaskTesting', function() {
         const button = await screen.findByTestId('test-task-btn');
 
         await waitFor(() => {
-          expect(document.querySelector('.run-card--error')).to.exist;
+          expect(screen.getByRole('alert')).to.exist;
         });
 
         button.click();
@@ -254,10 +254,10 @@ describe('TaskTesting', function() {
 
         // then
         await waitFor(async () => {
-          expect(document.querySelector('.run-card--error')).to.exist;
+          expect(screen.getByRole('alert')).to.exist;
         });
 
-        const title = document.querySelector('.run-card__title');
+        const title = document.querySelector('[data-slot="alert-title"]');
 
         expect(title).to.exist;
         expect(title.textContent).to.equal('Connection error');
@@ -277,10 +277,10 @@ describe('TaskTesting', function() {
 
         // then
         await waitFor(async () => {
-          expect(document.querySelector('.run-card--error')).to.exist;
+          expect(screen.getByRole('alert')).to.exist;
         });
 
-        const title = document.querySelector('.run-card__title');
+        const title = document.querySelector('[data-slot="alert-title"]');
 
         expect(title).to.exist;
         expect(title.textContent).to.equal('Error');
@@ -306,10 +306,8 @@ describe('TaskTesting', function() {
 
         // then
         await waitFor(() => {
-          expect(document.querySelector('.output__placeholder--muted')).to.exist;
+          expect(screen.getByText('Fix the input to run a test.')).to.exist;
         });
-
-        expect(screen.getByText('Fix the input to run a test.')).to.exist;
 
         // input group is expanded and the editor shows the error state
         const editor = document.querySelector('.code__editor--error');
@@ -343,7 +341,7 @@ describe('TaskTesting', function() {
         const button = await screen.findByTestId('test-task-btn');
 
         await waitFor(() => {
-          expect(document.querySelector('.output__placeholder--muted')).to.exist;
+          expect(screen.getByText('Fix the input to run a test.')).to.exist;
         });
 
         button.click();
