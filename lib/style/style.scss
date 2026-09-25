@@ -667,15 +667,10 @@
     display: flex;
     flex-direction: column;
 
-    &.code__editor--error {
-      .code__editor-codemirror {
-        border-color: var(--danger-foreground-subtle);
-        background-color: var(--danger-background-subtle);
-      }
-
-      .cm-gutter {
-        background-color: var(--danger-background-subtle);
-      }
+    // matches the design system's invalid Input
+    &.code__editor--error .code__editor-codemirror {
+      border-color: var(--danger-foreground-subtle);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger-foreground-subtle) 20%, transparent);
     }
 
     .code__editor-codemirror {
@@ -688,8 +683,11 @@
       }
 
       .cm-gutters {
+        border-right-color: var(--border);
         border-top-left-radius: calc(0.5rem - 1px);
         border-bottom-left-radius: calc(0.5rem - 1px);
+        background-color: transparent;
+        color: var(--neutral-foreground-subtle);
       }
 
       .cm-content {

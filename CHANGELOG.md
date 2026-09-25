@@ -9,6 +9,7 @@ ___Note:__ Yet to be released changes appear here._
 * `FEAT`: build the panel on `@camunda/design-system` components and tokens
 * `FEAT`: reorganize the panel around a run card; `TaskTesting.Tab` plugins render as collapsible strips inside it
 * `DEPS`: drop `lucide-react`; icons come from `@camunda/design-system/icons`
+* `DEPS`: add `@bpmn-io/cm-theme` for the JSON editors' syntax colors
 
 ### Breaking Changes
 
