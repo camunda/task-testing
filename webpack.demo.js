@@ -1,7 +1,16 @@
+const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+const envFile = fs.existsSync(path.resolve(__dirname, 'demo/.env')) ? 'demo/.env' : 'demo/.env.example';
+
+// same precedence as `demo/server.mjs`: `.env.local` overrides the base file
+const { CAMUNDA_OPERATE_BASE_URL, CAMUNDA_TASKLIST_BASE_URL } = {
+  ...dotenv.config({ path: path.resolve(__dirname, envFile) }).parsed,
+  ...dotenv.config({ path: path.resolve(__dirname, 'demo/.env.local') }).parsed
+};
 
 module.exports = {
   mode: 'development',
@@ -50,7 +59,7 @@ module.exports = {
       template: './demo/index.html'
     }),
     new webpack.DefinePlugin({
-      'process.env': JSON.stringify(dotenv.config({ path: path.resolve(__dirname, 'demo/.env') }).parsed)
+      'process.env': JSON.stringify({ CAMUNDA_OPERATE_BASE_URL, CAMUNDA_TASKLIST_BASE_URL })
     })
   ],
   resolve: {
