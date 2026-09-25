@@ -3,6 +3,8 @@ import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import { TooltipProvider } from '@camunda/design-system';
+
 import { bootstrapModeler, getModeler, inject } from '../../helpers/modeler';
 
 import InputEditor, { PLACEHOLDER_TEXT, INVALID_JSON_ERROR } from '../../../lib/components/Input/InputEditor';
@@ -548,7 +550,8 @@ function renderWithProps(props = {}) {
       onChange={ onChange }
       onErrorChange={ onErrorChange }
       variablesForElement={ variablesForElement }
-    />
+    />,
+    { wrapper: TooltipProvider }
   );
 }
 

@@ -9,6 +9,8 @@ import React from 'react';
 
 import { fireEvent, render, waitFor } from '@testing-library/react';
 
+import { TooltipProvider } from '@camunda/design-system';
+
 import Output, { getWaitingContext } from '../../../lib/components/Output/Output';
 import TaskTesting from '../../../lib/components/TaskTesting/TaskTesting';
 
@@ -1068,9 +1070,11 @@ const Wrapper = (props) => {
   const pluginsProviderValue = usePluginsProviderValue();
 
   return (
-    <PluginContext.Provider value={ pluginsProviderValue }>
-      { props.children }
-    </PluginContext.Provider>
+    <TooltipProvider>
+      <PluginContext.Provider value={ pluginsProviderValue }>
+        { props.children }
+      </PluginContext.Provider>
+    </TooltipProvider>
   );
 };
 
