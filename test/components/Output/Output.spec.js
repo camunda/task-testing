@@ -7,12 +7,15 @@
 
 import React from 'react';
 
-import { render } from '@testing-library/react';
+import { fireEvent, render, waitFor } from '@testing-library/react';
+
+import { TooltipProvider } from '@camunda/design-system';
 
 import Output, { getWaitingContext } from '../../../lib/components/Output/Output';
 
 import {
   createJobEntry,
+  EXECUTION_LOG_ENTRY_STATUS,
   EXECUTION_LOG_ENTRY_TYPE
 } from '../../../lib/ExecutionLog';
 
@@ -27,7 +30,7 @@ import {
 
 describe('Output', function() {
 
-  it('should render empty state when no output', async function() {
+  it('should render idle placeholder when no output', async function() {
 
     // when
     const { queryByText } = renderWithProps({
@@ -35,27 +38,66 @@ describe('Output', function() {
     });
 
     // then
-    expect(queryByText(/Result will appear here after you run the test/i)).to.exist;
+    expect(queryByText(/No run yet\. Results appear here\./i)).to.exist;
     expect(queryByText(/Test completed/i)).to.not.exist;
     expect(queryByText(/Running test/i)).to.not.exist;
   });
 
 
-  it('should render executing banner', async function() {
+  it('should render input error placeholder', async function() {
+
+    // when
+    const { queryByText } = renderWithProps({
+      output: null,
+      inputError: 'Invalid JSON'
+    });
+
+    // then
+    expect(queryByText(/Fix the input to run a test\./i)).to.exist;
+  });
+
+
+  it('should render connection error card when no connection configured', async function() {
+
+    // given
+    const onConfigureSpy = sinon.spy();
+
+    // when
+    const { getByText, queryByText } = renderWithProps({
+      output: null,
+      isConnectionConfigured: false,
+      errorBannerTitle: 'Connection error',
+      onConfigure: onConfigureSpy
+    });
+
+    // then
+    expect(queryByText('Connection error')).to.exist;
+    expect(queryByText(/Connect a Camunda 8 cluster/i)).to.exist;
+
+    const configureButton = getByText('Configure connection');
+
+    configureButton.click();
+
+    expect(onConfigureSpy).to.have.been.calledOnce;
+  });
+
+
+  it('should render executing card', async function() {
 
     // when
     const { queryByText } = renderWithProps({
       isTaskExecuting: true,
+      taskExecutionState: 'executing',
       output: null
     });
 
     // then
     expect(queryByText(/Running test/i)).to.exist;
-    expect(queryByText(/Result will appear here/i)).to.not.exist;
+    expect(queryByText(/No run yet/i)).to.not.exist;
   });
 
 
-  it('should render success banner', async function() {
+  it('should render success card', async function() {
 
     // given
     const output = {
@@ -92,25 +134,32 @@ describe('Output', function() {
     };
 
     // when
-    const { getAllByRole, queryByText } = renderWithProps({
+    const { getAllByRole, getByText, queryByText } = renderWithProps({
       output
     });
 
     // then
-    expect(queryByText(/Process variables/i)).to.exist;
-    expect(queryByText(/Local variables/i)).to.exist;
+    expect(queryByText('Variables')).to.exist;
 
-    const textboxes = getAllByRole('textbox');
+    // process scope is shown by default
+    let textboxes = getAllByRole('textbox');
 
-    const hasMatch = textboxes.some(tb => /"foo": "bar"/i.test(tb.textContent));
-    expect(hasMatch).to.be.true;
+    expect(textboxes.some(tb => /"foo": "bar"/i.test(tb.textContent))).to.be.true;
+    expect(textboxes.some(tb => /"localFoo": "localBar"/i.test(tb.textContent))).to.be.false;
 
-    const hasLocalMatch = textboxes.some(tb => /"localFoo": "localBar"/i.test(tb.textContent));
-    expect(hasLocalMatch).to.be.true;
+    // when
+    fireEvent.click(getByText('Local'));
+
+    // then
+    await waitFor(() => {
+      textboxes = getAllByRole('textbox');
+
+      expect(textboxes.some(tb => /"localFoo": "localBar"/i.test(tb.textContent))).to.be.true;
+    });
   });
 
 
-  it('should render error banner', async function() {
+  it('should render error card', async function() {
 
     // given
     const output = {
@@ -125,7 +174,8 @@ describe('Output', function() {
     const { queryByText } = renderWithProps({ output });
 
     // then
-    expect(queryByText(/Error: Foo/i)).to.exist;
+    expect(queryByText(/Could not start test/i)).to.exist;
+    expect(queryByText('Foo')).to.exist;
   });
 
 
@@ -155,7 +205,7 @@ describe('Output', function() {
   });
 
 
-  it('should render variables for error output', async function() {
+  it('should not render strips for error output without started instance', async function() {
 
     // given
     /** @type {ElementOutput} */
@@ -171,21 +221,52 @@ describe('Output', function() {
     };
 
     // when
-    const { getAllByRole, queryByText } = renderWithProps({
+    const { queryByText } = renderWithProps({
       output
     });
 
     // then
-    expect(queryByText(/Process variables/i)).to.exist;
-
-    const textboxes = getAllByRole('textbox');
-
-    const hasMatch = textboxes.some(tb => /"foo": "bar"/i.test(tb.textContent));
-    expect(hasMatch).to.be.true;
+    expect(queryByText('Variables')).to.not.exist;
+    expect(queryByText('Timeline')).to.not.exist;
   });
 
 
-  it('should render incident banner', async function() {
+  it('should render variables for error output with started instance', async function() {
+
+    // given
+    /** @type {ElementOutput} */
+    const output = {
+      success: false,
+      error: {
+        message: 'Foo',
+        response: 'Bar'
+      },
+      variables: {
+        1: { name: 'foo', value: 'bar', scope: SCOPES.PROCESS }
+      }
+    };
+
+    // when
+    const { getAllByRole, getByText, queryByText } = renderWithProps({
+      output,
+      executionLog: [ createInstanceStartedEntry() ]
+    });
+
+    // then
+    expect(queryByText('Variables')).to.exist;
+
+    // strips are collapsed by default on error
+    fireEvent.click(getByText('Variables'));
+
+    await waitFor(() => {
+      const textboxes = getAllByRole('textbox');
+
+      expect(textboxes.some(tb => /"foo": "bar"/i.test(tb.textContent))).to.be.true;
+    });
+  });
+
+
+  it('should render incident card', async function() {
 
     // given
     const output = {
@@ -200,7 +281,7 @@ describe('Output', function() {
     const { queryByText } = renderWithProps({ output });
 
     // then
-    expect(queryByText(/Incident: JOB_NO_RETRIES/i)).to.exist;
+    expect(queryByText(/^Incident$/i)).to.exist;
     expect(queryByText(/No retries left/i)).to.exist;
   });
 
@@ -220,9 +301,45 @@ describe('Output', function() {
     const { queryByText } = renderWithProps({ output });
 
     // then
-    expect(queryByText('Incident details')).to.exist;
     expect(queryByText('JOB_NO_RETRIES')).to.exist;
     expect(queryByText('No retries left')).to.exist;
+  });
+
+
+  it('should auto-expand timeline on incident', async function() {
+
+    // given
+    const output = {
+      success: false,
+      incident: {
+        errorType: 'JOB_NO_RETRIES',
+        errorMessage: 'No retries left'
+      }
+    };
+
+    // when
+    const { queryByText } = renderWithProps({ output });
+
+    // then
+    expect(queryByText('1 error')).to.exist;
+    expect(queryByText('Result does not have a log.')).to.exist;
+  });
+
+
+  it('should collapse timeline by default on success', async function() {
+
+    // given
+    const output = {
+      success: true,
+      variables: {}
+    };
+
+    // when
+    const { queryByText } = renderWithProps({ output });
+
+    // then
+    expect(queryByText('0 events')).to.exist;
+    expect(queryByText('Result does not have a log.')).to.not.exist;
   });
 
 
@@ -242,21 +359,25 @@ describe('Output', function() {
     };
 
     // when
-    const { getAllByRole, queryByText } = renderWithProps({
+    const { getAllByRole, getByText, queryByText } = renderWithProps({
       output
     });
 
     // then
-    expect(queryByText(/Process variables/i)).to.exist;
+    expect(queryByText('Variables')).to.exist;
 
-    const textboxes = getAllByRole('textbox');
+    // strips are collapsed by default on incident
+    fireEvent.click(getByText('Variables'));
 
-    const hasMatch = textboxes.some(tb => /"foo": "bar"/i.test(tb.textContent));
-    expect(hasMatch).to.be.true;
+    await waitFor(() => {
+      const textboxes = getAllByRole('textbox');
+
+      expect(textboxes.some(tb => /"foo": "bar"/i.test(tb.textContent))).to.be.true;
+    });
   });
 
 
-  it('should render terminated banner', async function() {
+  it('should render terminated card', async function() {
 
     // given
     const output = {
@@ -268,8 +389,8 @@ describe('Output', function() {
     const { queryByText } = renderWithProps({ output });
 
     // then
-    expect(queryByText(/Process instance terminated/i)).to.exist;
-    expect(queryByText(/terminated before the test could complete/i)).to.exist;
+    expect(queryByText(/Instance terminated/i)).to.exist;
+    expect(queryByText(/Terminated before the test could complete\./i)).to.exist;
   });
 
 
@@ -290,20 +411,25 @@ describe('Output', function() {
     };
 
     // when
-    const { getAllByRole, queryByText } = renderWithProps({
+    const { getAllByRole, getByText, queryByText } = renderWithProps({
       output
     });
 
     // then
-    expect(queryByText(/Process variables/i)).to.exist;
+    expect(queryByText('Variables')).to.exist;
 
-    const textboxes = getAllByRole('textbox');
-    const hasMatch = textboxes.some(tb => /"foo": "bar"/i.test(tb.textContent));
-    expect(hasMatch).to.be.true;
+    // strips are collapsed by default when terminated
+    fireEvent.click(getByText('Variables'));
+
+    await waitFor(() => {
+      const textboxes = getAllByRole('textbox');
+
+      expect(textboxes.some(tb => /"foo": "bar"/i.test(tb.textContent))).to.be.true;
+    });
   });
 
 
-  it('should render canceled banner', async function() {
+  it('should render canceled card', async function() {
 
     // given
     const output = {
@@ -316,7 +442,7 @@ describe('Output', function() {
 
     // then
     expect(queryByText(/Test canceled/i)).to.exist;
-    expect(queryByText(/manually canceled/i)).to.exist;
+    expect(queryByText(/You stopped the test\./i)).to.exist;
   });
 
 
@@ -336,14 +462,19 @@ describe('Output', function() {
     };
 
     // when
-    const { getAllByRole, queryByText } = renderWithProps({ output });
+    const { getAllByRole, getByText, queryByText } = renderWithProps({ output });
 
     // then
-    expect(queryByText(/Process variables/i)).to.exist;
+    expect(queryByText('Variables')).to.exist;
 
-    const textboxes = getAllByRole('textbox');
-    const hasMatch = textboxes.some(tb => /"myVar": "snapshot"/i.test(tb.textContent));
-    expect(hasMatch).to.be.true;
+    // strips are collapsed by default when canceled
+    fireEvent.click(getByText('Variables'));
+
+    await waitFor(() => {
+      const textboxes = getAllByRole('textbox');
+
+      expect(textboxes.some(tb => /"myVar": "snapshot"/i.test(tb.textContent))).to.be.true;
+    });
   });
 
 
@@ -449,7 +580,7 @@ describe('getWaitingContext', function() {
 
     // then
     expect(context).to.exist;
-    expect(context.title).to.equal('Waiting for job completion');
+    expect(context.title).to.equal('Waiting for job');
     expect(context.description).to.exist;
     expect(context.linkUrl).to.equal('https://operate.example.com');
     expect(context.linkLabel).to.equal('Open in Operate');
@@ -542,7 +673,7 @@ describe('getWaitingContext', function() {
 
     // then
     expect(context).to.exist;
-    expect(context.title).to.equal('Waiting for job completion');
+    expect(context.title).to.equal('Waiting for job');
     expect(context.description).to.exist;
   });
 
@@ -604,7 +735,7 @@ describe('getWaitingContext', function() {
 
     // then
     expect(context).to.exist;
-    expect(context.title).to.equal('Waiting for message correlation');
+    expect(context.title).to.equal('Waiting for message');
     expect(context.description).to.exist;
     expect(context.linkUrl).to.equal('https://operate.example.com');
     expect(context.linkLabel).to.equal('Open in Operate');
@@ -643,7 +774,7 @@ describe('getWaitingContext', function() {
 
     // then
     expect(context).to.exist;
-    expect(context.title).to.equal('Waiting for user task completion');
+    expect(context.title).to.equal('Waiting for user task');
     expect(context.description).to.exist;
     expect(context.linkUrl).to.equal('https://tasklist.example.com/1');
     expect(context.linkLabel).to.equal('Open in Tasklist');
@@ -699,7 +830,7 @@ describe('getWaitingContext', function() {
     const context = getWaitingContext(entries, null, null);
 
     // then
-    expect(context.title).to.equal('Waiting for user task completion');
+    expect(context.title).to.equal('Waiting for user task');
   });
 
 
@@ -719,8 +850,8 @@ describe('getWaitingContext', function() {
 
     // then
     expect(context).to.exist;
-    expect(context.title).to.equal('Waiting for called process completion');
-    expect(context.linkLabel).to.equal('Open called process in Operate');
+    expect(context.title).to.equal('Waiting for called process');
+    expect(context.linkLabel).to.equal('Open called process');
     expect(context.linkUrl).to.equal('https://operate.example.com/processes/2');
   });
 
@@ -763,14 +894,19 @@ function renderWithProps(props = {}) {
   const {
     element,
     isConnectionConfigured = true,
+    errorBannerTitle,
+    onConfigure,
+    inputError = null,
     currentOperateUrl = null,
     isTaskExecuting = false,
-    output = {},
+    output = null,
     onResetOutput = () => {},
     taskExecutionState,
     executionLog = [],
     tasklistBaseUrl,
-    currentVariables
+    operateBaseUrl,
+    currentVariables,
+    executionStartedAt = null
   } = props;
 
 
@@ -779,6 +915,9 @@ function renderWithProps(props = {}) {
       <Output
         element={ element }
         isConnectionConfigured={ isConnectionConfigured }
+        errorBannerTitle={ errorBannerTitle }
+        onConfigure={ onConfigure }
+        inputError={ inputError }
         currentOperateUrl={ currentOperateUrl }
         isTaskExecuting={ isTaskExecuting }
         output={ output }
@@ -786,7 +925,9 @@ function renderWithProps(props = {}) {
         taskExecutionState={ taskExecutionState }
         executionLog={ executionLog }
         tasklistBaseUrl={ tasklistBaseUrl }
+        operateBaseUrl={ operateBaseUrl }
         currentVariables={ currentVariables }
+        executionStartedAt={ executionStartedAt }
       />
     </Wrapper>
   );
@@ -796,11 +937,24 @@ const Wrapper = (props) => {
   const pluginsProviderValue = usePluginsProviderValue();
 
   return (
-    <PluginContext.Provider value={ pluginsProviderValue }>
-      { props.children }
-    </PluginContext.Provider>
+    <TooltipProvider>
+      <PluginContext.Provider value={ pluginsProviderValue }>
+        { props.children }
+      </PluginContext.Provider>
+    </TooltipProvider>
   );
 };
+
+function createInstanceStartedEntry(timestamp = 0) {
+  return {
+    type: EXECUTION_LOG_ENTRY_TYPE.STATUS,
+    status: EXECUTION_LOG_ENTRY_STATUS.INSTANCE_STARTED,
+    data: {
+      processInstanceKey: '1'
+    },
+    timestamp
+  };
+}
 
 function createUserTaskEntry(data, timestamp = 0) {
   return {

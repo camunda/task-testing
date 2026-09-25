@@ -5,6 +5,7 @@
  * } from '@camunda8/orchestration-cluster-api'
  */
 
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
@@ -21,7 +22,14 @@ import { createApi } from './api.mjs';
 let api;
 
 try {
-  const { parsed: config } = dotenv.config({ path: path.join(__dirname, '.env') });
+
+  // Local overrides (gitignored) take precedence; without `.env`, the c8run defaults from `.env.example` apply
+  const envFile = fs.existsSync(path.join(__dirname, '.env')) ? '.env' : '.env.example';
+
+  const { parsed: localConfig } = dotenv.config({ path: path.join(__dirname, '.env.local') });
+  const { parsed: defaultConfig } = dotenv.config({ path: path.join(__dirname, envFile) });
+
+  const config = { ...defaultConfig, ...localConfig };
 
   if (!Object.keys(config)?.length) {
     throw new Error('No configuration found in .env file');
@@ -84,6 +92,16 @@ app.get('/api/getProcessInstance/:processInstanceKey', async (req, res) => {
 
   const { processInstanceKey } = req.params;
   const result = await api.searchProcessInstances(processInstanceKey);
+  res.json(result);
+});
+
+app.get('/api/getChildProcessInstances/:processInstanceKey', async (req, res) => {
+  if (!api) {
+    return res.json({ success: false, error: 'Camunda environment not configured' });
+  }
+
+  const { processInstanceKey } = req.params;
+  const result = await api.searchChildProcessInstances(processInstanceKey);
   res.json(result);
 });
 

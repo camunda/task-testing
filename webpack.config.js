@@ -19,8 +19,8 @@ module.exports = {
     'react/jsx-dev-runtime': 'react/jsx-dev-runtime',
     'react-dom': 'react-dom',
     'react-dom/server': 'react-dom/server',
-    '@carbon/react': '@carbon/react',
-    '@carbon/icons-react': '@carbon/icons-react'
+    '@camunda/design-system': '@camunda/design-system',
+    '@camunda/design-system/icons': '@camunda/design-system/icons'
   },
   resolve: {
     extensions: [ '.js', '.jsx' ]

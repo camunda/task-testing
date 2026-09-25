@@ -13,10 +13,21 @@ export const RPATab = () => {
     return <iframe width="100%" height="100%" srcDoc={ logHtml } />;
   }, []);
 
+  const openExternal = useCallback(() => {
+    const win = window.open('', '_blank');
+
+    if (win) {
+      win.document.write(logHtml);
+      win.document.close();
+    }
+  }, []);
+
   return <TaskTesting.Tab
     priority={ 0 }
     label={ 'RPA Log' }
     render={ render }
+    fullBleed={ true }
+    onOpenExternal={ openExternal }
   />;
 };
 

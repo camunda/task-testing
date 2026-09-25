@@ -19,8 +19,8 @@ import theme from '../shared/CodeMirrorTheme';
 import { getAutocompletionExtensions } from '../../utils/autocompletion';
 
 import { SCOPES } from '../../utils/variables';
-import { Button } from '@carbon/react';
-import { Erase } from '@carbon/icons-react';
+import { IconButton } from '@camunda/design-system';
+import { RotateCcw as Reset } from '@camunda/design-system/icons';
 
 const fromPropAnnotation = Annotation.define();
 
@@ -192,14 +192,13 @@ export default function InputEditor({
 
   return <div className={ classNames('code__editor', { 'code__editor--error': error }) }>
     <div className="code__editor-buttons">
-      <Button
-        renderIcon={ Erase }
-        iconDescription="Reset editor"
-        size="sm"
-        kind="ghost"
-        hasIconOnly
-        tooltipPosition="left"
-        onClick={ onClear } />
+      <IconButton
+        variant="ghost"
+        size="xs"
+        label="Reset to default values"
+        icon={ Reset }
+        onClick={ onClear }
+      />
     </div>
     <div className="code__editor-codemirror">
       <div ref={ ref } className="code__editor-codemirror-inner"></div>

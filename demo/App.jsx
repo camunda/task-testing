@@ -3,7 +3,19 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { debounce, merge } from 'min-dash';
 
 import BpmnModeler from 'camunda-bpmn-js/lib/camunda-cloud/Modeler';
-import 'camunda-bpmn-js/dist/assets/camunda-cloud-modeler.css';
+
+// TODO: temporary until a `camunda-bpmn-js` release bundles the theme-adopted styles;
+// then replace with `camunda-bpmn-js/dist/assets/camunda-cloud-modeler.css` and drop the `diagram-js` and `bpmn-js` devDependencies
+import 'diagram-js/assets/diagram-js.css';
+import 'bpmn-js/dist/assets/bpmn-js.css';
+import 'bpmn-js-element-templates/dist/assets/element-templates.css';
+
+import 'camunda-bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
+import 'camunda-bpmn-js/dist/assets/properties-panel.css';
+import 'camunda-bpmn-js/dist/assets/element-template-chooser.css';
+import 'camunda-bpmn-js/dist/assets/color-picker.css';
+
+import { BpmnImprovedCanvasModule } from '@camunda/improved-canvas';
 
 import TaskTesting from '../lib';
 
@@ -13,7 +25,8 @@ import form1 from './fixtures/form_1.form';
 import connectorTemplates from './fixtures/connectorTemplates.json';
 import defaultConfig from './fixtures/config';
 
-import '@carbon/styles/css/styles.min.css';
+import '@camunda/design-system/styles.css';
+import '@bpmn-io/c4-theme/assets/all.css';
 import './style.css';
 import { RPALink, RPATab } from './plugins/RPA';
 import {
@@ -48,6 +61,9 @@ function App() {
     if (modelerRef.current) {
       setModeler(new BpmnModeler({
         container: '#canvas',
+        additionalModules: [
+          BpmnImprovedCanvasModule
+        ],
         propertiesPanel: {
           parent: '#properties'
         },
@@ -115,6 +131,11 @@ function App() {
       .then(response => response.json());
   }, []);
 
+  const getChildProcessInstances = useCallback(async (processInstanceKey) => {
+    return fetch(`/api/getChildProcessInstances/${processInstanceKey}`)
+      .then(response => response.json());
+  }, []);
+
   const getProcessInstanceVariables = useCallback(async (processInstanceKey) => {
     return fetch(`/api/getProcessInstanceVariables/${processInstanceKey}`)
       .then(response => response.json());
@@ -147,6 +168,7 @@ function App() {
 
   const api = useMemo(() => ({
     deploy,
+    getChildProcessInstances,
     getProcessInstance,
     getProcessInstanceElementInstances,
     getProcessInstanceIncident,
@@ -157,6 +179,7 @@ function App() {
     startInstance
   }), [
     deploy,
+    getChildProcessInstances,
     getProcessInstance,
     getProcessInstanceElementInstances,
     getProcessInstanceIncident,

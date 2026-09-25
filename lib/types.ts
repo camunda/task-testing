@@ -306,6 +306,10 @@ export type Plugin = {
   priority?: number;
   render: Function;
   type: string;
+  /** Render the plugin body full-bleed and quarantined (foreign HTML). */
+  fullBleed?: boolean;
+  /** Open the plugin content in its own window. */
+  onOpenExternal?: Function;
   [key: string]: any;
 };
 

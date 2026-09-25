@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 
-import { Button } from '@carbon/react';
-import { Copy } from '@carbon/icons-react';
+import { IconButton } from '@camunda/design-system';
+import { Copy } from '@camunda/design-system/icons';
 
 import { EditorState } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
@@ -67,16 +67,15 @@ export default function OutputEditor({ value }) {
 
   return <div className="code__editor">
     <div className="code__editor-buttons">
-      <Button
-        renderIcon={ Copy }
-        iconDescription="Copy to clipboard"
-        size="sm"
-        kind="ghost"
-        hasIconOnly
-        tooltipPosition="left"
+      <IconButton
+        variant="ghost"
+        size="xs"
+        label="Copy to clipboard"
+        icon={ Copy }
         onClick={ () => {
           navigator.clipboard.writeText(value);
-        } } />
+        } }
+      />
     </div>
     <div className="code__editor-codemirror">
       <div ref={ ref } className="code__editor-codemirror-inner"></div>

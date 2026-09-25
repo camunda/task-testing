@@ -2,6 +2,8 @@ import React from 'react';
 
 import { render } from '@testing-library/react';
 
+import { TooltipProvider } from '@camunda/design-system';
+
 import { bootstrapModeler, getModeler } from '../../helpers/modeler';
 
 import Input from '../../../lib/components/Input/Input';
@@ -56,6 +58,7 @@ function renderWithProps(props) {
       variablesForElement={ variablesForElement }
       output={ output }
       onRunTask={ onRunTask }
-    />
+    />,
+    { wrapper: TooltipProvider }
   );
 }

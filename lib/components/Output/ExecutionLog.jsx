@@ -9,7 +9,7 @@ import React, { useState } from 'react';
 import {
   ChevronRight,
   ChevronDown
-} from '@carbon/icons-react';
+} from '@camunda/design-system/icons';
 
 import classNames from 'classnames';
 
@@ -265,7 +265,7 @@ function getEntryDetails(entry) {
   return [];
 }
 
-function formatDuration(ms) {
+export function formatDuration(ms) {
   if (ms < 1000) {
     return `${ms}ms`;
   }

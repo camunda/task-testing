@@ -1027,6 +1027,92 @@ describe('TaskExecution', function() {
       });
     }));
 
+
+    it('should keep polling when process instance is terminated but element instance index has not caught up', inject(async function(elementRegistry) {
+
+      // given - process instance already terminated, element instance still ACTIVE (index lag)
+      const terminatedProcessInstanceResponse = createGetProcessInstanceResponse({
+        response: createSearchProcessInstancesSDKResponse({
+          items: [ createProcessInstanceDetails({ state: 'TERMINATED' }) ]
+        })
+      });
+      const activeElementInstancesResponse = createGetProcessInstanceElementInstancesResponse({
+        response: createSearchElementInstancesSDKResponse({
+          items: [ createElementInstanceDetails({ state: 'ACTIVE' }) ]
+        })
+      });
+      const completedElementInstancesResponse = createGetProcessInstanceElementInstancesResponse({
+        response: createSearchElementInstancesSDKResponse({
+          items: [ createElementInstanceDetails({ state: 'COMPLETED' }) ]
+        })
+      });
+
+      api.deploy.resolves(createDeployResponse());
+      api.getProcessInstance.resolves(terminatedProcessInstanceResponse);
+      api.getProcessInstanceElementInstances
+        .onFirstCall().resolves(activeElementInstancesResponse)
+        .onSecondCall().resolves(completedElementInstancesResponse);
+      api.getProcessInstanceJobs.resolves(createGetProcessInstanceJobsResponse());
+      api.getProcessInstanceMessageSubscriptions.resolves(createEmptyGetProcessInstanceMessageSubscriptionsResponse());
+      api.getProcessInstanceUserTasks.resolves(createEmptyGetProcessInstanceUserTasksResponse());
+      api.getProcessInstanceVariables.resolves(createGetProcessInstanceVariablesResponse());
+      api.startInstance.resolves(createStartInstanceResponse());
+
+      // when
+      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
+
+      await clock.tickAsync(POLL_INTERVAL_MS);
+
+      // then - no premature termination verdict on skewed snapshot
+      expect(finishedSpy).to.not.have.been.called;
+
+      // when - next poll, element instance index caught up
+      await clock.tickAsync(POLL_INTERVAL_MS);
+
+      // then
+      expect(finishedSpy).to.have.been.calledOnce;
+      expect(finishedSpy).to.have.been.calledWithMatch({
+        success: true
+      });
+    }));
+
+
+    it('should finish with termination reason after grace polls if element instance never reaches terminal state', inject(async function(elementRegistry) {
+
+      // given - process terminated, element instance stays ACTIVE (e.g. never exported)
+      const terminatedProcessInstanceResponse = createGetProcessInstanceResponse({
+        response: createSearchProcessInstancesSDKResponse({
+          items: [ createProcessInstanceDetails({ state: 'TERMINATED' }) ]
+        })
+      });
+      const activeElementInstancesResponse = createGetProcessInstanceElementInstancesResponse({
+        response: createSearchElementInstancesSDKResponse({
+          items: [ createElementInstanceDetails({ state: 'ACTIVE' }) ]
+        })
+      });
+
+      api.deploy.resolves(createDeployResponse());
+      api.getProcessInstance.resolves(terminatedProcessInstanceResponse);
+      api.getProcessInstanceElementInstances.resolves(activeElementInstancesResponse);
+      api.getProcessInstanceJobs.resolves(createGetProcessInstanceJobsResponse());
+      api.getProcessInstanceMessageSubscriptions.resolves(createEmptyGetProcessInstanceMessageSubscriptionsResponse());
+      api.getProcessInstanceUserTasks.resolves(createEmptyGetProcessInstanceUserTasksResponse());
+      api.getProcessInstanceVariables.resolves(createGetProcessInstanceVariablesResponse());
+      api.startInstance.resolves(createStartInstanceResponse());
+
+      // when - grace polls (5) plus the initial poll
+      taskExecution.executeTask(elementRegistry.get('ServiceTask_1'), { foo: 'bar' });
+
+      await clock.tickAsync(POLL_INTERVAL_MS * 6);
+
+      // then
+      expect(finishedSpy).to.have.been.calledOnce;
+      expect(finishedSpy).to.have.been.calledWithMatch({
+        success: false,
+        reason: TASK_EXECUTION_FINISHED_REASON.TERMINATED
+      });
+    }));
+
   });
 
 
