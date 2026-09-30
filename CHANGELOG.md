@@ -6,6 +6,8 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+## 7.0.0
+
 * `FEAT`: build the panel on `@camunda/design-system` components and tokens
 * `FEAT`: reorganize the panel around a run card; `TaskTesting.Tab` plugins render as collapsible strips inside it
 * `DEPS`: drop `lucide-react`; icons come from `@camunda/design-system/icons`
