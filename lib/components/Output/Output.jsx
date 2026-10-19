@@ -66,6 +66,8 @@ import { getTasklistUrl } from '../../utils/getTasklistUrl';
  * @param {Element} props.element
  * @param {boolean} props.isConnectionConfigured
  * @param {string} [props.errorBannerTitle='Error']
+ * @param {string} props.errorBannerDescription
+ * @param {string} props.errorBannerActionLabel
  * @param {Function} [props.onConfigure]
  * @param {string|null} [props.inputError]
  * @param {string|null} props.currentOperateUrl
@@ -83,6 +85,8 @@ export default function Output({
   element,
   isConnectionConfigured,
   errorBannerTitle = 'Error',
+  errorBannerDescription,
+  errorBannerActionLabel,
   onConfigure,
   inputError,
   isTaskExecuting,
@@ -163,31 +167,38 @@ export default function Output({
     );
   }
 
+  const errorBanner = !isConnectionConfigured && (
+    <ErrorBanner
+      title={ errorBannerTitle }
+      description={ errorBannerDescription }
+      actionLabel={ errorBannerActionLabel }
+      onConfigure={ onConfigure }
+    />
+  );
+
   if (output) {
     return (
-      <ResultCard
-        currentOperateUrl={ currentOperateUrl }
-        currentVariables={ currentVariables }
-        duration={ durationText }
-        element={ element }
-        executionLog={ executionLog }
-        hasRunError={ hasRunError }
-        hasStartedInstance={ hasStartedInstance }
-        isConnectionConfigured={ isConnectionConfigured }
-        isTaskExecuting={ isTaskExecuting }
-        onResetOutput={ onResetOutput }
-        output={ output }
-      />
+      <>
+        { errorBanner }
+        <ResultCard
+          currentOperateUrl={ currentOperateUrl }
+          currentVariables={ currentVariables }
+          duration={ durationText }
+          element={ element }
+          executionLog={ executionLog }
+          hasRunError={ hasRunError }
+          hasStartedInstance={ hasStartedInstance }
+          isConnectionConfigured={ isConnectionConfigured }
+          isTaskExecuting={ isTaskExecuting }
+          onResetOutput={ onResetOutput }
+          output={ output }
+        />
+      </>
     );
   }
 
-  if (!isConnectionConfigured) {
-    return (
-      <ConnectionErrorCard
-        title={ errorBannerTitle }
-        onConfigure={ onConfigure }
-      />
-    );
+  if (errorBanner) {
+    return errorBanner;
   }
 
   if (inputError) {
@@ -258,6 +269,8 @@ const HeaderLinks = (props) => {
   );
 };
 
+const DEFAULT_RENDER = /** @type {(props?: any) => React.ReactNode} */ (() => null);
+
 /**
  * @param {Object} props
  * @param {(props: Object) => React.ReactNode} [props.render] - Function that returns link content
@@ -268,13 +281,11 @@ const HeaderLinks = (props) => {
  * @param {string | ((props: Object) => string | undefined)} [props.className] - Link class name (static or dynamic)
  * @param {Function | ((props: Object) => Function)} [props.onClick] - Click handler (static or dynamic)
  * @param {string | ((props: Object) => string)} [props.role] - ARIA role (static or dynamic)
- * @param {string | ((props: Object) => string | undefined)} [props.tooltip] - Tooltip text (static or dynamic)
- * @param {React.ComponentType | ((props: Object) => React.ComponentType)} [props.renderIcon] - Icon
+ * @param {string | null | ((props: Object) => string | null | undefined)} [props.tooltip] - Tooltip text (static or dynamic)
+ * @param {React.ComponentType | null | ((props: Object) => React.ComponentType | null)} [props.renderIcon] - Icon
  * @param {number} [props.priority=1000] - Priority for sorting (higher values first)
  * @returns {null}
  */
-const DEFAULT_RENDER = /** @type {(props?: any) => React.ReactNode} */ (() => null);
-
 export const HeaderLink = ({ children = null, render = DEFAULT_RENDER, visible, href, target, className = undefined, onClick = undefined, renderIcon, role = undefined, tooltip, priority = 1000 }) => {
   const { registerPlugin, unregisterPlugin } = useContext(PluginContext);
 
@@ -518,15 +529,15 @@ function RunCard({ accent, icon, title, duration, meta, description, detailRows,
   );
 }
 
-function ConnectionErrorCard({ title, onConfigure }) {
+function ErrorBanner({ title, description, actionLabel, onConfigure }) {
   return (
-    <div className="output">
+    <div className="error-banner">
       <Alert
         variant="destructive"
         title={ title }
-        description="Connect a Camunda 8 cluster to run tests from the modeler."
+        description={ description }
       >
-        { onConfigure && <Button variant="secondary" size="sm" onClick={ onConfigure }>Configure connection</Button> }
+        { onConfigure && <Button variant="secondary" size="sm" onClick={ onConfigure }>{ actionLabel }</Button> }
       </Alert>
     </div>
   );

@@ -58,28 +58,65 @@ describe('Output', function() {
   });
 
 
-  it('should render connection error card when no connection configured', async function() {
+  it('should render error banner', async function() {
+
+    // when
+    const { queryByText } = renderWithProps({
+      output: null,
+      isConnectionConfigured: false,
+      errorBannerTitle: 'Diagram has errors',
+      errorBannerDescription: 'Task testing requires a diagram without errors.',
+      errorBannerActionLabel: 'Show problems',
+      onConfigure: () => {}
+    });
+
+    // then
+    expect(queryByText('Diagram has errors')).to.exist;
+    expect(queryByText('Task testing requires a diagram without errors.')).to.exist;
+    expect(queryByText('Show problems')).to.exist;
+  });
+
+
+  it('should call onConfigure on error banner action click', async function() {
 
     // given
     const onConfigureSpy = sinon.spy();
 
-    // when
-    const { getByText, queryByText } = renderWithProps({
+    const { getByText } = renderWithProps({
       output: null,
       isConnectionConfigured: false,
       errorBannerTitle: 'Connection error',
+      errorBannerDescription: 'Configure a REST connection to Camunda 8.',
+      errorBannerActionLabel: 'Configure connection',
       onConfigure: onConfigureSpy
+    });
+
+    // when
+    getByText('Configure connection').click();
+
+    // then
+    expect(onConfigureSpy).to.have.been.calledOnce;
+  });
+
+
+  it('should render error banner above last result', async function() {
+
+    // when
+    const { queryByText } = renderWithProps({
+      output: {
+        success: true,
+        variables: {}
+      },
+      isConnectionConfigured: false,
+      errorBannerTitle: 'Connection error',
+      errorBannerDescription: 'Configure a REST connection to Camunda 8.',
+      errorBannerActionLabel: 'Configure connection',
+      onConfigure: () => {}
     });
 
     // then
     expect(queryByText('Connection error')).to.exist;
-    expect(queryByText(/Connect a Camunda 8 cluster/i)).to.exist;
-
-    const configureButton = getByText('Configure connection');
-
-    configureButton.click();
-
-    expect(onConfigureSpy).to.have.been.calledOnce;
+    expect(queryByText(/Test completed/i)).to.exist;
   });
 
 
@@ -1026,6 +1063,8 @@ function renderWithProps(props = {}) {
     element,
     isConnectionConfigured = true,
     errorBannerTitle,
+    errorBannerDescription,
+    errorBannerActionLabel,
     onConfigure,
     inputError = null,
     currentOperateUrl = null,
@@ -1049,6 +1088,8 @@ function renderWithProps(props = {}) {
         element={ element }
         isConnectionConfigured={ isConnectionConfigured }
         errorBannerTitle={ errorBannerTitle }
+        errorBannerDescription={ errorBannerDescription }
+        errorBannerActionLabel={ errorBannerActionLabel }
         onConfigure={ onConfigure }
         inputError={ inputError }
         currentOperateUrl={ currentOperateUrl }

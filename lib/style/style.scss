@@ -168,6 +168,16 @@
     }
   }
 
+  .error-banner {
+    flex-shrink: 0;
+    padding: 12px;
+  }
+
+  // error banner could be above the last result, keep a single gap between the two
+  .error-banner + .output {
+    padding-top: 0;
+  }
+
   // raised surface like the design system's Card; the status fill (the DS
   // Alert's) covers only the title bar, so long incident details stay neutral
   .run-card {

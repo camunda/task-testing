@@ -33,6 +33,8 @@ function App() {
 | `config` | `Config` | no | Input/output configuration for elements |
 | `onConfigChanged` | `(config: Config) => void` | no | Called when the configuration changes |
 | `errorBannerTitle` | `string` | no | Title for the error banner (default: `'Error'`) |
+| `errorBannerDescription` | `string` | yes | Description for the error banner |
+| `errorBannerActionLabel` | `string` | yes | Label of the error banner button, which calls `onConfigure` |
 | `configureTooltip` | `string` | no | Tooltip for the configure button (default: `'Configure'`) |
 | `onConfigure` | `Function` | no | Called when the user clicks the configure button |
 | `onTestTask` | `() => boolean \| Promise<boolean>` | no | Called when the user clicks _Test task_. Return `true` to proceed, `false` to abort |
