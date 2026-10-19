@@ -234,6 +234,8 @@ function App() {
             injector={ injector }
             hasError={ !isConnectionConfigured }
             errorBannerTitle="Error"
+            errorBannerDescription="Connect a Camunda 8 cluster to run tests."
+            errorBannerActionLabel="Select cluster"
             configureTooltip="Select cluster"
             onConfigure={ onConfigureConnection }
             onTestTask={ onTestTask }
