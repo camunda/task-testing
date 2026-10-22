@@ -6,6 +6,8 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+# 7.0.1
+
 * `FIX`: show the actual error and its action, provided by the host through `errorBannerDescription` and `errorBannerActionLabel` ([#106](https://github.com/camunda/task-testing/pull/106))
 * `FIX`: keep the error visible when a previous test result is shown ([#106](https://github.com/camunda/task-testing/pull/106))
 
