@@ -202,7 +202,7 @@ export default function Output({
   }
 
   if (inputError) {
-    return <IdlePlaceholder text="Fix the input to run a test." />;
+    return <IdlePlaceholder text="Fix the input before executing." />;
   }
 
   return <IdlePlaceholder text="No run yet. Results appear here." />;
@@ -568,7 +568,7 @@ function ExecutingCard({
       return 'Starting process instance';
     }
 
-    return 'Running test';
+    return 'Executing';
   }, [ waitingContext, taskExecutionState ]);
 
   const meta = !waitingContext && taskExecutionState !== TASK_EXECUTION_STATE.DEPLOYING
@@ -666,19 +666,19 @@ function ResultCard({
         : <CircleX size={ 18 } aria-hidden="true" />;
 
   const title = output.error
-    ? (hasStartedInstance ? 'Test failed' : 'Could not start test')
+    ? (hasStartedInstance ? 'Execution failed' : 'Could not start execution')
     : output.incident
       ? 'Incident'
       : output.success
-        ? 'Test completed'
+        ? 'Execution completed'
         : output.terminated
           ? 'Instance terminated'
-          : 'Test canceled';
+          : 'Execution canceled';
 
   const description = output.terminated
-    ? 'Terminated before the test could complete. This may be expected.'
+    ? 'Terminated before the execution could complete. This may be expected.'
     : output.canceled
-      ? 'You stopped the test. Partial results kept below.'
+      ? 'You canceled the execution. Partial results kept below.'
       : null;
 
   const meta = useMemo(() => {

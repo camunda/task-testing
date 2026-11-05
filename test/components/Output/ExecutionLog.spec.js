@@ -174,7 +174,7 @@ describe('ExecutionLog', function() {
       const { queryByText } = renderExecutionLog({ entries });
 
       // then
-      expect(queryByText('Test canceled')).to.exist;
+      expect(queryByText('Execution canceled')).to.exist;
     });
 
 

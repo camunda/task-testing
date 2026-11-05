@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/camunda/task-testing/actions/workflows/CI.yml/badge.svg)](https://github.com/camunda/task-testing/actions/workflows/CI.yml)
 
-Run and test a single building block of your BPMN diagram.
+Validate a single building block of your BPMN diagram by executing it against a connected cluster.
 
 ## Usage
 
@@ -37,7 +37,7 @@ function App() {
 | `errorBannerActionLabel` | `string` | yes | Label of the error banner button, which calls `onConfigure` |
 | `configureTooltip` | `string` | no | Tooltip for the configure button (default: `'Configure'`) |
 | `onConfigure` | `Function` | no | Called when the user clicks the configure button |
-| `onTestTask` | `() => boolean \| Promise<boolean>` | no | Called when the user clicks _Test task_. Return `true` to proceed, `false` to abort |
+| `onTestTask` | `() => boolean \| Promise<boolean>` | no | Called when the user clicks _Execute_. Return `true` to proceed, `false` to abort |
 | `operateBaseUrl` | `string` | no | Base URL for Operate links |
 | `tasklistBaseUrl` | `string` | no | Base URL for Tasklist links |
 | `documentationUrl` | `string` | no | URL for the documentation link |

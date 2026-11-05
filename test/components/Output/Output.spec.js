@@ -40,8 +40,8 @@ describe('Output', function() {
 
     // then
     expect(queryByText(/No run yet\. Results appear here\./i)).to.exist;
-    expect(queryByText(/Test completed/i)).to.not.exist;
-    expect(queryByText(/Running test/i)).to.not.exist;
+    expect(queryByText(/Execution completed/i)).to.not.exist;
+    expect(queryByText(/Executing/i)).to.not.exist;
   });
 
 
@@ -54,7 +54,7 @@ describe('Output', function() {
     });
 
     // then
-    expect(queryByText(/Fix the input to run a test\./i)).to.exist;
+    expect(queryByText(/Fix the input before executing\./i)).to.exist;
   });
 
 
@@ -116,7 +116,7 @@ describe('Output', function() {
 
     // then
     expect(queryByText('Connection error')).to.exist;
-    expect(queryByText(/Test completed/i)).to.exist;
+    expect(queryByText(/Execution completed/i)).to.exist;
   });
 
 
@@ -130,7 +130,7 @@ describe('Output', function() {
     });
 
     // then
-    expect(queryByText(/Running test/i)).to.exist;
+    expect(queryByText(/Executing/i)).to.exist;
     expect(queryByText(/No run yet/i)).to.not.exist;
   });
 
@@ -147,7 +147,7 @@ describe('Output', function() {
     const { queryByText } = renderWithProps({ output });
 
     // then
-    expect(queryByText(/Test completed/i)).to.exist;
+    expect(queryByText(/Execution completed/i)).to.exist;
   });
 
 
@@ -212,7 +212,7 @@ describe('Output', function() {
     const { queryByText } = renderWithProps({ output });
 
     // then
-    expect(queryByText(/Could not start test/i)).to.exist;
+    expect(queryByText(/Could not start execution/i)).to.exist;
     expect(queryByText('Foo')).to.exist;
   });
 
@@ -234,8 +234,8 @@ describe('Output', function() {
     });
 
     // then
-    expect(queryByText(/Test failed/i)).to.exist;
-    expect(queryByText(/Could not start test/i)).not.to.exist;
+    expect(queryByText(/Execution failed/i)).to.exist;
+    expect(queryByText(/Could not start execution/i)).not.to.exist;
   });
 
 
@@ -450,7 +450,7 @@ describe('Output', function() {
 
     // then
     expect(queryByText(/Instance terminated/i)).to.exist;
-    expect(queryByText(/Terminated before the test could complete\./i)).to.exist;
+    expect(queryByText(/Terminated before the execution could complete\./i)).to.exist;
   });
 
 
@@ -501,8 +501,8 @@ describe('Output', function() {
     const { queryByText } = renderWithProps({ output });
 
     // then
-    expect(queryByText(/Test canceled/i)).to.exist;
-    expect(queryByText(/You stopped the test\./i)).to.exist;
+    expect(queryByText(/Execution canceled/i)).to.exist;
+    expect(queryByText(/You canceled the execution\./i)).to.exist;
   });
 
 
