@@ -678,7 +678,7 @@ function ResultCard({
   const description = output.terminated
     ? 'Terminated before the execution could complete. This may be expected.'
     : output.canceled
-      ? 'You canceled the execution. Partial results kept below.'
+      ? 'Monitoring stopped. The process instance may still be running. Partial results kept below.'
       : null;
 
   const meta = useMemo(() => {

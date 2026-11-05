@@ -502,7 +502,7 @@ describe('Output', function() {
 
     // then
     expect(queryByText(/Execution canceled/i)).to.exist;
-    expect(queryByText(/You canceled the execution\./i)).to.exist;
+    expect(queryByText(/Monitoring stopped\. The process instance may still be running\./i)).to.exist;
   });
 
 
