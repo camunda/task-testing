@@ -19,7 +19,7 @@ describe('useSelectedElement', function() {
     // then
     expect(selectedElement).to.be.null;
     expect(selectionInfo).to.deep.equal({
-      message: 'Select a task, subprocess, or call activity to start testing.'
+      message: 'Select a task, subprocess, or call activity to validate it.'
     });
   }));
 
@@ -44,7 +44,7 @@ describe('useSelectedElement', function() {
     // then
     expect(selectedElement).to.be.null;
     expect(selectionInfo).to.deep.equal({
-      message: 'Select a task, subprocess, or call activity to start testing.'
+      message: 'Select a task, subprocess, or call activity to validate it.'
     });
   }));
 
@@ -67,7 +67,7 @@ describe('useSelectedElement', function() {
     expect(selectedElement).to.be.null;
     expect(selectionInfo).to.deep.equal({
       title: 'Unsupported element',
-      message: 'Task testing is only supported for tasks, subprocesses, and call activities. Select one to start testing.'
+      message: 'Only tasks, subprocesses, and call activities can be validated. Select one to validate it.'
     });
   }));
 

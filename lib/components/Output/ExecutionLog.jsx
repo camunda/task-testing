@@ -28,7 +28,7 @@ const STATUS_LABELS = {
   completed: 'Process instance completed',
   terminated: 'Process instance terminated',
   incident: 'Incident',
-  canceled: 'Test canceled'
+  canceled: 'Execution canceled'
 };
 
 export const JOB_STATES = /** @type {const} */ ({
@@ -394,7 +394,7 @@ export function ExecutionLog({ entries, isTaskExecuting }) {
   if (!entries.length) {
     return (
       <div className="execution-log">
-        <div className="execution-log__empty">No log entries yet. Click <span className="execution-log__empty-action">Test</span> to execute the task.</div>
+        <div className="execution-log__empty">No log entries yet. Click <span className="execution-log__empty-action">Execute</span> to start.</div>
       </div>
     );
   }

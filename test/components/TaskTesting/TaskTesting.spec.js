@@ -60,7 +60,7 @@ describe('TaskTesting', function() {
     renderTaskTesting();
 
     // then
-    expect(screen.getByText('Select a task, subprocess, or call activity to start testing.')).to.exist;
+    expect(screen.getByText('Select a task, subprocess, or call activity to validate it.')).to.exist;
   }));
 
 
@@ -207,7 +207,7 @@ describe('TaskTesting', function() {
       }));
 
 
-      it('should not start execution when clicking "Run test"', inject(async function(elementRegistry, selection) {
+      it('should not start execution when clicking "Execute"', inject(async function(elementRegistry, selection) {
 
         // given
         const deploySpy = sinon.spy(() => new Promise(() => {}));
@@ -306,7 +306,7 @@ describe('TaskTesting', function() {
 
         // then
         await waitFor(() => {
-          expect(screen.getByText('Fix the input to run a test.')).to.exist;
+          expect(screen.getByText('Fix the input before executing.')).to.exist;
         });
 
         // input group is expanded and the editor shows the error state
@@ -320,7 +320,7 @@ describe('TaskTesting', function() {
       }));
 
 
-      it('should not start execution when clicking "Run test"', inject(async function(elementRegistry, selection) {
+      it('should not start execution when clicking "Execute"', inject(async function(elementRegistry, selection) {
 
         // given
         const deploySpy = sinon.spy(() => new Promise(() => {}));
@@ -341,7 +341,7 @@ describe('TaskTesting', function() {
         const button = await screen.findByTestId('test-task-btn');
 
         await waitFor(() => {
-          expect(screen.getByText('Fix the input to run a test.')).to.exist;
+          expect(screen.getByText('Fix the input before executing.')).to.exist;
         });
 
         button.click();
@@ -655,7 +655,7 @@ describe('TaskTesting', function() {
       });
 
       await waitFor(() => {
-        expect(button.textContent).to.equal('Stop test');
+        expect(button.textContent).to.equal('Cancel');
       });
 
       // when
@@ -731,7 +731,7 @@ describe('TaskTesting', function() {
       }));
 
 
-    it('should disable _Test task_ button while awaiting onTestTask',
+    it('should disable _Execute_ button while awaiting onTestTask',
       inject(async function(elementRegistry, selection) {
 
         // given
@@ -830,7 +830,7 @@ describe('TaskTesting', function() {
         // when
         let button = await screen.findByTestId('test-task-btn');
 
-        expect(button.textContent).to.equal('Run test');
+        expect(button.textContent).to.equal('Execute');
 
         button.click();
 
@@ -843,14 +843,14 @@ describe('TaskTesting', function() {
         button = await screen.findByTestId('test-task-btn');
 
         await waitFor(() => {
-          expect(button.textContent).to.equal('Stop test');
+          expect(button.textContent).to.equal('Cancel');
         });
 
         button.click();
 
         // then
         await waitFor(() => {
-          expect(button.textContent).to.equal('Run test');
+          expect(button.textContent).to.equal('Execute');
         });
       }));
 
