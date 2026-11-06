@@ -6,6 +6,8 @@ All notable changes are documented here. We use [semantic versioning](http://sem
 
 ___Note:__ Yet to be released changes appear here._
 
+## 7.1.0
+
 * `FEAT`: rename user-facing copy from testing to _Validate_. The button reads _Execute_ / _Cancel_ instead of _Run test_ / _Stop test_, and results read _Execution completed_, _Execution failed_, _Execution canceled_ ([#103](https://github.com/camunda/task-testing/issues/103))
 
 ## 7.0.1
